@@ -1,6 +1,5 @@
 package com.cm.sanchalak.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,10 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-    @NotBlank
-    private String email;
-
-    @NotBlank
-    private String password;
+public class BulkMarkAttendanceResponse {
+    private boolean success;
+    private int markedCount;
+    private int failedCount;
+    private String message;
 }

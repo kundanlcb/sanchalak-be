@@ -22,6 +22,7 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
+- 003-attendance-service: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 002-academic-management: Added
 

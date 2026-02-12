@@ -29,12 +29,14 @@ public class MarkEntryIntegrationTest {
     @Autowired private ExamScheduleRepository scheduleRepo;
     @Autowired private StudentMarksRepository marksRepo;
     @Autowired private ClassSubjectRepository classSubjectRepo;
+    @Autowired private AttendanceRepository attendanceRepo;
 
     private WebTestClient webTestClient;
 
     @BeforeEach
     void setUp() {
         webTestClient = MockMvcWebTestClient.bindToApplicationContext(context).build();
+        attendanceRepo.deleteAll();
         marksRepo.deleteAll();
         scheduleRepo.deleteAll();
         classSubjectRepo.deleteAll();

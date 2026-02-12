@@ -6,8 +6,8 @@ import com.cm.sanchalak.entity.Role;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.UserRepository;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,7 @@ public class AuthIntegrationTest {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -61,12 +60,9 @@ public class AuthIntegrationTest {
             .bodyValue(signUpRequest)
             .exchange()
             .expectStatus().isCreated()
-            .expectBody(JsonNode.class)
-            .consumeWith(result -> {
-                 JsonNode body = result.getResponseBody();
-                 assertThat(body.get("success").asBoolean()).isTrue();
-                 assertThat(body.get("message").asText()).isEqualTo("User registered successfully");
-            });
+            .expectBody()
+            .jsonPath("$.success").isEqualTo(true)
+            .jsonPath("$.message").isEqualTo("User registered successfully");
     }
 
     @Test
@@ -92,10 +88,7 @@ public class AuthIntegrationTest {
             .bodyValue(loginRequest)
             .exchange()
             .expectStatus().isOk()
-            .expectBody(JsonNode.class)
-            .consumeWith(result -> {
-                JsonNode body = result.getResponseBody();
-                assertThat(body.get("tokenType").asText()).isEqualTo("Bearer");
-            });
+            .expectBody()
+            .jsonPath("$.tokenType").isEqualTo("Bearer");
     }
 }

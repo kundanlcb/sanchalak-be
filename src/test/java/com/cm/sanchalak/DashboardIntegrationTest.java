@@ -49,6 +49,9 @@ public class DashboardIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private com.cm.sanchalak.repository.AttendanceRepository attendanceRepository;
+
+    @Autowired
     private RoleRepository roleRepository;
     
     @Autowired
@@ -60,6 +63,7 @@ public class DashboardIntegrationTest {
     @BeforeEach
     void setUp() {
         this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context).build();
+        attendanceRepository.deleteAll();
         studentRepository.deleteAll();
         teacherRepository.deleteAll();
         classRepository.deleteAll();

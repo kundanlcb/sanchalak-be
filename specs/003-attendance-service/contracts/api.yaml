@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: Attendance Service API
+  version: 1.0.0
+paths:
+  /api/attendance/bulk:
+    post:
+      summary: Mark attendance for multiple students
+      operationId: bulkMarkAttendance
+      tags:
+        - Attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkMarkAttendanceRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkMarkAttendanceResponse'
+
+  /api/attendance:
+    post:
+      summary: Mark attendance for single student
+      operationId: markAttendance
+      tags:
+        - Attendance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkAttendanceRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+    get:
+      summary: Get attendance history
+      operationId: getAttendance
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: classId
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttendanceRecord'
+
+  /api/attendance/class/{classId}/date/{date}:
+    get:
+      summary: Get class attendance sheet
+      operationId: getClassAttendanceSheet
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Class sheet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassAttendanceSheet'
+
+  /api/attendance/summary:
+    get:
+      summary: Get attendance summary stats
+      operationId: getAttendanceSummary
+      parameters:
+        - name: studentId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceSummary'
+
+  /api/attendance/class/{classId}/statistics:
+    get:
+      summary: Get class attendance statistics (Admin Report)
+      operationId: getClassAttendanceStats
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Class stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassAttendanceStatistics'
+
+components:
+  schemas:
+    AttendanceStatus:
+      type: string
+      enum: [PRESENT, ABSENT, LATE, EXCUSED, HOLIDAY]
+
+    AttendanceRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        studentId:
+          type: integer
+          format: int64
+        classId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        remarks:
+          type: string
+        markedBy:
+          type: string
+        markedDate:
+          type: string
+          format: date-time
+        isModified:
+          type: boolean
+
+    BulkMarkAttendanceRequest:
+      type: object
+      properties:
+        classId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date
+        attendances:
+          type: array
+          items:
+            type: object
+            properties:
+              studentId:
+                type: integer
+                format: int64
+              status:
+                $ref: '#/components/schemas/AttendanceStatus'
+              remarks:
+                type: string
+        markedBy:
+           type: string
+
+    BulkMarkAttendanceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        markedCount:
+          type: integer
+        failedCount:
+          type: integer
+
+    MarkAttendanceRequest:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        classId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        remarks:
+          type: string
+    
+    ClassAttendanceSheet:
+      type: object
+      properties:
+        classId:
+           type: integer
+        date:
+           type: string
+        presentCount:
+           type: integer
+        absentCount:
+           type: integer
+        students:
+           type: array
+           items:
+             $ref: '#/components/schemas/AttendanceRecord'
+
+    AttendanceSummary:
+      type: object
+      properties:
+        studentId:
+           type: integer
+        totalDays:
+           type: integer
+        presentDays:
+           type: integer
+        percentage:
+           type: number
+           format: double
+
+    ClassAttendanceStatistics:
+      type: object
+      properties:
+        classId:
+           type: integer
+        averagePercentage:
+           type: number
+           format: double
+        totalWorkingDays:
+           type: integer
+        startDate:
+           type: string
+           format: date
+        endDate:
+           type: string
+           format: date
