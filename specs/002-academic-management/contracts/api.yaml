@@ -1,0 +1,136 @@
+openapi: 3.0.0
+info:
+  title: Academic Management API
+  version: 1.0.0
+paths:
+  /api/academic/terms:
+    post:
+      summary: Create Exam Term
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+      responses:
+        '201':
+          description: Created
+
+  /api/academic/subjects:
+    post:
+      summary: Create Subject
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                code: { type: string }
+      responses:
+        '201':
+          description: Created
+
+  /api/academic/classes/{classId}/subjects:
+    post:
+      summary: Assign Subject to Class
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectId: { type: integer }
+                teacherId: { type: integer } # Optional
+      responses:
+        '200':
+          description: Assigned
+
+  /api/academic/schedules:
+    post:
+      summary: Schedule Exam for Class & Subject (Define Max Marks)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                examTermId: { type: integer }
+                classId: { type: integer }
+                subjectId: { type: integer }
+                maxMarks: { type: integer }
+                examDate: { type: string, format: date }
+
+  /api/academic/marks:
+    post:
+      summary: Submit Marks
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                examScheduleId: { type: integer }
+                studentId: { type: integer }
+                marksObtained: { type: number }
+                remarks: { type: string }
+
+  /api/academic/reports/{studentId}:
+    get:
+      summary: Get Report Card Data
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Report Data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  studentName: { type: string }
+                  terms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        termName: { type: string }
+                        subjects:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              subjectName: { type: string }
+                              marksObtained: { type: number }
+                              maxMarks: { type: number }
+
+  /api/homework:
+    post:
+      summary: Create Homework
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId: { type: integer }
+                subjectId: { type: integer }
+                title: { type: string }
+                description: { type: string }
+                dueDate: { type: string, format: date }

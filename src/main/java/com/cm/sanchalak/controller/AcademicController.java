@@ -1,0 +1,106 @@
+package com.cm.sanchalak.controller;
+
+import com.cm.sanchalak.dto.ClassSubjectRequest;
+import com.cm.sanchalak.dto.ExamTermRequest;
+import com.cm.sanchalak.dto.SubjectRequest;
+import com.cm.sanchalak.entity.ClassSubject;
+import com.cm.sanchalak.entity.ExamTerm;
+import com.cm.sanchalak.entity.Subject;
+import com.cm.sanchalak.entity.ExamSchedule;
+import com.cm.sanchalak.dto.ExamScheduleRequest;
+import com.cm.sanchalak.dto.MarkEntryRequest;
+import com.cm.sanchalak.dto.ReportCardDto;
+import com.cm.sanchalak.entity.StudentMarks;
+import com.cm.sanchalak.service.AcademicService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+@RestController
+@RequestMapping("/api/academic")
+public class AcademicController {
+
+    private final AcademicService academicService;
+
+    public AcademicController(AcademicService academicService) {
+        this.academicService = academicService;
+    }
+
+    // Terms
+    @PostMapping("/terms")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ExamTerm> createTerm(@Valid @RequestBody ExamTermRequest request) {
+        ExamTerm term = new ExamTerm();
+        term.setName(request.getName());
+        term.setStartDate(request.getStartDate());
+        term.setEndDate(request.getEndDate());
+        return ResponseEntity.ok(academicService.createExamTerm(term));
+    }
+
+    @GetMapping("/terms")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<List<ExamTerm>> getAllTerms() {
+        return ResponseEntity.ok(academicService.getAllTerms());
+    }
+
+    // Subjects
+    @PostMapping("/subjects")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Subject> createSubject(@Valid @RequestBody SubjectRequest request) {
+        Subject subject = new Subject();
+        subject.setName(request.getName());
+        subject.setCode(request.getCode());
+        return ResponseEntity.ok(academicService.createSubject(subject));
+    }
+
+    @GetMapping("/subjects")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<List<Subject>> getAllSubjects() {
+        return ResponseEntity.ok(academicService.getAllSubjects());
+    }
+
+    // Class Subjects
+    @PostMapping("/class-subjects")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ClassSubject> assignSubjectToClass(@Valid @RequestBody ClassSubjectRequest request) {
+        return ResponseEntity.ok(academicService.assignSubjectToClass(
+            request.getClassId(), 
+            request.getSubjectId(), 
+            request.getTeacherId()
+        ));
+    }
+
+    // Schedules
+    @PostMapping("/schedules")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ExamSchedule> scheduleExam(@Valid @RequestBody ExamScheduleRequest request) {
+        return ResponseEntity.ok(academicService.scheduleExam(
+            request.getExamTermId(),
+            request.getClassId(),
+            request.getSubjectId(),
+            request.getExamDate(),
+            request.getMaxMarks()
+        ));
+    }
+
+    // Marks
+    @PostMapping("/marks")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<StudentMarks> saveStudentMarks(@Valid @RequestBody MarkEntryRequest request) {
+        return ResponseEntity.ok(academicService.saveStudentMarks(
+            request.getExamScheduleId(),
+            request.getStudentId(),
+            request.getMarksObtained(),
+            request.getRemarks()
+        ));
+    }
+
+    // Reports
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    @GetMapping("/reports/{studentId}")
+    public ResponseEntity<ReportCardDto> getReportCard(@PathVariable Long studentId) {
+        return ResponseEntity.ok(academicService.generateReportCard(studentId));
+    }
+}
