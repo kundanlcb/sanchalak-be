@@ -1,115 +1,93 @@
-# Feature Specification: [FEATURE NAME]
+# Specification: Finance Module (Backend)
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
-**Input**: User description: "$ARGUMENTS"
+## 1. Overview
+The Finance Module enables fee management, structure configuration, and payment tracking. This specification aligns with the Frontend "Phase 3 Financial & Admin" specification (P1-P3), focusing on Fee Structures, Online Payments, and Digital Receipts.
 
-## User Scenarios & Testing *(mandatory)*
+**Reference:** Frontend Spec `003-financial-admin/spec.md`
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+## 2. Goals
+*   **Flexible Configuration:** Support Tuition, Transport, etc., with monthly/annual frequencies (Matches FE FR-001).
+*   **Advanced Logic:** Handle Late Fees (FR-004) and Discounts (FR-005).
+*   **Payment Integrity:** Support Partial Payments (FR-016) and prevent duplicates (FR-015).
+*   **Receipts:** Generate unique sequential IDs `RCP-YYYY-NNNNN` (FR-022).
 
-### User Story 1 - [Brief Title] (Priority: P1)
+## 3. Functional Requirements (Backend)
 
-[Describe this user journey in plain language]
+### 3.1 Fee Structure & Categories (P1)
+*   **FR-3.1.1:** CRUD for `FeeCategory` (Name: Tuition, Transport, etc., Default Amount). *Aligns with FE `FeeCategory`*.
+*   **FR-3.1.2:** CRUD for `FeeStructure`. Must support:
+    *   `frequency` (Monthly/Annual).
+    *   `lateFeeRule` (Amount/Percentage + Grace Period).
+*   **FR-3.1.3:** Assign Structure to Student/Class. Support `discounts` (e.g., Sibling Discount) at assignment time.
 
-**Why this priority**: [Explain the value and why it has this priority level]
+### 3.2 Ledger & Dues Management
+*   **FR-3.2.1:** Calculate Total Dues dynamically:
+    *   `Total Due` = `Base Amount` - `Discounts` + `Late Fees` - `Paid Amount`.
+*   **FR-3.2.2:** API must return dues broken down by fee category for the frontend.
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+### 3.3 Transaction Processing (P2)
+*   **FR-3.3.1:** Record `PaymentTransaction`.
+*   **FR-3.3.2:** Support **Partial Payments**. Validates that `Amount <= Pending Amount` (unless Advance is enabled).
+*   **FR-3.3.3:** **Idempotency**: Prevent duplicate charging using `gatewayTransactionId`.
+*   **FR-3.3.4:** Record `paymentMethod` (UPI, Card, Cash) and `gatewayStatus`.
 
-**Acceptance Scenarios**:
+### 3.4 Receipt Generation (P3)
+*   **FR-3.4.1:** Generate `Receipt` on successful transaction.
+*   **FR-3.4.2:** **Format**: `RCP-{YYYY}-{Sequence}` (e.g., `RCP-2026-00123`).
+*   **FR-3.4.3:** Persist Receipt URL/Data for retrieval.
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+## 4. Database Schema (Aligned with FE)
 
----
+### 4.1 FeeCategory (was FeeHead)
+*   `id`: Long (PK)
+*   `name`: String (Unique)
+*   `description`: String
+*   `isMandatory`: Boolean
 
-### User Story 2 - [Brief Title] (Priority: P2)
+### 4.2 FeeStructure
+*   `id`: Long (PK)
+*   `name`: String
+*   `academicYear`: String
+*   `frequency`: ENUM (MONTHLY, QUARTERLY, ANNUAL)
+*   `lateFeeAmount`: BigDecimal
+*   `gracePeriodDays`: Integer
 
-[Describe this user journey in plain language]
+### 4.3 FeeStructureItem
+*   `structure_id`: FK
+*   `category_id`: FK (FeeCategory)
+*   `amount`: BigDecimal
 
-**Why this priority**: [Explain the value and why it has this priority level]
+### 4.4 StudentFeeMap
+*   `student_id`: FK
+*   `structure_id`: FK
+*   `discountAmount`: BigDecimal (Flat discount stored here)
+*   `discountReason`: String (e.g., "Sibling")
 
-**Independent Test**: [Describe how this can be tested independently]
+### 4.5 PaymentTransaction
+*   `id`: Long (PK)
+*   `student_id`: FK
+*   `transactionType`: ENUM (FEE_PAYMENT, REFUND)
+*   `amount`: BigDecimal
+*   `paymentDate`: LocalDateTime
+*   `paymentMethod`: ENUM (CASH, UPI, CARD, CHEQUE)
+*   `gatewayTransactionId`: String (Unique, for Idempotency)
+*   `status`: ENUM (SUCCESS, PENDING, FAILED)
+*   `receiptNo`: String (Unique, Format: RCP-YYYY-NNNNN)
 
-**Acceptance Scenarios**:
+## 5. API Endpoints
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+### Configuration
+*   `GET/POST /api/finance/categories` (Fee Categories)
+*   `GET/POST /api/finance/structures` (Fee Structures)
+*   `POST /api/finance/structures/{id}/assign` (Assign to Student/Class)
 
----
+### Ledger & Payments
+*   `GET /api/finance/students/{studentId}/ledger` (Returns Dues, Late Fees, History)
+*   `POST /api/finance/transactions` (Process Payment)
+    *   Input: `studentId`, `amount`, `method`, `gatewayId`.
+*   `GET /api/finance/receipts/{receiptNo}` (Fetch Receipt Data)
 
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-[Add more user stories as needed, each with an assigned priority]
-
-### Edge Cases
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
-
-## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
-
-### Functional Requirements
-
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
-
-*Example of marking unclear requirements:*
-
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
-
-### Key Entities *(include if feature involves data)*
-
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
-
-## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+## 6. Out of Scope (For this Backend Branch)
+*   **Phase 2:** Payroll Management (FE User Story 4).
+*   **Phase 2:** Advanced Analytics Dashboards (FE User Story 5).
+*   *Rational:* These are P4/P5 in the FE spec. We focus on enabling Fee Collection first.
