@@ -1,115 +1,75 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Academic Management
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
-**Input**: User description: "$ARGUMENTS"
+**Feature Branch**: `002-academic-management`
+**Created**: 2026-02-12
+**Status**: Draft
+**Input**: Academic Core: Exams, Marks, Homework, Report Cards.
 
 ## User Scenarios & Testing *(mandatory)*
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+### User Story 1 - Exam & Subject Management (Priority: P1)
 
-### User Story 1 - [Brief Title] (Priority: P1)
+Admins need to define structure: Exam Terms (Quarterly, Final), Subjects (Math, Science), and map simple subjects to Classes.
 
-[Describe this user journey in plain language]
+**Why this priority**: Prerequisite for marks entry.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: Create Exam "Mid-Term", Create Subject "Math", Link Math to Class 10A.
 
 **Acceptance Scenarios**:
+1. **Given** Admin token, **When** `POST /api/academic/terms`, **Then** Exam Term created.
+2. **Given** Admin token, **When** `POST /api/academic/subjects`, **Then** Subject created.
+3. **Given** Class 10A, **When** `POST /api/academic/classes/10A/subjects`, **Then** Subject is linked to Class.
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+### User Story 2 - Marks Entry (Priority: P1)
 
----
+Teachers need to save marks for students in their subjects.
 
-### User Story 2 - [Brief Title] (Priority: P2)
+**Why this priority**: Core academic data.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Post marks for a student in a specific exam/subject.
 
 **Acceptance Scenarios**:
+1. **Given** Teacher token, **When** `POST /api/academic/marks` with valid score (e.g., 85/100), **Then** saved successfully.
+2. **Given** marks > max marks, **When** POST, **Then** 400 Bad Request.
+3. **Given** non-teacher/wrong teacher, **When** POST, **Then** 403 Forbidden.
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+### User Story 3 - Report Card Data (Priority: P2)
 
----
+Admins need aggregated data to generate PDF reports.
 
-### User Story 3 - [Brief Title] (Priority: P3)
+**Why this priority**: Required for output generation.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Call `GET /api/academic/reports/card/{studentId}` and receive JSON with all term marks.
 
 **Acceptance Scenarios**:
+1. **Given** student with marks in 3 subjects, **When** GET report, **Then** returns subject names, marks obtained, max marks, and calculated grade.
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+### User Story 4 - Homework Management (Priority: P3)
 
----
+Teachers post homework assignments.
 
-[Add more user stories as needed, each with an assigned priority]
+**Why this priority**: Day-to-day operations.
 
-### Edge Cases
+**Independent Test**: Create homework, Fetch homework for class.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+**Acceptance Scenarios**:
+1. **Given** Teacher, **When** `POST /api/homework` for Class 10A, **Then** created.
+2. **Given** Student in 10A, **When** `GET /api/homework`, **Then** sees assignments.
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
-
-## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
+## Functional Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST allow creating Exam Terms (name, start_date, end_date).
+- **FR-002**: System MUST allow defining Subjects and mapping 'Subject' to 'Class' (ClassSubject).
+- **FR-003**: System MUST allow recording marks for (Student, Exam, Subject).
+- **FR-004**: System MUST validate marks do not exceed defined maximum for the subject/exam.
+- **FR-005**: System MUST allow CRUD for Homework (title, description, due_date) linked to a Class and Subject.
 
-*Example of marking unclear requirements:*
+### Key Entities
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
-
-### Key Entities *(include if feature involves data)*
-
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
-
-## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **ExamTerm**: definition of exam period.
+- **Subject**: Global subject list (Math, Science).
+- **ClassSubject**: Mapping of Subject -> Class (e.g., "Math for Class 10A").
+- **StudentMarks**: Score record.
+- **Homework**: Assignment details.

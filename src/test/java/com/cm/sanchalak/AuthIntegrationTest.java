@@ -6,28 +6,27 @@ import com.cm.sanchalak.entity.Role;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class AuthIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebApplicationContext context;
+
+    private WebTestClient webTestClient;
 
     @Autowired
     private UserRepository userRepository;
@@ -40,6 +39,7 @@ public class AuthIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context).build();
         userRepository.deleteAll();
         
         if (roleRepository.count() == 0) {
@@ -57,12 +57,16 @@ public class AuthIntegrationTest {
         signUpRequest.setPassword("password");
         signUpRequest.setRole("STUDENT");
 
-        mockMvc.perform(post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.message", is("User registered successfully")));
+        webTestClient.post().uri("/api/auth/signup")
+            .bodyValue(signUpRequest)
+            .exchange()
+            .expectStatus().isCreated()
+            .expectBody(JsonNode.class)
+            .consumeWith(result -> {
+                 JsonNode body = result.getResponseBody();
+                 assertThat(body.get("success").asBoolean()).isTrue();
+                 assertThat(body.get("message").asText()).isEqualTo("User registered successfully");
+            });
     }
 
     @Test
@@ -74,20 +78,24 @@ public class AuthIntegrationTest {
         signUpRequest.setPassword("password");
         signUpRequest.setRole("STUDENT");
 
-        mockMvc.perform(post("/api/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(signUpRequest)))
-                .andExpect(status().isCreated());
+        webTestClient.post().uri("/api/auth/signup")
+            .bodyValue(signUpRequest)
+            .exchange()
+            .expectStatus().isCreated();
 
         // Then login
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("login@example.com");
         loginRequest.setPassword("password");
 
-        mockMvc.perform(post("/api/auth/signin")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tokenType", is("Bearer")));
+        webTestClient.post().uri("/api/auth/signin")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .consumeWith(result -> {
+                JsonNode body = result.getResponseBody();
+                assertThat(body.get("tokenType").asText()).isEqualTo("Bearer");
+            });
     }
 }

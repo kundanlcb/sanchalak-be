@@ -1,5 +1,6 @@
 package com.cm.sanchalak;
 
+import com.cm.sanchalak.dto.LoginRequest;
 import com.cm.sanchalak.dto.SignUpRequest;
 import com.cm.sanchalak.entity.Class;
 import com.cm.sanchalak.entity.Role;
@@ -12,33 +13,28 @@ import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
 import com.cm.sanchalak.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-
 import java.util.Collections;
-
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class DashboardIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebApplicationContext context;
+
+    private WebTestClient webTestClient;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -63,6 +59,7 @@ public class DashboardIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context).build();
         studentRepository.deleteAll();
         teacherRepository.deleteAll();
         classRepository.deleteAll();
@@ -77,7 +74,7 @@ public class DashboardIntegrationTest {
 
 
     @Test
-    void shouldReturnDashboardStats() throws Exception {
+    void shouldReturnDashboardStats() {
         // Seed Data
         Class cls = new Class();
         cls.setName("Class 10 A");
@@ -99,22 +96,34 @@ public class DashboardIntegrationTest {
         userRepository.save(admin);
 
         // Login to get token
-        String jsonRequest = "{\"email\":\"admin@school.com\",\"password\":\"password\"}";
-        MvcResult result = mockMvc.perform(post("/api/auth/signin")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonRequest))
-                .andExpect(status().isOk())
-                .andReturn();
-        
-        String response = result.getResponse().getContentAsString();
-        String token = new ObjectMapper().readTree(response).get("accessToken").asText();
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("admin@school.com");
+        loginRequest.setPassword("password");
+
+        var loginResult = webTestClient.post().uri("/api/auth/signin")
+            .bodyValue(loginRequest)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .returnResult();
+
+        JsonNode loginBody = loginResult.getResponseBody();
+        assertThat(loginBody).isNotNull();
+        assertThat(loginBody.has("accessToken")).as("accessToken should be present").isTrue();
+
+        String token = loginBody.get("accessToken").asText();
 
         // Call Dashboard endpoint
-        mockMvc.perform(get("/api/dashboard/stats")
-                .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.students", is(1)))
-                .andExpect(jsonPath("$.teachers", is(1)))
-                .andExpect(jsonPath("$.classes", is(1)));
+        webTestClient.get().uri("/api/dashboard/stats")
+            .headers(headers -> headers.setBearerAuth(token))
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(JsonNode.class)
+            .consumeWith(result -> {
+                JsonNode body = result.getResponseBody();
+                assertThat(body.get("students").asInt()).isEqualTo(1);
+                assertThat(body.get("teachers").asInt()).isEqualTo(1);
+                assertThat(body.get("classes").asInt()).isEqualTo(1);
+            });
     }
 }

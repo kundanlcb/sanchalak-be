@@ -4,7 +4,7 @@
 
 | Component | Status | Source/Target |
 | :--- | :--- | :--- |
-| **Project** | Initialize | `Spring Boot` 3.4.2, Java 21, `PostgreSQL` |
+| **Project** | Initialize | `Spring Boot` 4.0.2, Java 25, `PostgreSQL` |
 | **Dependencies** | Add | Spring Security, JJWT (jjwt-api 0.12.x), Lombok, ModelMapper, Flyway |
 | **Database** | Create | Schema: `users`, `students`, `teachers`, `classes` |
 | **API** | Implement | Auth Controller (`/api/auth`) & Dashboard Controller (`/api/dashboard`) |
