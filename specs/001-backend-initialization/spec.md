@@ -49,7 +49,7 @@ As a system architect, I want to ensure API endpoints are protected by roles so 
 ## Functional Requirements
 
 ### System Architecture
-- **FR 1.1**: The backend must be initialized as a Spring Boot 3.x application using Java 17+.
+- **FR 1.1**: The backend must be initialized as a Spring Boot 4.x.x application using Java 25.
 - **FR 1.2**: The application must confirm to a layered architecture (Controller -> Service -> Repository).
 - **FR 1.3**: The database must be configured for PostgreSQL (production) and H2 (development/test).
 

@@ -1,10 +1,12 @@
-package com.cm.sanchalak_be;
+package com.cm.sanchalak;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-class SanchalakBeApplicationTests {
+@ActiveProfiles("test")
+public class SanchalakApplicationTests {
 
 	@Test
 	void contextLoads() {

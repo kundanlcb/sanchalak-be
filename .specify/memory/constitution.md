@@ -102,3 +102,14 @@ Rationale:
 - **Amendments**: Proposed via Pull Request, verified by Lead Architect.
 - **Compliance**: Code reviews MUST check against these principles.
 
+### VII. Continuous Verification
+
+**MUST** enforce a strict "Green Build" policy. No code can be merged unless all unit and integration tests pass. The build process MUST automatically execute the full test suite.
+
+**Rationale**: To prevent regression and ensure that new features do not break existing functionality.
+
+**Enforcement**:
+- The CI/CD pipeline MUST run \`./gradlew check\`.
+- PRs blocked if build fails.
+- Developers MUST run tests locally.
+

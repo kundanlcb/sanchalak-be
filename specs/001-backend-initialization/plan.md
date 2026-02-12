@@ -4,9 +4,9 @@
 
 | Component | Status | Source/Target |
 | :--- | :--- | :--- |
-| **Project** | Initialize | `Spring Boot` 3.x, Java 17, `PostgreSQL` |
-| **Dependencies** | Add | Spring Security, JJWT (com.auth0:java-jwt), Lombok, ModelMapper, Flyway |
-| **Database** | Create | Schema: `users`, `roles`, `students`, `teachers`, `classes` |
+| **Project** | Initialize | `Spring Boot` 3.4.2, Java 21, `PostgreSQL` |
+| **Dependencies** | Add | Spring Security, JJWT (jjwt-api 0.12.x), Lombok, ModelMapper, Flyway |
+| **Database** | Create | Schema: `users`, `students`, `teachers`, `classes` |
 | **API** | Implement | Auth Controller (`/api/auth`) & Dashboard Controller (`/api/dashboard`) |
 | **Config** | Setup | `SecurityFilterChain` (CORS + Filter), `application.yml` |
 
@@ -33,7 +33,7 @@
 
 ### Step 1: Project Scaffolding
 1.  Update `build.gradle` (Dependencies: Security, Web, JPA, Postgres, Lombok, JJWT, Flyway).
-2.  Create package structure: `com.sanchalak.api.{config, controller, dto, entity, repository, service, exception}`.
+2.  Create package structure: `com.cms.sanchalak.{config, controller, dto, entity, repository, service, exception}`.
 3.  Configure `application.yml` (Datasource, JWT Secret, Server Port).
 
 ### Step 2: Database Schema (Flyway)

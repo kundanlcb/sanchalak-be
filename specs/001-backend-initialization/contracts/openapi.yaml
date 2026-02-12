@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Sanchalak Backend API
+  version: 0.1.0
+  description: Initialization APIs for Auth and Dashboard
+servers:
+  - url: http://localhost:8080/api
+    description: Local Development Server
+
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@school.com
+                password:
+                  type: string
+                  format: password
+                  example: supersecret
+      responses:
+        '200':
+          description: Successful Login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT Access Token
+        '401':
+          description: Invalid Credentials
+
+  /auth/me:
+    get:
+      summary: Get Current User Profile
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User Profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  role:
+                    type: string
+                    enum: [ADMIN, TEACHER, STUDENT]
+
+  /dashboard/stats:
+    get:
+      summary: Get Dashboard Statistics
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard Counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalStudents:
+                    type: integer
+                    example: 150
+                  totalTeachers:
+                    type: integer
+                    example: 12
+                  totalClasses:
+                    type: integer
+                    example: 5
+                  monthlyRevenue:
+                    type: number
+                    format: double
+                    example: 50000.00
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
