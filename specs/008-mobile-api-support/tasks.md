@@ -380,14 +380,14 @@
 - [X] T155 [P] Write unit tests for ParentAuthorizationService (linkage validation, cache behavior) in src/test/java/com/cm/sanchalak/service/ParentAuthorizationServiceTest.java
 - [X] T156 [P] Write unit tests for TransportEtaService (Haversine distance, ETA calculation, staleness detection) in src/test/java/com/cm/sanchalak/service/TransportEtaServiceTest.java
 - [X] T157 [P] Write unit tests for HomeworkSubmissionService (submission creation, resubmission, late status) with mocked FileStorageService in src/test/java/com/cm/sanchalak/service/HomeworkSubmissionServiceTest.java
-- [ ] T157a [P] Write unit tests for S3StorageProvider (presigned URL generation, expiry validation) in src/test/java/com/cm/sanchalak/service/storage/impl/S3StorageProviderTest.java
-- [ ] T157b [P] Write unit tests for AzureBlobStorageProvider (SAS token generation) in src/test/java/com/cm/sanchalak/service/storage/impl/AzureBlobStorageProviderTest.java
+- [X] T157a [P] Write unit tests for S3StorageProvider (presigned URL generation, expiry validation) in src/test/java/com/cm/sanchalak/service/storage/impl/S3StorageProviderTest.java
+- [X] T157b [P] Write unit tests for AzureBlobStorageProvider (SAS token generation) in src/test/java/com/cm/sanchalak/service/storage/impl/AzureBlobStorageProviderTest.java
 - [X] T158 [P] Write integration test for OTP authentication flow (request OTP → verify OTP → receive tokens → access protected endpoint) in src/test/java/com/cm/sanchalak/integration/OtpAuthenticationFlowTest.java
 - [ ] T159 [P] Write integration test for parent multi-child access (authenticate as parent → get children → access child data) in src/test/java/com/cm/sanchalak/integration/ParentMultiChildAccessTest.java
 - [ ] T160 [P] Write integration test for transport live tracking (create route → simulate GPS pings → fetch live location → verify ETA) in src/test/java/com/cm/sanchalak/integration/TransportLiveTrackingTest.java
 - [X] T161 [P] Write controller tests for MobileAuthController with @SpringBootTest and MockMvc in src/test/java/com/cm/sanchalak/controller/MobileAuthControllerTest.java
 - [ ] T162 [P] Write controller tests for MobileStudentController with JWT authentication in src/test/java/com/cm/sanchalak/controller/MobileStudentControllerTest.java
-- [ ] T163 [P] Write controller tests for TransportController with JWT authentication and parent authorization in src/test/java/com/cm/sanchalak/controller/TransportControllerTest.java
+- [X] T163 [P] Write controller tests for TransportController with JWT authentication and parent authorization in src/test/java/com/cm/sanchalak/controller/TransportControllerTest.java
 
 ### Documentation
 
@@ -401,7 +401,7 @@
 
 ### Performance Optimization
 
-- [ ] T171 Add database indexes for performance: idx_otp_mobile_number, idx_refresh_token_user_id, idx_parent_student_link_composite, idx_location_ping_vehicle_received_at, idx_student_transport_assignment_student_id in migration scripts
+- [X] T171 Add database indexes for performance: idx_otp_mobile_number, idx_refresh_token_user_id, idx_parent_student_link_composite, idx_location_ping_vehicle_received_at, idx_student_transport_assignment_student_id in migration scripts
 - [X] T172 Configure Spring Cache with Caffeine for parent-linkage cache (1-hour TTL) and route-assignments cache (6-hour TTL) in CacheConfig.java
 - [ ] T173 Add pagination support for GET /api/mobile/v1/homework, GET /api/mobile/v1/notices, GET /api/mobile/v1/attendance/history with pageSize and pageNumber params
 - [ ] T174 Add ETag and Last-Modified headers for cacheable responses (attendance summary, timetable, results) in wrapper controllers
