@@ -17,6 +17,8 @@ import java.time.Duration
 ;
 import java.time.OffsetDateTime;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * Azure Blob Storage implementation of file storage service
  * Activated when storage.provider=azure
@@ -31,6 +33,7 @@ public class AzureBlobStorageProvider implements FileStorageService {
     private final BlobContainerClient containerClient;
     private final String containerName;
     
+    @Autowired
     public AzureBlobStorageProvider(
         @Value("${storage.azure.connection-string}") String connectionString,
         @Value("${storage.azure.container-name}") String containerName) {
@@ -44,6 +47,15 @@ public class AzureBlobStorageProvider implements FileStorageService {
         this.containerClient = blobServiceClient.getBlobContainerClient(containerName);
         
         logger.info("AzureBlobStorageProvider initialized with container: {}", containerName);
+    }
+
+    /**
+     * Constructor for testing
+     */
+    public AzureBlobStorageProvider(String containerName, BlobServiceClient blobServiceClient, BlobContainerClient containerClient) {
+        this.containerName = containerName;
+        this.blobServiceClient = blobServiceClient;
+        this.containerClient = containerClient;
     }
     
     @Override

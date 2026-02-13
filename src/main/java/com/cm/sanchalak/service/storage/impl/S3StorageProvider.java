@@ -19,6 +19,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * AWS S3 implementation of file storage service
  * Activated when storage.provider=s3
@@ -34,6 +36,7 @@ public class S3StorageProvider implements FileStorageService {
     private final String bucketName;
     private final String region;
     
+    @Autowired
     public S3StorageProvider(
         @Value("${storage.s3.bucket-name}") String bucketName,
         @Value("${storage.s3.region}") String region,
@@ -56,6 +59,16 @@ public class S3StorageProvider implements FileStorageService {
             .build();
         
         logger.info("S3StorageProvider initialized with bucket: {}, region: {}", bucketName, region);
+    }
+
+    /**
+     * Constructor for testing
+     */
+    public S3StorageProvider(String bucketName, String region, S3Client s3Client, S3Presigner s3Presigner) {
+        this.bucketName = bucketName;
+        this.region = region;
+        this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
     }
     
     @Override
