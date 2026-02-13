@@ -1,9 +1,9 @@
 package com.cm.sanchalak.repository;
 
-import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.SchoolClass;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ClassRepository extends JpaRepository<Class, Long> {
+public interface SchoolClassRepository extends JpaRepository<SchoolClass, Long> {
 }

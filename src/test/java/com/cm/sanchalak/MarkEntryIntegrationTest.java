@@ -1,7 +1,12 @@
 package com.cm.sanchalak;
 
 import com.cm.sanchalak.dto.academic.MarkEntryRequest;
-import com.cm.sanchalak.entity.*;
+import com.cm.sanchalak.entity.AttendanceStatus;
+import com.cm.sanchalak.entity.SchoolClass;
+import com.cm.sanchalak.entity.ExamSchedule;
+import com.cm.sanchalak.entity.ExamTerm;
+import com.cm.sanchalak.entity.Student;
+import com.cm.sanchalak.entity.Subject;
 import com.cm.sanchalak.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,31 +19,42 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDate;
+import org.springframework.test.annotation.DirtiesContext;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MarkEntryIntegrationTest {
 
     @Autowired
     private WebApplicationContext context;
     
     @Autowired private ExamTermRepository termRepo;
-    @Autowired private ClassRepository classRepo;
+    @Autowired private SchoolClassRepository classRepo;
     @Autowired private SubjectRepository subjectRepo;
     @Autowired private StudentRepository studentRepo;
     @Autowired private ExamScheduleRepository scheduleRepo;
     @Autowired private StudentMarksRepository marksRepo;
     @Autowired private ClassSubjectRepository classSubjectRepo;
     @Autowired private AttendanceRepository attendanceRepo;
+    @Autowired private TeacherRepository teacherRepo; // Add TeacherRepo
 
     private WebTestClient webTestClient;
 
     @BeforeEach
     void setUp() {
-        webTestClient = MockMvcWebTestClient.bindToApplicationContext(context).build();
+        webTestClient = MockMvcWebTestClient.bindToApplicationContext(context)
+                .apply(springSecurity())
+                .configureClient()
+                .build();
         attendanceRepo.deleteAll();
         marksRepo.deleteAll();
         scheduleRepo.deleteAll();
+        
+        // Clean dependent entities
+        teacherRepo.deleteAll(); 
+        
         classSubjectRepo.deleteAll();
         subjectRepo.deleteAll();
         termRepo.deleteAll();
@@ -56,7 +72,7 @@ public class MarkEntryIntegrationTest {
         term.setEndDate(LocalDate.now().plusDays(10));
         term = termRepo.save(term);
 
-        com.cm.sanchalak.entity.Class clazz = new com.cm.sanchalak.entity.Class();
+        SchoolClass clazz = new SchoolClass();
         clazz.setName("Test Class");
         clazz = classRepo.save(clazz);
 

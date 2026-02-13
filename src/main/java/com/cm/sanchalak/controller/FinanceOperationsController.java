@@ -6,6 +6,8 @@ import com.cm.sanchalak.dto.finance.StudentLedgerDto;
 import com.cm.sanchalak.service.FinanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +36,8 @@ public class FinanceOperationsController {
     public ResponseEntity<byte[]> downloadReceipt(@PathVariable String receiptNo) {
         byte[] pdf = financeService.getReceiptPdf(receiptNo);
         return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=receipt-" + receiptNo + ".pdf")
-                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=receipt-" + receiptNo + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
 }

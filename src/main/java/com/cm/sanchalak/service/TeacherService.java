@@ -11,8 +11,9 @@ import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.SubjectRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
 import com.cm.sanchalak.repository.UserRepository;
+import com.cm.sanchalak.repository.ClassRoutineRepository;
 import com.cm.sanchalak.repository.ClassSubjectRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TeacherService {
 
     private final TeacherRepository teacherRepository;
@@ -33,22 +35,7 @@ public class TeacherService {
     private final PasswordEncoder passwordEncoder;
     private final SubjectRepository subjectRepository;
     private final ClassSubjectRepository classSubjectRepository;
-    private final com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository;
-
-    @Autowired
-    public TeacherService(TeacherRepository teacherRepository, UserRepository userRepository,
-                          RoleRepository roleRepository, PasswordEncoder passwordEncoder,
-                          SubjectRepository subjectRepository,
-                          ClassSubjectRepository classSubjectRepository,
-                          com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository) {
-        this.teacherRepository = teacherRepository;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.subjectRepository = subjectRepository;
-        this.classSubjectRepository = classSubjectRepository;
-        this.classRoutineRepository = classRoutineRepository;
-    }
+    private final ClassRoutineRepository classRoutineRepository;
 
     public TeacherResponse createTeacher(TeacherRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {

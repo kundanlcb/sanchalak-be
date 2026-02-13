@@ -14,3 +14,23 @@ spring:
 app:
   jwtSecret: 9a02115a835ee03d5fb83cd8a468ea33e4090a6a27e4e1a47321696435f3b7f1
   jwtExpirationInMs: 604800000
+  jwt:
+    access-token-expiry-ms: 900000
+    refresh-token-expiry-days: 30
+  otp:
+    expiry-minutes: 5
+    encryption-key: "1234567812345678"
+    rate-limit:
+      max-requests: 3
+      window-minutes: 15
+  firebase:
+    enabled: false
+  storage:
+    provider: s3
+
+storage:
+  s3:
+    bucket-name: test-bucket
+    region: us-east-1
+    access-key: test-access-key
+    secret-key: test-secret-key

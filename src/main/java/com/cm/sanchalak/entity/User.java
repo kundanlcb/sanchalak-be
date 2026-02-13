@@ -12,6 +12,9 @@ import java.util.UUID;
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
             "email"
+        }),
+        @UniqueConstraint(columnNames = {
+            "mobile_number"
         })
 })
 public class User extends BaseEntity {
@@ -29,6 +32,10 @@ public class User extends BaseEntity {
     @Email
     @Column(length = 40, nullable = false)
     private String email;
+
+    @Size(max = 15)
+    @Column(name = "mobile_number", length = 15, unique = true)
+    private String mobileNumber;  // For OTP authentication
 
     @NotBlank
     @Size(max = 100)
@@ -72,6 +79,14 @@ public class User extends BaseEntity {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
 
     public String getPassword() {

@@ -2,12 +2,12 @@ package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.StudentRequest;
 import com.cm.sanchalak.dto.StudentResponse;
-import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.entity.Student;
-import com.cm.sanchalak.repository.ClassRepository;
+import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,19 +16,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class StudentService {
 
     private final StudentRepository studentRepository;
-    private final ClassRepository classRepository;
-
-    @Autowired
-    public StudentService(StudentRepository studentRepository, ClassRepository classRepository) {
-        this.studentRepository = studentRepository;
-        this.classRepository = classRepository;
-    }
+    private final SchoolClassRepository classRepository;
 
     public StudentResponse createStudent(StudentRequest request) {
-        Class studentClass = classRepository.findById(request.getClassId())
+        SchoolClass studentClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
 
         Student student = new Student();
@@ -45,7 +40,7 @@ public class StudentService {
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
 
         if (request.getClassId() != null && !request.getClassId().equals(student.getStudentClass().getId())) {
-             Class studentClass = classRepository.findById(request.getClassId())
+             SchoolClass studentClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
              student.setStudentClass(studentClass);
         }
@@ -104,7 +99,7 @@ public class StudentService {
                 .guardianName(student.getGuardianName())
                 .guardianMobile(student.getGuardianMobile())
                 .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)
-                .className(student.getStudentClass() != null ? student.getStudentClass().getClassName() : null)
+                .className(student.getStudentClass() != null ? student.getStudentClass().getName() : null)
                 .deleted(student.isDeleted())
                 .build();
     }

@@ -4,6 +4,7 @@ import com.cm.sanchalak.dto.analytics.CollectionTrendDto;
 import com.cm.sanchalak.dto.analytics.FinancialSummaryDto;
 import com.cm.sanchalak.dto.analytics.ReportCardDataDto;
 import com.cm.sanchalak.entity.*;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ public class AnalyticsIntegrationTest {
     @Autowired private ExamTermRepository examTermRepository;
     @Autowired private ExamScheduleRepository examScheduleRepository;
     @Autowired private SubjectRepository subjectRepository;
-    @Autowired private ClassRepository classRepository;
+    @Autowired private SchoolClassRepository classRepository;
     @Autowired private StudentMarksRepository studentMarksRepository;
     @Autowired private AttendanceRepository attendanceRepository;
     
@@ -64,7 +65,7 @@ public class AnalyticsIntegrationTest {
     @WithMockUser(roles = "ADMIN")
     void shouldReturnReportCardData() {
         // Setup Class & Student
-        com.cm.sanchalak.entity.Class schoolClass = new com.cm.sanchalak.entity.Class();
+        SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10");
         schoolClass = classRepository.save(schoolClass);
         
@@ -140,7 +141,7 @@ public class AnalyticsIntegrationTest {
         fs = feeStructureRepository.save(fs);
 
         // Assign to Student
-        com.cm.sanchalak.entity.Class schoolClass = new com.cm.sanchalak.entity.Class();
+        SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10B");
         schoolClass = classRepository.save(schoolClass);
         

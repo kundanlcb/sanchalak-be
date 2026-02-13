@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
@@ -17,6 +19,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     
     // Keep legacy for existing code that might not care, or update them.
     List<Student> findByStudentClass_Id(Long classId);
+    
+    // Find student by user account
+    Optional<Student> findByUserId(UUID userId);
     
     long countByStudentClassId(Long classId);
     long countByGender(String gender);

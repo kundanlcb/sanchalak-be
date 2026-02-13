@@ -7,17 +7,86 @@ spring:
     password: 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate        # Changed from 'update' to 'validate' - Flyway manages schema
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  
+  # Caching Configuration (Caffeine for parent-child linkage)
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=3600s
 
 app:
   jwtSecret: 9a02115a835ee03d5fb83cd8a468ea33e4090a6a27e4e1a47321696435f3b7f1
   jwtExpirationInMs: 604800000
+
+# Mobile API - JWT Configuration
+jwt:
+  secret: ${app.jwtSecret}
+  access-token-expiry: 900000          # 15 minutes in milliseconds
+  refresh-token-expiry: 2592000000     # 30 days in milliseconds
+
+# Mobile API - OTP Configuration
+otp:
+  expiry-seconds: 300                  # 5 minutes
+  rate-limit-requests: 3               # Maximum 3 OTP requests
+  rate-limit-window-seconds: 900       # Per 15-minute window
+  encryption-key: ${OTP_ENCRYPTION_KEY:CHANGE_THIS_IN_PRODUCTION_32CHAR}  # AES-256 requires 32 chars
+
+# Mobile API - Firebase Cloud Messaging
+fcm:
+  credentials-path: classpath:firebase-adminsdk-dev.json
+  enabled: true
+
+# Mobile API - Async Executor for Push Notifications
+async:
+  executor:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+
+# Mobile API - File Storage Provider Configuration
+file-storage:
+  provider: s3                         # Options: s3, azure, local
+  upload-url-expiry-minutes: 5
+  download-url-expiry-minutes: 15
+  max-file-size-mb: 10
+  
+  # AWS S3 Configuration
+  s3:
+    bucket-name: ${AWS_S3_BUCKET:sanchalak-homework-uploads}
+    region: ${AWS_REGION:us-east-1}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    endpoint: ${AWS_S3_ENDPOINT:}      # Leave empty for AWS, set for LocalStack
+    path-style-access: false            # Set to true for LocalStack
+  
+  # Azure Blob Storage Configuration (alternative to S3)
+  azure:
+    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:}
+    container-name: ${AZURE_CONTAINER_NAME:sanchalak-homework-uploads}
 
 logging:
   level:
     org:
       springframework:
         security: DEBUG
+    com:
+      cm:
+        sanchalak: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+

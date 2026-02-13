@@ -3,6 +3,7 @@ package com.cm.sanchalak;
 import com.cm.sanchalak.dto.academic.*;
 import com.cm.sanchalak.dto.*;
 import com.cm.sanchalak.entity.*;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,14 +23,18 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.springframework.test.annotation.DirtiesContext;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class SchoolOperationsIntegrationTest {
 
     @Autowired private WebApplicationContext context;
     @Autowired private TeacherRepository teacherRepo;
     @Autowired private SubjectRepository subjectRepo;
-    @Autowired private ClassRepository classRepo;
+    @Autowired private SchoolClassRepository classRepo;
     @Autowired private StudentRepository studentRepo;
     @Autowired private ClassRoutineRepository routineRepo;
     @Autowired private RoleRepository roleRepo;
@@ -39,22 +44,20 @@ public class SchoolOperationsIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        webTestClient = MockMvcWebTestClient.bindToApplicationContext(context).build();
+        webTestClient = MockMvcWebTestClient.bindToApplicationContext(context)
+                .apply(springSecurity())
+                .configureClient()
+                .build();
         routineRepo.deleteAll();
         studentRepo.deleteAll();
         teacherRepo.deleteAll();
         userRepo.deleteAll();
-        roleRepo.deleteAll();
-        
+        // roleRepo.deleteAll(); // Do not delete roles to avoid constraint violations
+
         // Setup Roles
-        if (roleRepo.count() == 0) {
-            Role admin = new Role(RoleName.ROLE_ADMIN);
-            roleRepo.save(admin);
-            Role teacher = new Role(RoleName.ROLE_TEACHER);
-            roleRepo.save(teacher);
-            Role student = new Role(RoleName.ROLE_STUDENT);
-            roleRepo.save(student);
-        }
+        createRoleIfMissing(RoleName.ROLE_ADMIN);
+        createRoleIfMissing(RoleName.ROLE_TEACHER);
+        createRoleIfMissing(RoleName.ROLE_STUDENT);
 
         // Clear related academic data
         classRepo.deleteAll(); // Subjects usually depend on nothing but Classes depend on nothing. 
@@ -100,7 +103,7 @@ public class SchoolOperationsIntegrationTest {
     @WithMockUser(roles = "ADMIN")
     void testRoutineConflictValidation() {
         // Setup
-        com.cm.sanchalak.entity.Class clsEntity = new com.cm.sanchalak.entity.Class();
+        SchoolClass clsEntity = new SchoolClass();
         clsEntity.setName("10-A");
         clsEntity = classRepo.save(clsEntity);
 
@@ -130,7 +133,7 @@ public class SchoolOperationsIntegrationTest {
 
         // Conflict: Same Teacher, Same Time (Period/Day)
         RoutineRequest req2 = new RoutineRequest();
-        com.cm.sanchalak.entity.Class cls2 = new com.cm.sanchalak.entity.Class();
+        SchoolClass cls2 = new SchoolClass();
         cls2.setName("10-B");
         cls2 = classRepo.save(cls2);
         req2.setClassId(cls2.getId());
@@ -152,7 +155,7 @@ public class SchoolOperationsIntegrationTest {
     @WithMockUser(roles = "ADMIN")
     void testSafeDeleteClass() {
         // 1. Create Class
-        com.cm.sanchalak.entity.Class cls = new com.cm.sanchalak.entity.Class();
+        SchoolClass cls = new SchoolClass();
         cls.setName("9-C");
         cls = classRepo.save(cls);
 
@@ -174,5 +177,15 @@ public class SchoolOperationsIntegrationTest {
         webTestClient.delete().uri("/api/academic/classes/" + cls.getId())
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    private void createRoleIfMissing(RoleName roleName) {
+        if (roleRepo.findByName(roleName).isEmpty()) {
+             try {
+                 roleRepo.save(new Role(roleName));
+             } catch (Exception e) {
+                 // Ignore if added concurrently or exists
+             }
+        }
     }
 }

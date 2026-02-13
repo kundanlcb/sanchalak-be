@@ -1,32 +1,27 @@
 package com.cm.sanchalak.service;
 
-import com.cm.sanchalak.repository.ClassRepository;
+import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
 import com.cm.sanchalak.repository.AttendanceRepository;
 import com.cm.sanchalak.entity.AttendanceStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class DashboardService {
 
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private TeacherRepository teacherRepository;
-
-    @Autowired
-    private ClassRepository classRepository;
-
-    @Autowired
-    private AttendanceRepository attendanceRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
+    private final SchoolClassRepository classRepository;
+    private final AttendanceRepository attendanceRepository;
 
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();

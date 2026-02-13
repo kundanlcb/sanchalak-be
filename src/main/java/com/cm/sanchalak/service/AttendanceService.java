@@ -2,7 +2,7 @@ package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.*;
 import com.cm.sanchalak.entity.*;
-import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
-    private final ClassRepository classRepository;
+    private final SchoolClassRepository classRepository;
 
     @Transactional
     public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkAttendanceRequest request) {
@@ -31,7 +31,7 @@ public class AttendanceService {
             throw new IllegalArgumentException("Cannot mark attendance for future dates");
         }
 
-        Class clazz = classRepository.findById(request.getClassId())
+        SchoolClass clazz = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
         List<Student> students = studentRepository.findByStudentClass_Id(request.getClassId());
@@ -94,7 +94,7 @@ public class AttendanceService {
             Student student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new RuntimeException("Student not found"));
             
-             Class clazz = student.getStudentClass(); 
+             SchoolClass clazz = student.getStudentClass(); 
              if (clazz == null) {
                  if (request.getClassId() != null) {
                       clazz = classRepository.findById(request.getClassId())

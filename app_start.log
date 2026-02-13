@@ -1,0 +1,1003 @@
+
+> Task :compileJava FAILED
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:95: error: type ApiResponse does not take parameters
+    public ResponseEntity<ApiResponse<String>> requestOtp(
+                                     ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:145: error: type ApiResponse does not take parameters
+    public ResponseEntity<ApiResponse<AuthTokenResponseDto>> verifyOtp(
+                                     ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:224: error: type ApiResponse does not take parameters
+    public ResponseEntity<ApiResponse<AuthTokenResponseDto>> refreshToken(
+                                     ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:308: error: type ApiResponse does not take parameters
+    public ResponseEntity<ApiResponse<String>> logout(
+                                     ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:66: error: type ApiResponse does not take parameters
+    public ApiResponse<RouteDetailsDto> getMyRoute(
+                      ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:120: error: type ApiResponse does not take parameters
+    public ApiResponse<LiveLocationDto> getLiveLocation(
+                      ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:192: error: type ApiResponse does not take parameters
+    public ApiResponse<StopEtaDto.StopsWithEtaResponse> getStopsWithEta(
+                      ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:302: error: type ApiResponse does not take parameters
+    public ApiResponse<List<TransportEventDto>> getTransportEvents(
+                      ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:336: error: type ApiResponse does not take parameters
+    public ApiResponse<String> ingestLocationPing(
+                      ^
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:26: error: cannot find symbol
+        return ApiResponse.<T>builder()
+                          ^
+  symbol:   method <T>builder()
+  location: class ApiResponse
+  where T is a type-variable:
+    T extends Object declared in method <T>success(T)
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:30: error: cannot find symbol
+            .meta(ApiMeta.builder().build())
+                         ^
+  symbol:   method builder()
+  location: class ApiMeta
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:35: error: cannot find symbol
+        return ApiResponse.<T>builder()
+                          ^
+  symbol:   method <T>builder()
+  location: class ApiResponse
+  where T is a type-variable:
+    T extends Object declared in method <T>success(T,ApiMeta)
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:44: error: cannot find symbol
+        return ApiResponse.<T>builder()
+                          ^
+  symbol:   method <T>builder()
+  location: class ApiResponse
+  where T is a type-variable:
+    T extends Object declared in method <T>error(ApiError)
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:48: error: cannot find symbol
+            .meta(ApiMeta.builder().build())
+                         ^
+  symbol:   method builder()
+  location: class ApiMeta
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:53: error: cannot find symbol
+        return ApiResponse.<T>builder()
+                          ^
+  symbol:   method <T>builder()
+  location: class ApiResponse
+  where T is a type-variable:
+    T extends Object declared in method <T>error(String,String)
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:56: error: cannot find symbol
+            .error(ApiError.builder()
+                           ^
+  symbol:   method builder()
+  location: class ApiError
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:60: error: cannot find symbol
+            .meta(ApiMeta.builder().build())
+                         ^
+  symbol:   method builder()
+  location: class ApiMeta
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiError.java:26: error: cannot find symbol
+        return ApiError.builder()
+                       ^
+  symbol:   method builder()
+  location: class ApiError
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiError.java:33: error: cannot find symbol
+        return ApiError.builder()
+                       ^
+  symbol:   method builder()
+  location: class ApiError
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:45: error: cannot find symbol
+        log.info("Processing absence notification for student {}", event.getStudentId());
+        ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:45: error: cannot find symbol
+        log.info("Processing absence notification for student {}", event.getStudentId());
+                                                                        ^
+  symbol:   method getStudentId()
+  location: variable event of type AbsenceRecordedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:49: error: cannot find symbol
+            .findByStudentIdAndIsActiveTrue(event.getStudentId());
+                                                 ^
+  symbol:   method getStudentId()
+  location: variable event of type AbsenceRecordedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:52: error: cannot find symbol
+            Parent parent = link.getParent();
+                                ^
+  symbol:   method getParent()
+  location: variable link of type ParentStudentLink
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:53: error: cannot find symbol
+            User parentUser = parent.getUser();
+                                    ^
+  symbol:   method getUser()
+  location: variable parent of type Parent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:58: error: cannot find symbol
+                    event.getStudentName(),
+                         ^
+  symbol:   method getStudentName()
+  location: variable event of type AbsenceRecordedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:59: error: cannot find symbol
+                    event.getDate()
+                         ^
+  symbol:   method getDate()
+  location: variable event of type AbsenceRecordedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:64: error: cannot find symbol
+        log.info("Absence notifications sent to {} parents for student {}", 
+        ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:65: error: cannot find symbol
+            links.size(), event.getStudentId());
+                               ^
+  symbol:   method getStudentId()
+  location: variable event of type AbsenceRecordedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+        log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+        ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+        log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+                                                                           ^
+  symbol:   method getTitle()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+        log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+                                                                                             ^
+  symbol:   method getPriority()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:78: error: cannot find symbol
+        if (!"HIGH".equals(event.getPriority())) {
+                                ^
+  symbol:   method getPriority()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:79: error: cannot find symbol
+            log.debug("Skipping push notification for non-HIGH priority notice");
+            ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:83: error: cannot find symbol
+        List<UUID> targetUserIds = event.getTargetUserIds();
+                                        ^
+  symbol:   method getTargetUserIds()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:88: error: cannot find symbol
+                event.getTitle(),
+                     ^
+  symbol:   method getTitle()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:89: error: cannot find symbol
+                event.getNoticeId()
+                     ^
+  symbol:   method getNoticeId()
+  location: variable event of type NoticePublishedEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:92: error: cannot find symbol
+            log.info("Notice notification sent to {} users", targetUserIds.size());
+            ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:94: error: cannot find symbol
+            log.warn("No target users specified for notice notification");
+            ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:105: error: cannot find symbol
+        log.info("Processing bus proximity alert for student {} (ETA: {} min)", 
+        ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:106: error: cannot find symbol
+            event.getStudentId(), event.getEtaMinutes());
+                 ^
+  symbol:   method getStudentId()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:106: error: cannot find symbol
+            event.getStudentId(), event.getEtaMinutes());
+                                       ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:109: error: cannot find symbol
+        if (event.getEtaMinutes() != null && event.getEtaMinutes() > 10) {
+                 ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:109: error: cannot find symbol
+        if (event.getEtaMinutes() != null && event.getEtaMinutes() > 10) {
+                                                  ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:110: error: cannot find symbol
+            log.debug("Bus is too far ({}min), skipping notification", event.getEtaMinutes());
+            ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:110: error: cannot find symbol
+            log.debug("Bus is too far ({}min), skipping notification", event.getEtaMinutes());
+                                                                            ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:115: error: cannot find symbol
+        Optional<Student> studentOpt = studentRepository.findById(event.getStudentId());
+                                                                       ^
+  symbol:   method getStudentId()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:117: error: cannot find symbol
+            log.warn("Student not found for bus proximity alert: {}", event.getStudentId());
+            ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:117: error: cannot find symbol
+            log.warn("Student not found for bus proximity alert: {}", event.getStudentId());
+                                                                           ^
+  symbol:   method getStudentId()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:128: error: cannot find symbol
+                event.getRouteName(),
+                     ^
+  symbol:   method getRouteName()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:129: error: cannot find symbol
+                event.getStopName(),
+                     ^
+  symbol:   method getStopName()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:130: error: cannot find symbol
+                event.getEtaMinutes()
+                     ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:136: error: cannot find symbol
+            .findByStudentIdAndIsActiveTrue(event.getStudentId());
+                                                 ^
+  symbol:   method getStudentId()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:139: error: cannot find symbol
+            Parent parent = link.getParent();
+                                ^
+  symbol:   method getParent()
+  location: variable link of type ParentStudentLink
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:140: error: cannot find symbol
+            User parentUser = parent.getUser();
+                                    ^
+  symbol:   method getUser()
+  location: variable parent of type Parent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:145: error: cannot find symbol
+                    event.getRouteName(),
+                         ^
+  symbol:   method getRouteName()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:146: error: cannot find symbol
+                    event.getStopName(),
+                         ^
+  symbol:   method getStopName()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:147: error: cannot find symbol
+                    event.getEtaMinutes()
+                         ^
+  symbol:   method getEtaMinutes()
+  location: variable event of type BusProximityEvent
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:152: error: cannot find symbol
+        log.info("Bus proximity alert sent to student and {} parents", links.size());
+        ^
+  symbol:   variable log
+  location: class NotificationEventListener
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:42: error: cannot find symbol
+        log.info("Sending notification to user {}: {}", userId, title);
+        ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:47: error: cannot find symbol
+            log.warn("No active notification tokens found for user {}", userId);
+            ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:63: error: cannot find symbol
+        log.info("Sending notification to {} users: {}", userIds.size(), title);
+        ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:75: error: cannot find symbol
+        User user = token.getUser();
+                         ^
+  symbol:   method getUser()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:94: error: cannot find symbol
+                .setToken(token.getTokenValue())
+                               ^
+  symbol:   method getTokenValue()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:115: error: cannot find symbol
+            logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                         ^
+  symbol:   method getTokenValue()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:116: error: cannot find symbol
+                token.getPlatform(), "SENT", null, response, dataPayload);
+                     ^
+  symbol:   method getPlatform()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:119: error: cannot find symbol
+            token.setLastUsedAt(Instant.now());
+                 ^
+  symbol:   method setLastUsedAt(Instant)
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:122: error: cannot find symbol
+            log.info("Notification sent successfully to user {} on platform {}: {}", 
+            ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:123: error: cannot find symbol
+                user.getId(), token.getPlatform(), response);
+                                   ^
+  symbol:   method getPlatform()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:126: error: cannot find symbol
+            log.error("Failed to send notification to user {} on platform {}: {}", 
+            ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:127: error: cannot find symbol
+                user.getId(), token.getPlatform(), e.getMessage());
+                                   ^
+  symbol:   method getPlatform()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:130: error: cannot find symbol
+            logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                         ^
+  symbol:   method getTokenValue()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:131: error: cannot find symbol
+                token.getPlatform(), "FAILED", e.getMessage(), null, data);
+                     ^
+  symbol:   method getPlatform()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:136: error: cannot find symbol
+                log.warn("Token is invalid, marking as inactive: {}", token.getId());
+                ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:136: error: cannot find symbol
+                log.warn("Token is invalid, marking as inactive: {}", token.getId());
+                                                                           ^
+  symbol:   method getId()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:137: error: cannot find symbol
+                token.setIsActive(false);
+                     ^
+  symbol:   method setIsActive(boolean)
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:141: error: cannot find symbol
+            log.error("Unexpected error sending notification to user {}: {}", user.getId(), e.getMessage());
+            ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:142: error: cannot find symbol
+            logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                         ^
+  symbol:   method getTokenValue()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:143: error: cannot find symbol
+                token.getPlatform(), "FAILED", e.getMessage(), null, data);
+                     ^
+  symbol:   method getPlatform()
+  location: variable token of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:154: error: cannot find symbol
+        log.setUser(user);
+           ^
+  symbol:   method setUser(User)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:155: error: cannot find symbol
+        log.setNotificationType(notificationType);
+           ^
+  symbol:   method setNotificationType(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:156: error: cannot find symbol
+        log.setTitle(title);
+           ^
+  symbol:   method setTitle(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:157: error: cannot find symbol
+        log.setMessage(message);
+           ^
+  symbol:   method setMessage(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:158: error: cannot find symbol
+        log.setTargetToken(targetToken);
+           ^
+  symbol:   method setTargetToken(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:159: error: cannot find symbol
+        log.setPlatform(platform);
+           ^
+  symbol:   method setPlatform(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:160: error: cannot find symbol
+        log.setDeliveryStatus(status);
+           ^
+  symbol:   method setDeliveryStatus(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:161: error: cannot find symbol
+        log.setErrorMessage(errorMessage);
+           ^
+  symbol:   method setErrorMessage(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:162: error: cannot find symbol
+        log.setReferenceId(referenceId);
+           ^
+  symbol:   method setReferenceId(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:163: error: cannot find symbol
+        log.setSentAt(Instant.now());
+           ^
+  symbol:   method setSentAt(Instant)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:166: error: cannot find symbol
+            log.setDeliveredAt(Instant.now());
+               ^
+  symbol:   method setDeliveredAt(Instant)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:172: error: cannot find symbol
+                log.setDataPayload(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data));
+                   ^
+  symbol:   method setDataPayload(String)
+  location: variable log of type NotificationLog
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:174: error: cannot find symbol
+                this.log.warn("Failed to serialize data payload: {}", e.getMessage());
+                    ^
+  symbol: variable log
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:195: error: cannot find symbol
+            existingToken.setUser(user);
+                         ^
+  symbol:   method setUser(User)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:196: error: cannot find symbol
+            existingToken.setPlatform(platform);
+                         ^
+  symbol:   method setPlatform(String)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:197: error: cannot find symbol
+            existingToken.setDeviceType(deviceType);
+                         ^
+  symbol:   method setDeviceType(String)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:198: error: cannot find symbol
+            existingToken.setDeviceId(deviceId);
+                         ^
+  symbol:   method setDeviceId(String)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:199: error: cannot find symbol
+            existingToken.setAppVersion(appVersion);
+                         ^
+  symbol:   method setAppVersion(String)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:200: error: cannot find symbol
+            existingToken.setIsActive(true);
+                         ^
+  symbol:   method setIsActive(boolean)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:201: error: cannot find symbol
+            existingToken.setLastUsedAt(Instant.now());
+                         ^
+  symbol:   method setLastUsedAt(Instant)
+  location: variable existingToken of type NotificationToken
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:203: error: cannot find symbol
+            log.info("Updated existing notification token for user {}", userId);
+            ^
+  symbol:   variable log
+  location: class NotificationService
+/Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:209: error: cannot find symbol
+        token.setUser(user);
+             ^
+  symbol:   method setUser(User)
+  location: variable token of type NotificationToken
+100 errors
+
+[Incubating] Problems report is available at: file:///Users/kundan/Documents/codebase/sanchalak_be/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:95: error: type ApiResponse does not take parameters
+      public ResponseEntity<ApiResponse<String>> requestOtp(
+                                       ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:145: error: type ApiResponse does not take parameters
+      public ResponseEntity<ApiResponse<AuthTokenResponseDto>> verifyOtp(
+                                       ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:224: error: type ApiResponse does not take parameters
+      public ResponseEntity<ApiResponse<AuthTokenResponseDto>> refreshToken(
+                                       ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/AuthController.java:308: error: type ApiResponse does not take parameters
+      public ResponseEntity<ApiResponse<String>> logout(
+                                       ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:66: error: type ApiResponse does not take parameters
+      public ApiResponse<RouteDetailsDto> getMyRoute(
+                        ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:120: error: type ApiResponse does not take parameters
+      public ApiResponse<LiveLocationDto> getLiveLocation(
+                        ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:192: error: type ApiResponse does not take parameters
+      public ApiResponse<StopEtaDto.StopsWithEtaResponse> getStopsWithEta(
+                        ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:302: error: type ApiResponse does not take parameters
+      public ApiResponse<List<TransportEventDto>> getTransportEvents(
+                        ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/controller/TransportController.java:336: error: type ApiResponse does not take parameters
+      public ApiResponse<String> ingestLocationPing(
+                        ^
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:45: error: cannot find symbol
+          log.info("Processing absence notification for student {}", event.getStudentId());
+          ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:64: error: cannot find symbol
+          log.info("Absence notifications sent to {} parents for student {}", 
+          ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+          log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+          ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:79: error: cannot find symbol
+              log.debug("Skipping push notification for non-HIGH priority notice");
+              ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:92: error: cannot find symbol
+              log.info("Notice notification sent to {} users", targetUserIds.size());
+              ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:94: error: cannot find symbol
+              log.warn("No target users specified for notice notification");
+              ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:105: error: cannot find symbol
+          log.info("Processing bus proximity alert for student {} (ETA: {} min)", 
+          ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:110: error: cannot find symbol
+              log.debug("Bus is too far ({}min), skipping notification", event.getEtaMinutes());
+              ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:117: error: cannot find symbol
+              log.warn("Student not found for bus proximity alert: {}", event.getStudentId());
+              ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:152: error: cannot find symbol
+          log.info("Bus proximity alert sent to student and {} parents", links.size());
+          ^
+    symbol:   variable log
+    location: class NotificationEventListener
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:42: error: cannot find symbol
+          log.info("Sending notification to user {}: {}", userId, title);
+          ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:47: error: cannot find symbol
+              log.warn("No active notification tokens found for user {}", userId);
+              ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:63: error: cannot find symbol
+          log.info("Sending notification to {} users: {}", userIds.size(), title);
+          ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:122: error: cannot find symbol
+              log.info("Notification sent successfully to user {} on platform {}: {}", 
+              ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:126: error: cannot find symbol
+              log.error("Failed to send notification to user {} on platform {}: {}", 
+              ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:136: error: cannot find symbol
+                  log.warn("Token is invalid, marking as inactive: {}", token.getId());
+                  ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:141: error: cannot find symbol
+              log.error("Unexpected error sending notification to user {}: {}", user.getId(), e.getMessage());
+              ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:203: error: cannot find symbol
+              log.info("Updated existing notification token for user {}", userId);
+              ^
+    symbol:   variable log
+    location: class NotificationService
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:26: error: cannot find symbol
+          return ApiResponse.<T>builder()
+                            ^
+    symbol:   method <T>builder()
+    location: class ApiResponse
+    where T is a type-variable:
+      T extends Object declared in method <T>success(T)
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:35: error: cannot find symbol
+          return ApiResponse.<T>builder()
+                            ^
+    symbol:   method <T>builder()
+    location: class ApiResponse
+    where T is a type-variable:
+      T extends Object declared in method <T>success(T,ApiMeta)
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:44: error: cannot find symbol
+          return ApiResponse.<T>builder()
+                            ^
+    symbol:   method <T>builder()
+    location: class ApiResponse
+    where T is a type-variable:
+      T extends Object declared in method <T>error(ApiError)
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:53: error: cannot find symbol
+          return ApiResponse.<T>builder()
+                            ^
+    symbol:   method <T>builder()
+    location: class ApiResponse
+    where T is a type-variable:
+      T extends Object declared in method <T>error(String,String)
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:174: error: cannot find symbol
+                  this.log.warn("Failed to serialize data payload: {}", e.getMessage());
+                      ^
+    symbol: variable log
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:30: error: cannot find symbol
+              .meta(ApiMeta.builder().build())
+                           ^
+    symbol:   method builder()
+    location: class ApiMeta
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:48: error: cannot find symbol
+              .meta(ApiMeta.builder().build())
+                           ^
+    symbol:   method builder()
+    location: class ApiMeta
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:56: error: cannot find symbol
+              .error(ApiError.builder()
+                             ^
+    symbol:   method builder()
+    location: class ApiError
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiResponse.java:60: error: cannot find symbol
+              .meta(ApiMeta.builder().build())
+                           ^
+    symbol:   method builder()
+    location: class ApiMeta
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiError.java:26: error: cannot find symbol
+          return ApiError.builder()
+                         ^
+    symbol:   method builder()
+    location: class ApiError
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/dto/ApiError.java:33: error: cannot find symbol
+          return ApiError.builder()
+                         ^
+    symbol:   method builder()
+    location: class ApiError
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:45: error: cannot find symbol
+          log.info("Processing absence notification for student {}", event.getStudentId());
+                                                                          ^
+    symbol:   method getStudentId()
+    location: variable event of type AbsenceRecordedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:49: error: cannot find symbol
+              .findByStudentIdAndIsActiveTrue(event.getStudentId());
+                                                   ^
+    symbol:   method getStudentId()
+    location: variable event of type AbsenceRecordedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:52: error: cannot find symbol
+              Parent parent = link.getParent();
+                                  ^
+    symbol:   method getParent()
+    location: variable link of type ParentStudentLink
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:53: error: cannot find symbol
+              User parentUser = parent.getUser();
+                                      ^
+    symbol:   method getUser()
+    location: variable parent of type Parent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:58: error: cannot find symbol
+                      event.getStudentName(),
+                           ^
+    symbol:   method getStudentName()
+    location: variable event of type AbsenceRecordedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:59: error: cannot find symbol
+                      event.getDate()
+                           ^
+    symbol:   method getDate()
+    location: variable event of type AbsenceRecordedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:65: error: cannot find symbol
+              links.size(), event.getStudentId());
+                                 ^
+    symbol:   method getStudentId()
+    location: variable event of type AbsenceRecordedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+          log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+                                                                             ^
+    symbol:   method getTitle()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:75: error: cannot find symbol
+          log.info("Processing notice notification: {} (priority: {})", event.getTitle(), event.getPriority());
+                                                                                               ^
+    symbol:   method getPriority()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:78: error: cannot find symbol
+          if (!"HIGH".equals(event.getPriority())) {
+                                  ^
+    symbol:   method getPriority()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:83: error: cannot find symbol
+          List<UUID> targetUserIds = event.getTargetUserIds();
+                                          ^
+    symbol:   method getTargetUserIds()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:88: error: cannot find symbol
+                  event.getTitle(),
+                       ^
+    symbol:   method getTitle()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:89: error: cannot find symbol
+                  event.getNoticeId()
+                       ^
+    symbol:   method getNoticeId()
+    location: variable event of type NoticePublishedEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:106: error: cannot find symbol
+              event.getStudentId(), event.getEtaMinutes());
+                   ^
+    symbol:   method getStudentId()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:106: error: cannot find symbol
+              event.getStudentId(), event.getEtaMinutes());
+                                         ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:109: error: cannot find symbol
+          if (event.getEtaMinutes() != null && event.getEtaMinutes() > 10) {
+                   ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:109: error: cannot find symbol
+          if (event.getEtaMinutes() != null && event.getEtaMinutes() > 10) {
+                                                    ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:110: error: cannot find symbol
+              log.debug("Bus is too far ({}min), skipping notification", event.getEtaMinutes());
+                                                                              ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:115: error: cannot find symbol
+          Optional<Student> studentOpt = studentRepository.findById(event.getStudentId());
+                                                                         ^
+    symbol:   method getStudentId()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:117: error: cannot find symbol
+              log.warn("Student not found for bus proximity alert: {}", event.getStudentId());
+                                                                             ^
+    symbol:   method getStudentId()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:128: error: cannot find symbol
+                  event.getRouteName(),
+                       ^
+    symbol:   method getRouteName()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:129: error: cannot find symbol
+                  event.getStopName(),
+                       ^
+    symbol:   method getStopName()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:130: error: cannot find symbol
+                  event.getEtaMinutes()
+                       ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:136: error: cannot find symbol
+              .findByStudentIdAndIsActiveTrue(event.getStudentId());
+                                                   ^
+    symbol:   method getStudentId()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:139: error: cannot find symbol
+              Parent parent = link.getParent();
+                                  ^
+    symbol:   method getParent()
+    location: variable link of type ParentStudentLink
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:140: error: cannot find symbol
+              User parentUser = parent.getUser();
+                                      ^
+    symbol:   method getUser()
+    location: variable parent of type Parent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:145: error: cannot find symbol
+                      event.getRouteName(),
+                           ^
+    symbol:   method getRouteName()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:146: error: cannot find symbol
+                      event.getStopName(),
+                           ^
+    symbol:   method getStopName()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/listener/NotificationEventListener.java:147: error: cannot find symbol
+                      event.getEtaMinutes()
+                           ^
+    symbol:   method getEtaMinutes()
+    location: variable event of type BusProximityEvent
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:75: error: cannot find symbol
+          User user = token.getUser();
+                           ^
+    symbol:   method getUser()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:94: error: cannot find symbol
+                  .setToken(token.getTokenValue())
+                                 ^
+    symbol:   method getTokenValue()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:115: error: cannot find symbol
+              logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                           ^
+    symbol:   method getTokenValue()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:116: error: cannot find symbol
+                  token.getPlatform(), "SENT", null, response, dataPayload);
+                       ^
+    symbol:   method getPlatform()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:119: error: cannot find symbol
+              token.setLastUsedAt(Instant.now());
+                   ^
+    symbol:   method setLastUsedAt(Instant)
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:123: error: cannot find symbol
+                  user.getId(), token.getPlatform(), response);
+                                     ^
+    symbol:   method getPlatform()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:127: error: cannot find symbol
+                  user.getId(), token.getPlatform(), e.getMessage());
+                                     ^
+    symbol:   method getPlatform()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:130: error: cannot find symbol
+              logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                           ^
+    symbol:   method getTokenValue()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:131: error: cannot find symbol
+                  token.getPlatform(), "FAILED", e.getMessage(), null, data);
+                       ^
+    symbol:   method getPlatform()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:136: error: cannot find symbol
+                  log.warn("Token is invalid, marking as inactive: {}", token.getId());
+                                                                             ^
+    symbol:   method getId()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:137: error: cannot find symbol
+                  token.setIsActive(false);
+                       ^
+    symbol:   method setIsActive(boolean)
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:142: error: cannot find symbol
+              logNotification(user, title, message, notificationType, token.getTokenValue(),
+                                                                           ^
+    symbol:   method getTokenValue()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:143: error: cannot find symbol
+                  token.getPlatform(), "FAILED", e.getMessage(), null, data);
+                       ^
+    symbol:   method getPlatform()
+    location: variable token of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:154: error: cannot find symbol
+          log.setUser(user);
+             ^
+    symbol:   method setUser(User)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:155: error: cannot find symbol
+          log.setNotificationType(notificationType);
+             ^
+    symbol:   method setNotificationType(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:156: error: cannot find symbol
+          log.setTitle(title);
+             ^
+    symbol:   method setTitle(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:157: error: cannot find symbol
+          log.setMessage(message);
+             ^
+    symbol:   method setMessage(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:158: error: cannot find symbol
+          log.setTargetToken(targetToken);
+             ^
+    symbol:   method setTargetToken(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:159: error: cannot find symbol
+          log.setPlatform(platform);
+             ^
+    symbol:   method setPlatform(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:160: error: cannot find symbol
+          log.setDeliveryStatus(status);
+             ^
+    symbol:   method setDeliveryStatus(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:161: error: cannot find symbol
+          log.setErrorMessage(errorMessage);
+             ^
+    symbol:   method setErrorMessage(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:162: error: cannot find symbol
+          log.setReferenceId(referenceId);
+             ^
+    symbol:   method setReferenceId(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:163: error: cannot find symbol
+          log.setSentAt(Instant.now());
+             ^
+    symbol:   method setSentAt(Instant)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:166: error: cannot find symbol
+              log.setDeliveredAt(Instant.now());
+                 ^
+    symbol:   method setDeliveredAt(Instant)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:172: error: cannot find symbol
+                  log.setDataPayload(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data));
+                     ^
+    symbol:   method setDataPayload(String)
+    location: variable log of type NotificationLog
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:195: error: cannot find symbol
+              existingToken.setUser(user);
+                           ^
+    symbol:   method setUser(User)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:196: error: cannot find symbol
+              existingToken.setPlatform(platform);
+                           ^
+    symbol:   method setPlatform(String)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:197: error: cannot find symbol
+              existingToken.setDeviceType(deviceType);
+                           ^
+    symbol:   method setDeviceType(String)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:198: error: cannot find symbol
+              existingToken.setDeviceId(deviceId);
+                           ^
+    symbol:   method setDeviceId(String)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:199: error: cannot find symbol
+              existingToken.setAppVersion(appVersion);
+                           ^
+    symbol:   method setAppVersion(String)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:200: error: cannot find symbol
+              existingToken.setIsActive(true);
+                           ^
+    symbol:   method setIsActive(boolean)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:201: error: cannot find symbol
+              existingToken.setLastUsedAt(Instant.now());
+                           ^
+    symbol:   method setLastUsedAt(Instant)
+    location: variable existingToken of type NotificationToken
+  /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/NotificationService.java:209: error: cannot find symbol
+          token.setUser(user);
+               ^
+    symbol:   method setUser(User)
+    location: variable token of type NotificationToken
+  100 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 4s
+1 actionable task: 1 executed

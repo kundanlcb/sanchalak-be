@@ -1,7 +1,9 @@
 package com.cm.sanchalak.service;
 
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import com.cm.sanchalak.dto.academic.ReportCardDto;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AcademicService {
 
     private final ExamTermRepository examTermRepository;
@@ -20,27 +23,10 @@ public class AcademicService {
     private final ClassSubjectRepository classSubjectRepository;
     private final ExamScheduleRepository examScheduleRepository;
     private final StudentMarksRepository studentMarksRepository;
-    private final ClassRepository classRepository;
+    private final SchoolClassRepository classRepository;
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
-    private final com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository;
-
-    @Autowired
-    public AcademicService(ExamTermRepository examTermRepository, SubjectRepository subjectRepository,
-                           ClassSubjectRepository classSubjectRepository, ExamScheduleRepository examScheduleRepository,
-                           StudentMarksRepository studentMarksRepository, ClassRepository classRepository,
-                           TeacherRepository teacherRepository, StudentRepository studentRepository,
-                           com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository) {
-        this.examTermRepository = examTermRepository;
-        this.subjectRepository = subjectRepository;
-        this.classSubjectRepository = classSubjectRepository;
-        this.examScheduleRepository = examScheduleRepository;
-        this.studentMarksRepository = studentMarksRepository;
-        this.classRepository = classRepository;
-        this.teacherRepository = teacherRepository;
-        this.studentRepository = studentRepository;
-        this.classRoutineRepository = classRoutineRepository;
-    }
+    private final ClassRoutineRepository classRoutineRepository;
 
     public ExamTerm createExamTerm(ExamTerm examTerm) {
         return examTermRepository.save(examTerm);
@@ -59,7 +45,7 @@ public class AcademicService {
     }
 
     public ClassSubject assignSubjectToClass(Long classId, Long subjectId, Long teacherId) {
-        com.cm.sanchalak.entity.Class studentClass = classRepository.findById(classId)
+        SchoolClass studentClass = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -81,7 +67,7 @@ public class AcademicService {
     public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, java.time.LocalDate date, Integer maxMarks) {
         ExamTerm term = examTermRepository.findById(termId)
                 .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
-        com.cm.sanchalak.entity.Class studentClass = classRepository.findById(classId)
+        SchoolClass studentClass = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -160,8 +146,8 @@ public class AcademicService {
 
     // Class Management
     
-    public com.cm.sanchalak.entity.Class updateClass(Long id, String name) {
-        com.cm.sanchalak.entity.Class studentClass = classRepository.findById(id)
+    public SchoolClass updateClass(Long id, String name) {
+        SchoolClass studentClass = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         studentClass.setName(name);
         return classRepository.save(studentClass);
