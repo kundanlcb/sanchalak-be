@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: Sanchalak Finance API
+  version: 1.0.0
+  description: Finance management, fee structures, and payment processing.
+servers:
+  - url: /api/finance
+paths:
+  /categories:
+    get:
+      summary: List all fee categories
+      tags: [Finance Configuration]
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeCategory'
+    post:
+      summary: Create new fee category
+      tags: [Finance Configuration]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeCategory'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCategory'
+
+  /structures:
+    get:
+      summary: List fee structures
+      tags: [Finance Configuration]
+      responses:
+        '200':
+          description: List of structures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeStructureResponse'
+    post:
+      summary: Create fee structure
+      tags: [Finance Configuration]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeStructureRequest'
+      responses:
+        '201':
+          description: Created
+
+  /structures/{id}/assign:
+    post:
+      summary: Assign structure to student
+      tags: [Finance Configuration]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignStructureRequest'
+      responses:
+        '200':
+          description: Assigned successfully
+
+  /students/{studentId}/ledger:
+    get:
+      summary: Get student fee ledger (Dues)
+      tags: [Finance Operations]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Ledger details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentLedger'
+
+  /transactions:
+    post:
+      summary: Record a payment
+      tags: [Finance Operations]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201':
+          description: Payment successful, Receipt generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /receipts/{receiptNo}:
+    get:
+      summary: Get receipt details
+      tags: [Finance Operations]
+      parameters:
+        - name: receiptNo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Receipt found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptDTO'
+
+components:
+  schemas:
+    FeeCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+        name:
+          type: string
+        description:
+          type: string
+        isMandatory:
+          type: boolean
+          default: true
+      required: [name]
+
+    FeeStructureRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        academicYear:
+          type: string
+        frequency:
+          type: string
+          enum: [MONTHLY, QUARTERLY, ANNUAL]
+        lateFeeAmount:
+          type: number
+          format: double
+        gracePeriodDays:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeStructureItemRequest'
+      required: [name, academicYear, frequency]
+
+    FeeStructureItemRequest:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+      required: [categoryId, amount]
+
+    FeeStructureResponse:
+      allOf:
+        - $ref: '#/components/schemas/FeeStructureRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+
+    AssignStructureRequest:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        discountAmount:
+          type: number
+          format: double
+        discountReason:
+          type: string
+      required: [studentId]
+
+    StudentLedger:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        totalFeeAmount:
+          type: number
+          format: double
+        totalPaidAmount:
+          type: number
+          format: double
+        totalDiscount:
+          type: number
+          format: double
+        totalLateFee:
+          type: number
+          format: double
+        currentDueAmount:
+          type: number
+          format: double
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentResponse'
+
+    PaymentRequest:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+        paymentMethod:
+          type: string
+          enum: [CASH, UPI, CARD, CHEQUE]
+        gatewayTransactionId:
+          type: string
+      required: [studentId, amount, paymentMethod]
+
+    PaymentResponse:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+        receiptNo:
+          type: string
+        status:
+          type: string
+        paymentDate:
+          type: string
+          format: date-time
+
+    ReceiptDTO:
+      type: object
+      properties:
+        receiptNo:
+          type: string
+        studentName:
+          type: string
+        amount:
+          type: number
+          format: double
+        paymentMethod:
+          type: string
+        paymentDate:
+          type: string
+          format: date-time
+        downloadUrl:
+          type: string

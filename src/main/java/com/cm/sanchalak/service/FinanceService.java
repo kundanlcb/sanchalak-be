@@ -1,0 +1,275 @@
+package com.cm.sanchalak.service;
+
+import com.cm.sanchalak.dto.finance.*;
+import com.cm.sanchalak.entity.*;
+import com.cm.sanchalak.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class FinanceService {
+
+    private final FeeCategoryRepository feeCategoryRepository;
+    private final FeeStructureRepository feeStructureRepository;
+    private final StudentRepository studentRepository;
+    private final StudentFeeMapRepository studentFeeMapRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final ReceiptRepository receiptRepository;
+    private final ReceiptService receiptService;
+
+    public FeeCategoryDto createCategory(FeeCategoryDto dto) {
+        if (feeCategoryRepository.existsByName(dto.getName())) {
+            throw new IllegalArgumentException("Fee category with name " + dto.getName() + " already exists");
+        }
+        FeeCategory entity = new FeeCategory();
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setIsMandatory(dto.getIsMandatory());
+        
+        FeeCategory saved = feeCategoryRepository.save(entity);
+        return mapToDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FeeCategoryDto> getAllCategories() {
+        return feeCategoryRepository.findAll().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    public FeeStructureDto createStructure(FeeStructureDto dto) {
+        if (feeStructureRepository.existsByNameAndAcademicYear(dto.getName(), dto.getAcademicYear())) {
+            throw new IllegalArgumentException("Fee structure with name " + dto.getName() + " for year " + dto.getAcademicYear() + " already exists");
+        }
+
+        FeeStructure entity = new FeeStructure();
+        entity.setName(dto.getName());
+        entity.setAcademicYear(dto.getAcademicYear());
+        entity.setFrequency(dto.getFrequency());
+        entity.setLateFeeAmount(dto.getLateFeeAmount());
+        entity.setGracePeriodDays(dto.getGracePeriodDays());
+
+        if (dto.getItems() != null) {
+            List<FeeStructureItem> items = dto.getItems().stream().map(itemDto -> {
+                FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+                
+                FeeStructureItem item = new FeeStructureItem();
+                item.setFeeStructure(entity);
+                item.setFeeCategory(category);
+                item.setAmount(itemDto.getAmount());
+                return item;
+            }).collect(Collectors.toList());
+            entity.setItems(items);
+        }
+
+        FeeStructure saved = feeStructureRepository.save(entity);
+        return mapStructureToDto(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FeeStructureDto> getAllStructures() {
+        return feeStructureRepository.findAll().stream()
+                .map(this::mapStructureToDto)
+                .collect(Collectors.toList());
+    }
+
+    public void assignStructureToClass(Long structureId, Long classId) {
+        FeeStructure structure = feeStructureRepository.findById(structureId)
+                .orElseThrow(() -> new IllegalArgumentException("Structure not found"));
+        
+        List<Student> students = studentRepository.findByStudentClass_Id(classId);
+        if (students.isEmpty()) {
+            throw new IllegalArgumentException("No students found for class ID: " + classId);
+        }
+
+        List<StudentFeeMap> newMaps = students.stream()
+                .filter(student -> !studentFeeMapRepository.existsByStudentIdAndFeeStructureId(student.getId(), structureId))
+                .map(student -> {
+                    StudentFeeMap map = new StudentFeeMap();
+                    map.setStudent(student);
+                    map.setFeeStructure(structure);
+                    map.setIsActive(true);
+                    return map;
+                })
+                .collect(Collectors.toList());
+        
+        if (!newMaps.isEmpty()) {
+            studentFeeMapRepository.saveAll(newMaps);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public StudentLedgerDto getStudentLedger(Long studentId) {
+        if (!studentRepository.existsById(studentId)) {
+             throw new IllegalArgumentException("Student not found");
+        }
+
+        List<StudentFeeMap> feeMaps = studentFeeMapRepository.findByStudentId(studentId);
+        List<PaymentTransaction> transactions = paymentTransactionRepository.findByStudentId(studentId);
+
+        BigDecimal totalDues = BigDecimal.ZERO;
+        BigDecimal totalLateFees = BigDecimal.ZERO;
+        List<LedgerEntryDto> ledgerEntries = new ArrayList<>();
+
+        for (StudentFeeMap map : feeMaps) {
+            FeeStructure structure = map.getFeeStructure();
+            BigDecimal baseAmount = structure.getItems().stream()
+                    .map(FeeStructureItem::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            BigDecimal discount = map.getDiscountAmount() != null ? map.getDiscountAmount() : BigDecimal.ZERO;
+            BigDecimal netAmount = baseAmount.subtract(discount);
+            
+            BigDecimal lateFee = BigDecimal.ZERO;
+            if (map.getCreatedAt() != null && structure.getGracePeriodDays() != null && structure.getLateFeeAmount() != null) {
+                Instant deadline = map.getCreatedAt().plus(structure.getGracePeriodDays(), ChronoUnit.DAYS);
+                if (Instant.now().isAfter(deadline)) {
+                    lateFee = structure.getLateFeeAmount();
+                }
+            }
+
+            totalDues = totalDues.add(netAmount).add(lateFee);
+            totalLateFees = totalLateFees.add(lateFee);
+
+            LedgerEntryDto entry = new LedgerEntryDto();
+            entry.setStudentFeeMapId(map.getId());
+            entry.setStructureName(structure.getName());
+            entry.setAcademicYear(structure.getAcademicYear());
+            entry.setBaseAmount(baseAmount);
+            entry.setDiscountAmount(discount);
+            entry.setNetAmount(netAmount); 
+            
+            ledgerEntries.add(entry);
+        }
+        
+        BigDecimal totalPaid = transactions.stream()
+                .filter(t -> "SUCCESS".equals(t.getStatus()))
+                .map(PaymentTransaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal pendingBalance = totalDues.subtract(totalPaid);
+
+        StudentLedgerDto ledger = new StudentLedgerDto();
+        ledger.setStudentId(studentId);
+        ledger.setTotalDues(totalDues);
+        ledger.setTotalPaid(totalPaid);
+        ledger.setPendingBalance(pendingBalance);
+        ledger.setLateFees(totalLateFees);
+        ledger.setDues(ledgerEntries);
+        ledger.setTransactions(transactions.stream().map(this::mapTransactionToDto).collect(Collectors.toList()));
+        
+        return ledger;
+    }
+
+    public PaymentTransactionDto recordPayment(PaymentRequestDto dto) {
+        if (dto.getTransactionReference() != null && !dto.getTransactionReference().isEmpty()) {
+            if (paymentTransactionRepository.existsByTransactionReference(dto.getTransactionReference())) {
+                throw new IllegalArgumentException("Duplicate transaction reference: " + dto.getTransactionReference());
+            }
+        }
+        
+        Student student = studentRepository.findById(dto.getStudentId())
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        
+        StudentLedgerDto ledger = getStudentLedger(dto.getStudentId());
+        
+        if (dto.getAmount().compareTo(ledger.getPendingBalance()) > 0) {
+              throw new IllegalArgumentException("Payment amount " + dto.getAmount() + " exceeds pending balance " + ledger.getPendingBalance());
+        }
+
+        PaymentTransaction tx = new PaymentTransaction();
+        tx.setStudent(student);
+        tx.setAmount(dto.getAmount());
+        tx.setPaymentMethod(dto.getPaymentMethod());
+        tx.setTransactionReference(dto.getTransactionReference());
+        tx.setStatus("SUCCESS");
+        tx.setPaymentDate(java.time.LocalDateTime.now());
+        
+        PaymentTransaction saved = paymentTransactionRepository.save(tx);
+        
+        Receipt receipt = new Receipt();
+        receipt.setTransaction(saved);
+        // Clean Receipt Number
+        receipt.setReceiptNumber("REC-" + saved.getId() + "-" + (System.currentTimeMillis() % 1000));
+        receiptRepository.save(receipt);
+        
+        return mapTransactionToDto(saved);
+    }
+    
+    @Transactional(readOnly = true)
+    public byte[] getReceiptPdf(String receiptNumber) {
+        Receipt receipt = receiptRepository.findByReceiptNumber(receiptNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Receipt not found"));
+        
+        PaymentTransaction tx = receipt.getTransaction();
+        Student student = tx.getStudent();
+        
+        Map<String, Object> data = new HashMap<>();
+        data.put("receiptNumber", receipt.getReceiptNumber());
+        data.put("date", tx.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        data.put("studentName", student.getName());
+        data.put("className", student.getStudentClass() != null ? student.getStudentClass().getName() : "N/A");
+        data.put("amount", tx.getAmount());
+        data.put("paymentMethod", tx.getPaymentMethod());
+        data.put("transactionRef", tx.getTransactionReference());
+        
+        return receiptService.generateReceiptPdf(data);
+    }
+
+    private FeeCategoryDto mapToDto(FeeCategory entity) {
+        FeeCategoryDto dto = new FeeCategoryDto();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setDescription(entity.getDescription());
+        dto.setIsMandatory(entity.getIsMandatory());
+        return dto;
+    }
+
+    private FeeStructureDto mapStructureToDto(FeeStructure entity) {
+        FeeStructureDto dto = new FeeStructureDto();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setAcademicYear(entity.getAcademicYear());
+        dto.setFrequency(entity.getFrequency());
+        dto.setLateFeeAmount(entity.getLateFeeAmount());
+        dto.setGracePeriodDays(entity.getGracePeriodDays());
+        
+        if (entity.getItems() != null) {
+            dto.setItems(entity.getItems().stream().map(item -> {
+                FeeStructureItemDto itemDto = new FeeStructureItemDto();
+                itemDto.setId(item.getId());
+                itemDto.setCategoryId(item.getFeeCategory().getId());
+                itemDto.setCategoryName(item.getFeeCategory().getName());
+                itemDto.setAmount(item.getAmount());
+                return itemDto;
+            }).collect(Collectors.toList()));
+        }
+        return dto;
+    }
+    
+    private PaymentTransactionDto mapTransactionToDto(PaymentTransaction val) {
+        PaymentTransactionDto dto = new PaymentTransactionDto();
+        dto.setId(val.getId());
+        dto.setStudentId(val.getStudent().getId());
+        dto.setAmount(val.getAmount());
+        dto.setPaymentMethod(val.getPaymentMethod());
+        dto.setTransactionReference(val.getTransactionReference());
+        dto.setStatus(val.getStatus());
+        dto.setPaymentDate(val.getPaymentDate());
+        return dto;
+    }
+}
