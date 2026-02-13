@@ -3,6 +3,7 @@ package com.cm.sanchalak.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 @Entity
 @Table(name = "students")
@@ -11,10 +12,22 @@ public class Student extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", columnDefinition = "BINARY(16)")
+    private UUID userId;  // Links student to user account for authentication. Nullable for legacy data.
+
+    @Column(length = 50)
+    private String firstName;
+
+    @Column(length = 50)
+    private String lastName;
+    
+    @Column(name = "roll_no")
+    private Integer rollNo;
+
     @NotBlank
     @Size(max = 100)
     @Column(length = 100, nullable = false)
-    private String name;
+    private String name; // Kept for backward compatibility, sync with first+last
 
     @Column(length = 10)
     private String gender;
@@ -30,7 +43,7 @@ public class Student extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
-    private Class studentClass;
+    private SchoolClass studentClass;
 
     public Long getId() {
         return id;
@@ -38,6 +51,14 @@ public class Student extends BaseEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -80,11 +101,44 @@ public class Student extends BaseEntity {
         this.deleted = deleted;
     }
 
-    public Class getStudentClass() {
+    public SchoolClass getStudentClass() {
         return studentClass;
     }
 
-    public void setStudentClass(Class studentClass) {
+    public void setStudentClass(SchoolClass studentClass) {
         this.studentClass = studentClass;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+        updateName();
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+        updateName();
+    }
+
+    public Integer getRollNo() {
+        return rollNo;
+    }
+
+    public void setRollNo(Integer rollNo) {
+        this.rollNo = rollNo;
+    }
+    
+    private void updateName() {
+        this.name = (this.firstName != null ? this.firstName : "") + 
+                   (this.firstName != null && this.lastName != null ? " " : "") + 
+                   (this.lastName != null ? this.lastName : "");
+        this.name = this.name.trim();
     }
 }

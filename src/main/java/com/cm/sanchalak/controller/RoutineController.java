@@ -4,7 +4,7 @@ import com.cm.sanchalak.dto.academic.RoutineRequest;
 import com.cm.sanchalak.dto.academic.RoutineResponse;
 import com.cm.sanchalak.service.RoutineService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/academics/routine")
+@RequiredArgsConstructor
 public class RoutineController {
 
     private final RoutineService routineService;
-
-    @Autowired
-    public RoutineController(RoutineService routineService) {
-        this.routineService = routineService;
-    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT')")

@@ -4,7 +4,7 @@ import com.cm.sanchalak.dto.TeacherRequest;
 import com.cm.sanchalak.dto.TeacherResponse;
 import com.cm.sanchalak.service.TeacherService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/academics/teachers")
+@RequiredArgsConstructor
 public class TeacherController {
 
     private final TeacherService teacherService;
-
-    @Autowired
-    public TeacherController(TeacherService teacherService) {
-        this.teacherService = teacherService;
-    }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")

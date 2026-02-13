@@ -1,0 +1,667 @@
+Initialized native services in: /Users/kundan/.gradle/native
+Initialized jansi services in: /Users/kundan/.gradle/native
+Found daemon DaemonInfo{pid=39537, address=[641b3c63-a515-4840-8761-181a4ae74208 port:50327, addresses:[/127.0.0.1]], state=Idle, lastBusy=1770985700404, context=DefaultDaemonContext[uid=aaa64627-42b5-4f0d-9d85-8bcb2f7df923,javaHome=/Users/kundan/.vscode/extensions/redhat.java-1.52.0-darwin-arm64/jre/21.0.9-macosx-aarch64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/Users/kundan/.gradle/daemon,pid=39537,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home (no Daemon JVM specified, using current Java home), daemonOpts=[-XX:MaxMetaspaceSize=384m, -XX:+HeapDumpOnOutOfMemoryError, -Xms256m, -Xmx512m, -Dfile.encoding=UTF-8, -Duser.country=IN, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=aaa64627-42b5-4f0d-9d85-8bcb2f7df923,javaHome=/Users/kundan/.vscode/extensions/redhat.java-1.52.0-darwin-arm64/jre/21.0.9-macosx-aarch64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/Users/kundan/.gradle/daemon,pid=39537,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 4436). The daemon log file: /Users/kundan/.gradle/daemon/9.3.0/daemon-4436.out.log
+Starting 109th build in daemon [uptime: 7 hrs 14 mins 0.794 secs, performance: 100%, GC rate: 0.00/s, heap usage: 27% of 512 MiB, non-heap usage: 28% of 384 MiB]
+Using 10 worker leases.
+Operational build model parameters: {requiresToolingModels=false, parallelProjectExecution=false, configureOnDemand=false, configurationCache=false, configurationCacheParallelStore=false, configurationCacheParallelLoad=true, isolatedProjects=false, parallelProjectConfiguration=false, intermediateModelCache=false, parallelToolingApiActions=false, invalidateCoupledProjects=false, modelAsProjectDependency=false, resilientModelBuilding=false}
+Now considering [/Users/kundan/Documents/codebase/sanchalak_be] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/Users/kundan/Documents/codebase/sanchalak_be/settings.gradle'.
+Projects loaded. Root project using build file '/Users/kundan/Documents/codebase/sanchalak_be/build.gradle'.
+Included projects: [root project 'sanchalak_be']
+
+> Configure project :
+Evaluating root project 'sanchalak_be' using build file '/Users/kundan/Documents/codebase/sanchalak_be/build.gradle'.
+Resolved plugin [id: 'java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2']
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7']
+Applying dependency management to configuration 'annotationProcessor' in project 'sanchalak_be'
+Applying dependency management to configuration 'apiElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'archives' in project 'sanchalak_be'
+Applying dependency management to configuration 'bootArchives' in project 'sanchalak_be'
+Applying dependency management to configuration 'compileClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'compileOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'default' in project 'sanchalak_be'
+Applying dependency management to configuration 'developmentOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'implementation' in project 'sanchalak_be'
+Applying dependency management to configuration 'mainSourceElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'sanchalak_be'
+Applying dependency management to configuration 'testCompileClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'testCompileOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testImplementation' in project 'sanchalak_be'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'sanchalak_be'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'sanchalak_be'
+All projects evaluated.
+Task name matched 'test'
+Selected primary task 'test' from project :
+Starting process 'command '/usr/libexec/java_home''. Working directory: /Users/kundan/.gradle/daemon/9.3.0 Command: /usr/libexec/java_home -V
+Successfully started process 'command '/usr/libexec/java_home''
+Resolving global dependency management for project 'sanchalak_be'
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':compileJava', task ':processResources', task ':classes', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test']
+Tasks that were excluded: []
+Resolve mutations for :compileJava (Thread[#15558,Execution worker,5,main]) started.
+:compileJava (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :compileJava
+Custom actions are attached to task ':compileJava'.
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+Task ':compileJava' is not up-to-date because:
+  Input property 'stableSources' file /Users/kundan/Documents/codebase/sanchalak_be/src/main/java/com/cm/sanchalak/service/OtpService.java has changed.
+Compilation mode: in-process compilation
+Created classpath snapshot for incremental compilation in 0.015 secs.
+Compiling with toolchain '/Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home'.
+Compiling with JDK Java compiler API.
+Incremental compilation of 2 classes completed in 0.31 secs.
+Class dependency analysis for incremental compilation took 0.003 secs.
+Resolve mutations for :processResources (Thread[#15558,Execution worker,5,main]) started.
+:processResources (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :classes (Thread[#15558,Execution worker,5,main]) started.
+:classes (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :classes
+Skipping task ':classes' as it has no actions.
+Resolve mutations for :compileTestJava (Thread[#15558,Execution worker,5,main]) started.
+:compileTestJava (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :compileTestJava UP-TO-DATE
+Custom actions are attached to task ':compileTestJava'.
+Caching disabled for task ':compileTestJava' because:
+  Build cache is disabled
+Skipping task ':compileTestJava' as it is up-to-date.
+Resolve mutations for :processTestResources (Thread[#15558,Execution worker,5,main]) started.
+:processTestResources (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :processTestResources UP-TO-DATE
+Caching disabled for task ':processTestResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processTestResources' as it is up-to-date.
+Resolve mutations for :testClasses (Thread[#15558,Execution worker,5,main]) started.
+:testClasses (Thread[#15558,Execution worker,5,main]) started.
+
+> Task :testClasses UP-TO-DATE
+Skipping task ':testClasses' as it has no actions.
+Resolve mutations for :test (Thread[#15558,Execution worker,5,main]) started.
+:test (Thread[#15558,Execution worker,5,main]) started.
+Gradle Test Executor 52 started executing tests.
+
+> Task :test
+Caching disabled for task ':test' because:
+  Build cache is disabled
+Task ':test' is not up-to-date because:
+  Task has failed previously.
+Starting process 'Gradle Test Executor 52'. Working directory: /Users/kundan/Documents/codebase/sanchalak_be Command: /Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home/bin/java -Dorg.gradle.internal.worker.tmpdir=/Users/kundan/Documents/codebase/sanchalak_be/build/tmp/test/work @/Users/kundan/.gradle/.tmp/gradle-worker-classpath4159787996062517805txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=IN -Duser.language=en -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 52'
+Successfully started process 'Gradle Test Executor 52'
+
+OtpAuthenticationFlowTest STANDARD_OUT
+    19:06:01.730 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.cm.sanchalak.integration.OtpAuthenticationFlowTest]: OtpAuthenticationFlowTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    19:06:01.793 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.integration.OtpAuthenticationFlowTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T19:06:01.982+05:30  INFO 28138 --- [    Test worker] c.c.s.i.OtpAuthenticationFlowTest        : Starting OtpAuthenticationFlowTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T19:06:01.983+05:30  INFO 28138 --- [    Test worker] c.c.s.i.OtpAuthenticationFlowTest        : The following 1 profile is active: "test"
+    2026-02-13T19:06:02.490+05:30  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T19:06:02.597+05:30  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 103 ms. Found 36 JPA repository interfaces.
+    2026-02-13T19:06:02.927+05:30  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T19:06:02.956+05:30  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.1.Final
+    2026-02-13T19:06:03.173+05:30  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T19:06:03.189+05:30  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+    2026-02-13T19:06:03.271+05:30  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T19:06:03.272+05:30  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+    2026-02-13T19:06:03.283+05:30  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T19:06:03.298+05:30  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T19:06:04.051+05:30  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T19:06:04.129+05:30  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T19:06:04.195+05:30  INFO 28138 --- [    Test worker] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+    2026-02-13T19:06:04.948+05:30  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T19:06:05.566+05:30  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T19:06:05.765+05:30  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T19:06:06.197+05:30  INFO 28138 --- [    Test worker] c.c.s.i.OtpAuthenticationFlowTest        : Started OtpAuthenticationFlowTest in 4.336 seconds (process running for 4.985)
+
+OtpAuthenticationFlowTest > testOtpAuthenticationFlow() STANDARD_ERROR
+    Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+    WARNING: A Java agent has been loaded dynamically (/Users/kundan/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.17.8/f09415827a71be7ed621c7bd02550678f28bc81c/byte-buddy-agent-1.17.8.jar)
+    WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+    WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+    WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :test
+
+OtpAuthenticationFlowTest > testOtpAuthenticationFlow() STANDARD_OUT
+    DEBUG: Starting cleanAllTables...
+    DEBUG: Finished cleanAllTables. otp_verifications count: 0
+    2026-02-13T19:06:06.457+05:30  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T19:06:06.457+05:30  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T19:06:06.458+05:30  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T19:06:06.710+05:30  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP request for mobile: 998***6655, IP: 127.0.0.1
+    2026-02-13T19:06:06.719+05:30  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : Rate limit check for 998***6655: count=0, limit=3
+    2026-02-13T19:06:06.721+05:30  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : OTP generated for mobile: 998***6655
+    2026-02-13T19:06:06.722+05:30  INFO 28138 --- [    Test worker] .s.a.AnnotationAsyncExecutionInterceptor : More than one TaskExecutor bean found within the context, and none is named 'taskExecutor'. Mark one of them as primary or name it 'taskExecutor' (possibly as an alias) in order to use it for async processing: [notificationExecutor, taskScheduler]
+    2026-02-13T19:06:06.723+05:30  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP generated: 547912 for mobile: 998***6655
+    OTP Request Response: {"success":true,"data":"OTP sent successfully. Valid for 5 minutes. [DEV: OTP=547912]","meta":{"requestId":null,"timestamp":"2026-02-13T13:36:06.72333","pagination":null}}
+    2026-02-13T19:06:06.764+05:30  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP verification for mobile: 998***6655, IP: 127.0.0.1
+    2026-02-13T19:06:06.769+05:30  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : OTP validated successfully for mobile: 998***6655
+    2026-02-13T19:06:06.882+05:30  INFO 28138 --- [    Test worker] c.c.s.service.RefreshTokenService        : Created refresh token for user: 4a8fdbf8-cb33-49d4-a595-2b99341d66d2 on device: device-1
+    2026-02-13T19:06:06.883+05:30  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : JWT tokens issued for user: 4a8fdbf8-cb33-49d4-a595-2b99341d66d2, mobile: 998***6655, role: ROLE_STUDENT
+    2026-02-13T19:06:06.906+05:30  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T19:06:06.915+05:30  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+    2026-02-13T19:06:06.916+05:30  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+AnalyticsIntegrationTest STANDARD_OUT
+    2026-02-13T19:06:06.922+05:30  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.AnalyticsIntegrationTest]: AnalyticsIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T19:06:06.926+05:30  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.AnalyticsIntegrationTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:06.938Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.AnalyticsIntegrationTest  : Starting AnalyticsIntegrationTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:06.938Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.AnalyticsIntegrationTest  : The following 1 profile is active: "test"
+    2026-02-13T13:36:07.043Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:07.059Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 15 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:07.104Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:07.114Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:07.114Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+    2026-02-13T13:36:07.115Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:07.115Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+    2026-02-13T13:36:07.115Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:07.116Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:07.219Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:07.262Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:07.377Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:07.515Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:07.596Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:07.738Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.AnalyticsIntegrationTest  : Started AnalyticsIntegrationTest in 0.81 seconds (process running for 6.525)
+
+AnalyticsIntegrationTest > shouldReturnReportCardData() STANDARD_OUT
+    2026-02-13T13:36:07.743Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:07.743Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:07.743Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+AnalyticsIntegrationTest > shouldReturnFinancialSummary() STANDARD_OUT
+    2026-02-13T13:36:07.880Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:07.880Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:07.881Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+
+AttendanceIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:07.915Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.AttendanceIntegrationTest]: AttendanceIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:07.916Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.AttendanceIntegrationTest
+
+AttendanceIntegrationTest > markBulkAttendance_ShouldSucceed() STANDARD_OUT
+    2026-02-13T13:36:07.918Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:07.919Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:07.920Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    DEBUG: Starting cleanAllTables...
+    DEBUG: Finished cleanAllTables. otp_verifications count: 0
+    Login Response: {"accessToken":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4Mzk5OGU3OC1kNWE1LTRkNDUtODk5ZS01MjhjYzZhZTMxZjgiLCJpYXQiOjE3NzA5ODk3NjgsImV4cCI6MTc3MTU5NDU2OH0.t9ZceJZ5Z7-0Vrchog9U0awoIcPEcHHT5weeGfeRWMzCwY5GNv5WtLfA46D1zcoQkenURb5-2uD1__h4xkNucg","tokenType":"Bearer"}
+    STATUS: 200 OK
+    BODY: {"success":true,"markedCount":1,"failedCount":0,"message":"Attendance marked successfully"}
+    2026-02-13T13:36:08.208Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:08.213Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+    2026-02-13T13:36:08.213Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+
+AuthIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:08.214Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.AuthIntegrationTest]: AuthIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:08.215Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.AuthIntegrationTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:08.225Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.AuthIntegrationTest     : Starting AuthIntegrationTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:08.225Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.AuthIntegrationTest     : The following 1 profile is active: "test"
+    2026-02-13T13:36:08.323Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:08.349Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 25 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:08.389Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:08.399Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:08.400Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+    2026-02-13T13:36:08.400Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection conn20: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:08.400Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+    2026-02-13T13:36:08.401Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:08.401Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:08.477Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:08.507Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:08.610Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:08.744Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:08.823Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:08.953Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.AuthIntegrationTest     : Started AuthIntegrationTest in 0.737 seconds (process running for 7.74)
+
+AuthIntegrationTest > shouldRegisterUserSuccessfully() STANDARD_OUT
+    2026-02-13T13:36:08.955Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:08.955Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:08.955Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+AuthIntegrationTest > shouldLoginSuccessfully() STANDARD_OUT
+    2026-02-13T13:36:09.052Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:09.052Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:09.053Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+
+DashboardIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:09.289Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.DashboardIntegrationTest]: DashboardIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:09.290Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.DashboardIntegrationTest
+
+DashboardIntegrationTest > shouldReturnDashboardStats() STANDARD_OUT
+    2026-02-13T13:36:09.292Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:09.292Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:09.293Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T13:36:09.466Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:09.470Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+    2026-02-13T13:36:09.470Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+
+MarkEntryIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:09.472Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.MarkEntryIntegrationTest]: MarkEntryIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:09.472Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.MarkEntryIntegrationTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:09.481Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.MarkEntryIntegrationTest  : Starting MarkEntryIntegrationTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:09.482Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.MarkEntryIntegrationTest  : The following 1 profile is active: "test"
+    2026-02-13T13:36:09.568Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:09.584Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 15 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:09.619Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:09.629Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:09.629Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+    2026-02-13T13:36:09.629Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection conn30: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:09.629Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+    2026-02-13T13:36:09.630Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:09.630Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:09.700Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:09.724Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:09.823Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:09.938Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:10.018Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:10.150Z  INFO 28138 --- [    Test worker] c.cm.sanchalak.MarkEntryIntegrationTest  : Started MarkEntryIntegrationTest in 0.676 seconds (process running for 8.937)
+
+MarkEntryIntegrationTest > testMarkEntryValidation() STANDARD_OUT
+    2026-02-13T13:36:10.152Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:10.152Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:10.153Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T13:36:10.186Z  WARN 28138 --- [    Test worker] c.c.s.e.GlobalApiExceptionHandler        : Invalid argument: Marks obtained cannot exceed max marks (100)
+    2026-02-13T13:36:10.191Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:10.195Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+    2026-02-13T13:36:10.195Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+
+SanchalakApplicationTests STANDARD_OUT
+    2026-02-13T13:36:10.196Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.SanchalakApplicationTests]: SanchalakApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:10.196Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.SanchalakApplicationTests
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:10.205Z  INFO 28138 --- [    Test worker] c.c.sanchalak.SanchalakApplicationTests  : Starting SanchalakApplicationTests using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:10.205Z  INFO 28138 --- [    Test worker] c.c.sanchalak.SanchalakApplicationTests  : The following 1 profile is active: "test"
+    2026-02-13T13:36:10.282Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:10.296Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 13 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:10.330Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:10.339Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:10.340Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+    2026-02-13T13:36:10.340Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection conn40: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:10.340Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+    2026-02-13T13:36:10.340Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:10.340Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:10.409Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:10.425Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:10.521Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:10.631Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:10.714Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:10.838Z  INFO 28138 --- [    Test worker] c.c.sanchalak.SanchalakApplicationTests  : Started SanchalakApplicationTests in 0.64 seconds (process running for 9.625)
+
+SchoolOperationsIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:10.841Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.SchoolOperationsIntegrationTest]: SchoolOperationsIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:10.841Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.SchoolOperationsIntegrationTest
+
+SchoolOperationsIntegrationTest > testRoutineConflictValidation() STANDARD_OUT
+    2026-02-13T13:36:10.844Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:10.844Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:10.844Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-02-13T13:36:10.906Z  WARN 28138 --- [    Test worker] c.c.s.e.GlobalApiExceptionHandler        : Invalid argument: Teacher is already booked in this slot.
+    2026-02-13T13:36:10.912Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:10.919Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+    2026-02-13T13:36:10.919Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+
+SchoolOperationsIntegrationTest STANDARD_OUT
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:10.929Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : Starting SchoolOperationsIntegrationTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:10.929Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : The following 1 profile is active: "test"
+    2026-02-13T13:36:11.021Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:11.036Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:11.070Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:11.080Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:11.080Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Starting...
+    2026-02-13T13:36:11.081Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-6 - Added connection conn50: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:11.081Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Start completed.
+    2026-02-13T13:36:11.081Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:11.081Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:11.142Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:11.156Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:11.253Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:11.359Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:11.444Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:11.570Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : Started SchoolOperationsIntegrationTest in 0.649 seconds (process running for 10.357)
+
+SchoolOperationsIntegrationTest > testSafeDeleteClass() STANDARD_OUT
+    2026-02-13T13:36:11.572Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:11.572Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:11.573Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T13:36:11.586Z  WARN 28138 --- [    Test worker] c.c.s.e.GlobalApiExceptionHandler        : Invalid argument: Cannot delete class with enrolled students.
+    2026-02-13T13:36:11.594Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:11.596Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+    2026-02-13T13:36:11.597Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+
+SchoolOperationsIntegrationTest STANDARD_OUT
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:11.605Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : Starting SchoolOperationsIntegrationTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:11.605Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : The following 1 profile is active: "test"
+    2026-02-13T13:36:11.677Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:11.690Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:11.722Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:11.731Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:11.731Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Starting...
+    2026-02-13T13:36:11.732Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-7 - Added connection conn60: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:11.732Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Start completed.
+    2026-02-13T13:36:11.732Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:11.732Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:11.797Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:11.810Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:11.902Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:12.002Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:12.089Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:12.212Z  INFO 28138 --- [    Test worker] c.c.s.SchoolOperationsIntegrationTest    : Started SchoolOperationsIntegrationTest in 0.614 seconds (process running for 11.0)
+
+SchoolOperationsIntegrationTest > testTeacherCreationAndSubjectLinking() STANDARD_OUT
+    2026-02-13T13:36:12.215Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:12.215Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:12.215Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-02-13T13:36:12.318Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:12.320Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown initiated...
+    2026-02-13T13:36:12.320Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-7 - Shutdown completed.
+
+MobileAuthControllerTest STANDARD_OUT
+    2026-02-13T13:36:12.322Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.controller.MobileAuthControllerTest]: MobileAuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:12.327Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.controller.MobileAuthControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-02-13T13:36:12.334Z  INFO 28138 --- [    Test worker] c.c.s.c.MobileAuthControllerTest         : Starting MobileAuthControllerTest using Java 25.0.2 with PID 28138 (started by kundan in /Users/kundan/Documents/codebase/sanchalak_be)
+    2026-02-13T13:36:12.334Z  INFO 28138 --- [    Test worker] c.c.s.c.MobileAuthControllerTest         : The following 1 profile is active: "test"
+    2026-02-13T13:36:12.404Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-02-13T13:36:12.417Z  INFO 28138 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 36 JPA repository interfaces.
+    2026-02-13T13:36:12.454Z  INFO 28138 --- [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-02-13T13:36:12.463Z  INFO 28138 --- [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-02-13T13:36:12.463Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Starting...
+    2026-02-13T13:36:12.464Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-8 - Added connection conn70: url=jdbc:h2:mem:testdb user=SA
+    2026-02-13T13:36:12.464Z  INFO 28138 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Start completed.
+    2026-02-13T13:36:12.464Z  WARN 28138 --- [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-02-13T13:36:12.464Z  INFO 28138 --- [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-02-13T13:36:12.521Z  INFO 28138 --- [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-02-13T13:36:12.533Z  INFO 28138 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-02-13T13:36:12.624Z  INFO 28138 --- [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name customUserDetailsService
+    2026-02-13T13:36:12.726Z  INFO 28138 --- [    Test worker] c.c.s.s.storage.impl.S3StorageProvider   : S3StorageProvider initialized with bucket: test-bucket, region: us-east-1
+    2026-02-13T13:36:12.809Z  WARN 28138 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-02-13T13:36:12.926Z  INFO 28138 --- [    Test worker] c.c.s.c.MobileAuthControllerTest         : Started MobileAuthControllerTest in 0.598 seconds (process running for 11.714)
+
+MobileAuthControllerTest > testRequestOtp_InvalidMobileNumber() STANDARD_OUT
+    2026-02-13T13:36:12.931Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:12.931Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:12.931Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-02-13T13:36:13.013Z  WARN 28138 --- [    Test worker] c.c.s.e.GlobalApiExceptionHandler        : Validation error: [Mobile number must be 10 digits]
+
+MobileAuthControllerTest > testVerifyOtp_InvalidOtp() STANDARD_OUT
+    2026-02-13T13:36:13.018Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:13.018Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:13.019Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T13:36:13.098Z  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP verification for mobile: 887***5544, IP: 127.0.0.1
+    2026-02-13T13:36:13.099Z  WARN 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : No valid OTP found for mobile: 887***5544
+    2026-02-13T13:36:13.100Z  INFO 28138 --- [    Test worker] .s.a.AnnotationAsyncExecutionInterceptor : More than one TaskExecutor bean found within the context, and none is named 'taskExecutor'. Mark one of them as primary or name it 'taskExecutor' (possibly as an alias) in order to use it for async processing: [notificationExecutor, taskScheduler]
+
+MobileAuthControllerTest > testRequestOtp_Success() STANDARD_OUT
+    2026-02-13T13:36:13.102Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:13.102Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:13.102Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-02-13T13:36:13.181Z  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP request for mobile: 887***5544, IP: 127.0.0.1
+    2026-02-13T13:36:13.183Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : Rate limit check for 887***5544: count=0, limit=3
+    2026-02-13T13:36:13.184Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : OTP generated for mobile: 887***5544
+    2026-02-13T13:36:13.184Z  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP generated: 462738 for mobile: 887***5544
+
+MobileAuthControllerTest > testRequestOtp_UserNotFound() STANDARD_OUT
+    2026-02-13T13:36:13.187Z  INFO 28138 --- [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-02-13T13:36:13.187Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-02-13T13:36:13.188Z  INFO 28138 --- [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-02-13T13:36:13.265Z  INFO 28138 --- [    Test worker] c.c.sanchalak.controller.AuthController  : OTP request for mobile: 000***0000, IP: 127.0.0.1
+
+FinanceIntegrationTest STANDARD_OUT
+    2026-02-13T13:36:13.268Z  INFO 28138 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cm.sanchalak.integration.FinanceIntegrationTest]: FinanceIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-02-13T13:36:13.269Z  INFO 28138 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cm.sanchalak.SanchalakApplication for test class com.cm.sanchalak.integration.FinanceIntegrationTest
+
+HomeworkSubmissionServiceTest > testSubmitHomework_Success_OnTime() STANDARD_OUT
+    2026-02-13T13:36:13.853Z  INFO 28138 --- [    Test worker] c.c.s.service.HomeworkSubmissionService  : Homework submitted: homework=1, student=100
+
+HomeworkSubmissionServiceTest > testSubmitHomework_Success_Late() STANDARD_OUT
+    2026-02-13T13:36:13.855Z  INFO 28138 --- [    Test worker] c.c.s.service.HomeworkSubmissionService  : Homework submitted: homework=1, student=100
+
+HomeworkSubmissionServiceTest > testGenerateUploadUrl_Success() STANDARD_OUT
+    2026-02-13T13:36:13.858Z  INFO 28138 --- [    Test worker] c.c.s.service.HomeworkSubmissionService  : Generated upload URL for homework: 1, student: 100
+
+OtpServiceTest > testValidateOtp_Failure_InvalidOtp() STANDARD_OUT
+    2026-02-13T13:36:13.955Z  WARN 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : Invalid OTP provided for mobile: 987***3210
+
+OtpServiceTest > testValidateOtp_Failure_MaxAttempts() STANDARD_OUT
+    2026-02-13T13:36:13.960Z  WARN 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : Maximum OTP attempts exceeded for mobile: 987***3210
+
+OtpServiceTest > testValidateOtp_Success() STANDARD_OUT
+    2026-02-13T13:36:13.961Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : OTP validated successfully for mobile: 987***3210
+
+OtpServiceTest > testGenerateOtp_Success() STANDARD_OUT
+    2026-02-13T13:36:13.963Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : Rate limit check for 987***3210: count=0, limit=3
+    2026-02-13T13:36:13.963Z  INFO 28138 --- [    Test worker] com.cm.sanchalak.service.OtpService      : OTP generated for mobile: 987***3210
+
+ParentAuthorizationServiceTest > testValidateParentStudentLinkage_Unauthorized() STANDARD_OUT
+    2026-02-13T13:36:14.015Z  WARN 28138 --- [    Test worker] c.c.s.s.ParentAuthorizationService       : Unauthorized parent access attempt: parent=1, student=200
+
+ParentAuthorizationServiceTest > testIsParentLinkedToStudent_Failure() STANDARD_OUT
+    2026-02-13T13:36:14.018Z  WARN 28138 --- [    Test worker] c.c.s.s.ParentAuthorizationService       : Unauthorized parent access attempt: parent=1, student=200
+
+RefreshTokenServiceTest > testRotateRefreshToken_ReuseDetection() STANDARD_OUT
+    2026-02-13T13:36:14.218Z ERROR 28138 --- [    Test worker] c.c.s.service.RefreshTokenService        : Token reuse detected! Revoking token family: be5a17b3-1fd5-4946-a7a6-62cfb2f58c02
+
+RefreshTokenServiceTest > testRotateRefreshToken_Success() STANDARD_OUT
+    2026-02-13T13:36:14.445Z  INFO 28138 --- [    Test worker] c.c.s.service.RefreshTokenService        : Rotated refresh token for user: 434be023-31d0-40b2-8a32-194ff4cb102b
+
+RefreshTokenServiceTest > testCreateRefreshToken() STANDARD_OUT
+    2026-02-13T13:36:14.522Z  INFO 28138 --- [    Test worker] c.c.s.service.RefreshTokenService        : Created refresh token for user: 01c429ae-1c0b-426d-93b2-cab51da61e13 on device: device-123
+
+Gradle Test Executor 52 finished executing tests.
+2026-02-13T13:36:14.738Z  INFO 28138 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-13T13:36:14.746Z  INFO 28138 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown initiated...
+2026-02-13T13:36:14.746Z  INFO 28138 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-8 - Shutdown completed.
+
+> Task :test
+Generating HTML test report...
+Finished generating test html results (0.007 secs) into: /Users/kundan/Documents/codebase/sanchalak_be/build/reports/tests/test
+Finished generating test XML results (0.002 secs) into: /Users/kundan/Documents/codebase/sanchalak_be/build/test-results/test
+
+[Incubating] Problems report is available at: file:///Users/kundan/Documents/codebase/sanchalak_be/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 14s
+5 actionable tasks: 2 executed, 3 up-to-date
+Watched directory hierarchies: [/Users/kundan/Documents/codebase/sanchalak_be]
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.0/userguide/configuration_cache_enabling.html

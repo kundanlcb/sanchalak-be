@@ -18,7 +18,7 @@ public class ExamSchedule extends BaseEntity {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class studentClass;
+    private SchoolClass studentClass;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "subject_id", nullable = false)
@@ -36,8 +36,8 @@ public class ExamSchedule extends BaseEntity {
     public void setId(Long id) { this.id = id; }
     public ExamTerm getExamTerm() { return examTerm; }
     public void setExamTerm(ExamTerm examTerm) { this.examTerm = examTerm; }
-    public Class getStudentClass() { return studentClass; }
-    public void setStudentClass(Class studentClass) { this.studentClass = studentClass; }
+    public SchoolClass getStudentClass() { return studentClass; }
+    public void setStudentClass(SchoolClass studentClass) { this.studentClass = studentClass; }
     public Subject getSubject() { return subject; }
     public void setSubject(Subject subject) { this.subject = subject; }
     public Integer getMaxMarks() { return maxMarks; }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "classes")
-public class Class extends BaseEntity {
+public class SchoolClass extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

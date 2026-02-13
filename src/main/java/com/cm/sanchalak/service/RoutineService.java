@@ -2,14 +2,15 @@ package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.academic.RoutineRequest;
 import com.cm.sanchalak.dto.academic.RoutineResponse;
-import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.entity.ClassRoutine;
 import com.cm.sanchalak.entity.Subject;
 import com.cm.sanchalak.entity.Teacher;
-import com.cm.sanchalak.repository.ClassRepository;
+import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.ClassRoutineRepository;
 import com.cm.sanchalak.repository.SubjectRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,21 +20,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RoutineService {
 
     private final ClassRoutineRepository routineRepository;
-    private final ClassRepository classRepository;
+    private final SchoolClassRepository classRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
 
-    @Autowired
-    public RoutineService(ClassRoutineRepository routineRepository, ClassRepository classRepository,
-                          SubjectRepository subjectRepository, TeacherRepository teacherRepository) {
-        this.routineRepository = routineRepository;
-        this.classRepository = classRepository;
-        this.subjectRepository = subjectRepository;
-        this.teacherRepository = teacherRepository;
-    }
 
     public List<RoutineResponse> getRoutineByClassId(Long classId) {
         return routineRepository.findByStudentClassId(classId).stream()
@@ -53,7 +47,7 @@ public class RoutineService {
             throw new IllegalArgumentException("Teacher is already booked in this slot.");
         }
 
-        Class studentClass = classRepository.findById(request.getClassId())
+        SchoolClass studentClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
 
         Subject subject = subjectRepository.findById(request.getSubjectId())

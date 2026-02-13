@@ -1,6 +1,7 @@
 package com.cm.sanchalak.repository;
 
 import com.cm.sanchalak.entity.AttendanceRecord;
+import com.cm.sanchalak.entity.AttendanceStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,5 +24,5 @@ public interface AttendanceRepository extends JpaRepository<AttendanceRecord, Lo
     // For history between dates (used in summary or reports)
     List<AttendanceRecord> findBySchoolClass_IdAndDateBetween(Long classId, LocalDate startDate, LocalDate endDate);
 
-    long countByDateAndStatus(LocalDate date, com.cm.sanchalak.entity.AttendanceStatus status);
+    long countByDateAndStatus(LocalDate date, AttendanceStatus status);
 }

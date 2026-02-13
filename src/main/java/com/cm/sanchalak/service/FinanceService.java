@@ -3,7 +3,10 @@ package com.cm.sanchalak.service;
 import com.cm.sanchalak.dto.finance.*;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.*;
+import com.cm.sanchalak.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,9 @@ public class FinanceService {
     private final FeeStructureItemRepository feeStructureItemRepository;
     private final ReceiptRepository receiptRepository;
     private final ReceiptService receiptService;
+    private final AuditLogService auditLogService;
 
+    @CacheEvict(value = "fee-categories", allEntries = true)
     public FeeCategoryDto createCategory(FeeCategoryDto dto) {
         if (feeCategoryRepository.existsByName(dto.getName())) {
             throw new IllegalArgumentException("Fee category with name " + dto.getName() + " already exists");
@@ -45,12 +50,14 @@ public class FinanceService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("fee-categories")
     public List<FeeCategoryDto> getAllCategories() {
         return feeCategoryRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "fee-structures", allEntries = true)
     public FeeStructureDto createStructure(FeeStructureDto dto) {
         if (feeStructureRepository.existsByNameAndAcademicYear(dto.getName(), dto.getAcademicYear())) {
             throw new IllegalArgumentException("Fee structure with name " + dto.getName() + " for year " + dto.getAcademicYear() + " already exists");
@@ -82,6 +89,7 @@ public class FinanceService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable("fee-structures")
     public List<FeeStructureDto> getAllStructures() {
         return feeStructureRepository.findAll().stream()
                 .map(this::mapStructureToDto)
@@ -208,6 +216,17 @@ public class FinanceService {
         receipt.setReceiptNumber("REC-" + saved.getId() + "-" + (System.currentTimeMillis() % 1000));
         receiptRepository.save(receipt);
         
+        auditLogService.logAction(
+            null,
+            "PAYMENT_RECORDED",
+            "TRANSACTION",
+            String.valueOf(saved.getId()),
+            "Payment of " + saved.getAmount() + " recorded for student " + student.getId(),
+            null,
+            null,
+            "SUCCESS"
+        );
+        
         return mapTransactionToDto(saved);
     }
     
@@ -276,6 +295,7 @@ public class FinanceService {
 
     // Fee Category Management
     
+    @CacheEvict(value = {"fee-categories", "fee-structures"}, allEntries = true)
     public FeeCategoryDto updateCategory(Long id, FeeCategoryDto dto) {
         FeeCategory category = feeCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
@@ -291,6 +311,7 @@ public class FinanceService {
         return mapToDto(feeCategoryRepository.save(category));
     }
     
+    @CacheEvict(value = {"fee-categories", "fee-structures"}, allEntries = true)
     public void deleteCategory(Long id) {
         if (!feeCategoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found");

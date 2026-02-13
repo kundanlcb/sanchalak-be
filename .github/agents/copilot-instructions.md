@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2026-02-12
 
 ## Active Technologies
+- Java 25 (LTS JDK) (008-mobile-api-support)
+- MySQL (production), H2 (test) via JPA/Hibernate with Flyway migrations (008-mobile-api-support)
 
 - (002-academic-management)
 
@@ -22,6 +24,7 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
+- 008-mobile-api-support: Added Java 25 (LTS JDK)
 - 004-finance-module: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 004-finance-module: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 

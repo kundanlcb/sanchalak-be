@@ -3,7 +3,7 @@ package com.cm.sanchalak;
 import com.cm.sanchalak.dto.BulkMarkAttendanceRequest;
 import com.cm.sanchalak.dto.LoginRequest;
 import com.cm.sanchalak.entity.*;
-import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,11 +21,15 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.annotation.DirtiesContext;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AttendanceIntegrationTest {
 
     @Autowired
@@ -36,19 +40,25 @@ public class AttendanceIntegrationTest {
     @Autowired
     private AttendanceRepository attendanceRepository;
     @Autowired
+    private PaymentTransactionRepository paymentTransactionRepository;
+    @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
     private StudentRepository studentRepository;
     @Autowired
-    private ClassRepository classRepository;
+    private SchoolClassRepository classRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
     
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private String teacherEmail = "teacher@test.com";
+    private String teacherEmail = "teacher_" + System.currentTimeMillis() + "@test.com"; // Unique email
     private String token;
     private Long classId;
     private Long studentId;
@@ -60,17 +70,13 @@ public class AttendanceIntegrationTest {
                 .configureClient()
                 .build();
         
-        attendanceRepository.deleteAll();
-        studentRepository.deleteAll();
-        classRepository.deleteAll();
-        userRepository.deleteAll();
+        // Use database cleanup utility to handle FK constraints
+        databaseCleanup.cleanAllTables();
 
         // 1. Roles
-        if (roleRepository.count() == 0) {
-            for (RoleName roleName : RoleName.values()) {
-                roleRepository.save(new Role(roleName));
-            }
-        }
+        createRoleIfMissing(RoleName.ROLE_TEACHER);
+        createRoleIfMissing(RoleName.ROLE_STUDENT);
+        createRoleIfMissing(RoleName.ROLE_ADMIN);
 
         // 2. Teacher
         User teacher = new User();
@@ -79,6 +85,8 @@ public class AttendanceIntegrationTest {
         teacher.setPassword(passwordEncoder.encode("password"));
         Role teacherRole = roleRepository.findByName(RoleName.ROLE_TEACHER).orElseThrow();
         teacher.setRoles(java.util.Set.of(teacherRole));
+        String mobile = String.valueOf(System.currentTimeMillis()).substring(3);
+        teacher.setMobileNumber(mobile);
         userRepository.save(teacher);
 
         // 3. Login
@@ -92,13 +100,19 @@ public class AttendanceIntegrationTest {
                 .blockFirst();
         
         if (response != null) {
+            String respStr = new String(response);
+            System.out.println("Login Response: " + respStr);
             JsonNode root = objectMapper.readTree(response);
-            this.token = root.path("accessToken").asText();
+            if (root.has("data")) {
+                this.token = root.path("data").path("accessToken").asText();
+            } else {
+                this.token = root.path("accessToken").asText();
+            }
         }
-        assertThat(token).as("JWT Token").isNotNull();
+        assertThat(token).as("JWT Token").isNotEmpty();
 
         // 4. Class & Student
-        Class clazz = new Class();
+        SchoolClass clazz = new SchoolClass();
         clazz.setName("Class 1A");
         clazz = classRepository.save(clazz);
         this.classId = clazz.getId();
@@ -137,5 +151,11 @@ public class AttendanceIntegrationTest {
                 .jsonPath("$.markedCount").isEqualTo(1);
 
         assertThat(attendanceRepository.findByStudentIdAndDate(studentId, LocalDate.now())).isPresent();
+    }
+
+    private void createRoleIfMissing(RoleName roleName) {
+        if (roleRepository.findByName(roleName).isEmpty()) {
+            roleRepository.save(new Role(roleName));
+        }
     }
 }

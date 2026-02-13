@@ -33,7 +33,7 @@ public class ClassRoutine extends BaseEntity {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class studentClass;
+    private SchoolClass studentClass;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "subject_id", nullable = false)
@@ -83,11 +83,11 @@ public class ClassRoutine extends BaseEntity {
         this.endTime = endTime;
     }
 
-    public Class getStudentClass() {
+    public SchoolClass getStudentClass() {
         return studentClass;
     }
 
-    public void setStudentClass(Class studentClass) {
+    public void setStudentClass(SchoolClass studentClass) {
         this.studentClass = studentClass;
     }
 

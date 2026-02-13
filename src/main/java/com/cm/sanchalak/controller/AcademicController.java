@@ -3,6 +3,7 @@ package com.cm.sanchalak.controller;
 import com.cm.sanchalak.dto.academic.ClassSubjectRequest;
 import com.cm.sanchalak.dto.academic.ExamTermRequest;
 import com.cm.sanchalak.dto.academic.SubjectRequest;
+import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.entity.ClassSubject;
 import com.cm.sanchalak.entity.ExamTerm;
 import com.cm.sanchalak.entity.Subject;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
@@ -108,7 +110,7 @@ public class AcademicController {
     
     @PutMapping("/classes/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.cm.sanchalak.entity.Class> updateClass(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+    public ResponseEntity<SchoolClass> updateClass(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String name = body.get("name");
         if (name == null || name.isEmpty()) {
             return ResponseEntity.badRequest().build();

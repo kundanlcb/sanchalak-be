@@ -50,11 +50,12 @@ public class AuthIntegrationTest {
 
     @Test
     void shouldRegisterUserSuccessfully() throws Exception {
-        SignUpRequest signUpRequest = new SignUpRequest();
-        signUpRequest.setName("Test User");
-        signUpRequest.setEmail("test@example.com");
-        signUpRequest.setPassword("password");
-        signUpRequest.setRole("STUDENT");
+        SignUpRequest signUpRequest = new SignUpRequest(
+            "Test User",
+            "test@example.com",
+            "password",
+            "STUDENT"
+        );
 
         webTestClient.post().uri("/api/auth/signup")
             .bodyValue(signUpRequest)
@@ -62,17 +63,18 @@ public class AuthIntegrationTest {
             .expectStatus().isCreated()
             .expectBody()
             .jsonPath("$.success").isEqualTo(true)
-            .jsonPath("$.message").isEqualTo("User registered successfully");
+            .jsonPath("$.data").isEqualTo("User registered successfully");
     }
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
         // First register
-        SignUpRequest signUpRequest = new SignUpRequest();
-        signUpRequest.setName("Login User");
-        signUpRequest.setEmail("login@example.com");
-        signUpRequest.setPassword("password");
-        signUpRequest.setRole("STUDENT");
+        SignUpRequest signUpRequest = new SignUpRequest(
+            "Login User",
+            "login@example.com",
+            "password",
+            "STUDENT"
+        );
 
         webTestClient.post().uri("/api/auth/signup")
             .bodyValue(signUpRequest)
@@ -80,9 +82,7 @@ public class AuthIntegrationTest {
             .expectStatus().isCreated();
 
         // Then login
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail("login@example.com");
-        loginRequest.setPassword("password");
+        LoginRequest loginRequest = new LoginRequest("login@example.com", "password");
 
         webTestClient.post().uri("/api/auth/signin")
             .bodyValue(loginRequest)
