@@ -1,15 +1,15 @@
 package com.cm.sanchalak.controller;
 
-import com.cm.sanchalak.dto.ClassSubjectRequest;
-import com.cm.sanchalak.dto.ExamTermRequest;
-import com.cm.sanchalak.dto.SubjectRequest;
+import com.cm.sanchalak.dto.academic.ClassSubjectRequest;
+import com.cm.sanchalak.dto.academic.ExamTermRequest;
+import com.cm.sanchalak.dto.academic.SubjectRequest;
 import com.cm.sanchalak.entity.ClassSubject;
 import com.cm.sanchalak.entity.ExamTerm;
 import com.cm.sanchalak.entity.Subject;
 import com.cm.sanchalak.entity.ExamSchedule;
-import com.cm.sanchalak.dto.ExamScheduleRequest;
-import com.cm.sanchalak.dto.MarkEntryRequest;
-import com.cm.sanchalak.dto.ReportCardDto;
+import com.cm.sanchalak.dto.academic.ExamScheduleRequest;
+import com.cm.sanchalak.dto.academic.MarkEntryRequest;
+import com.cm.sanchalak.dto.academic.ReportCardDto;
 import com.cm.sanchalak.entity.StudentMarks;
 import com.cm.sanchalak.service.AcademicService;
 import org.springframework.http.ResponseEntity;
@@ -103,4 +103,40 @@ public class AcademicController {
     public ResponseEntity<ReportCardDto> getReportCard(@PathVariable Long studentId) {
         return ResponseEntity.ok(academicService.generateReportCard(studentId));
     }
+
+    // Class Management
+    
+    @PutMapping("/classes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<com.cm.sanchalak.entity.Class> updateClass(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        String name = body.get("name");
+        if (name == null || name.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(academicService.updateClass(id, name));
+    }
+
+    @DeleteMapping("/classes/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
+        academicService.deleteClass(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    // Subject Management
+    
+    @PutMapping("/subjects/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectRequest request) {
+        return ResponseEntity.ok(academicService.updateSubject(id, request.getName(), request.getCode()));
+    }
+
+    @DeleteMapping("/subjects/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
+        academicService.deleteSubject(id);
+        return ResponseEntity.noContent().build();
+    }
 }
+
+    // Class Management

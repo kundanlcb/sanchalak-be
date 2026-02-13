@@ -1,4 +1,4 @@
-package com.cm.sanchalak.dto;
+package com.cm.sanchalak.dto.academic;
 
 public class MarkEntryResponse {
     private Long id;

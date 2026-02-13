@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface StudentMarksRepository extends JpaRepository<StudentMarks, Long> {
     Optional<StudentMarks> findByExamScheduleAndStudent(ExamSchedule examSchedule, Student student);
     java.util.List<StudentMarks> findByStudent(Student student);
+    
+    // For Analytics
+    java.util.List<StudentMarks> findByStudent_IdAndExamSchedule_ExamTerm_Id(Long studentId, Long termId);
 }

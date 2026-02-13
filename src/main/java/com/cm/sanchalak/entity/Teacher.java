@@ -1,8 +1,11 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "teachers")
@@ -19,6 +22,34 @@ public class Teacher extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+
+    @NotBlank
+    @Email
+    @Column(length = 50, unique = true)
+    private String email;
+
+    @NotBlank
+    @Size(max = 15)
+    @Column(length = 15)
+    private String phone;
+
+    @Size(max = 100)
+    @Column(length = 100)
+    private String qualification;
+
+    @Column(name = "profile_image")
+    private String profileImage;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "teacher_specializations",
+        joinColumns = @JoinColumn(name = "teacher_id"),
+        inverseJoinColumns = @JoinColumn(name = "subject_id")
+    )
+    private Set<Subject> specializations = new HashSet<>();
+    
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     public Long getId() {
         return id;
@@ -42,5 +73,53 @@ public class Teacher extends BaseEntity {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getQualification() {
+        return qualification;
+    }
+
+    public void setQualification(String qualification) {
+        this.qualification = qualification;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public Set<Subject> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<Subject> specializations) {
+        this.specializations = specializations;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

@@ -1,4 +1,4 @@
-package com.cm.sanchalak.dto;
+package com.cm.sanchalak.dto.academic;
 
 import java.time.LocalDate;
 import jakarta.validation.constraints.NotBlank;

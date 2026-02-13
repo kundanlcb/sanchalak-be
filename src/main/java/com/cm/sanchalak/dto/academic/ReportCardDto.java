@@ -1,4 +1,4 @@
-package com.cm.sanchalak.dto;
+package com.cm.sanchalak.dto.academic;
 
 import java.util.List;
 

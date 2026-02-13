@@ -48,4 +48,30 @@ public class FinanceConfigController {
         financeService.assignStructureToClass(id, classId);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/categories/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<FeeCategoryDto> updateCategory(@PathVariable Long id, @Valid @RequestBody FeeCategoryDto dto) {
+        return ResponseEntity.ok(financeService.updateCategory(id, dto));
+    }
+
+    @DeleteMapping("/categories/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        financeService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/structures/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<FeeStructureDto> updateStructure(@PathVariable Long id, @Valid @RequestBody FeeStructureDto dto) {
+        return ResponseEntity.ok(financeService.updateStructure(id, dto));
+    }
+
+    @DeleteMapping("/structures/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteStructure(@PathVariable Long id) {
+        financeService.deleteStructure(id);
+        return ResponseEntity.noContent().build();
+    }
 }

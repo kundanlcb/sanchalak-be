@@ -20,4 +20,22 @@ public class DashboardController {
     public ResponseEntity<?> getDashboardStats() {
         return ResponseEntity.ok(dashboardService.getStats());
     }
+
+    @GetMapping("/gender-distribution")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getGenderDistribution() {
+        return ResponseEntity.ok(dashboardService.getGenderDistribution());
+    }
+
+    @GetMapping("/teacher-performance")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> getTeacherPerformance() {
+        return ResponseEntity.ok(dashboardService.getTeacherPerformance());
+    }
+
+    @GetMapping("/activity-feed")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_TEACHER')")
+    public ResponseEntity<?> getActivityFeed() {
+        return ResponseEntity.ok(dashboardService.getActivityFeed());
+    }
 }

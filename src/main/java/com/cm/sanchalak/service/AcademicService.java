@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
-import com.cm.sanchalak.dto.ReportCardDto;
+import com.cm.sanchalak.dto.academic.ReportCardDto;
 
 @Service
 @Transactional
@@ -153,5 +153,57 @@ public class AcademicService {
 
         report.setTerms(termReports);
         return report;
+    }
+
+    // Class Management
+    
+    public com.cm.sanchalak.entity.Class updateClass(Long id, String name) {
+        com.cm.sanchalak.entity.Class studentClass = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+        studentClass.setName(name);
+        return classRepository.save(studentClass);
+    }
+    
+    public void deleteClass(Long id) {
+        if (!classRepository.existsById(id)) {
+            throw new IllegalArgumentException("Class not found");
+        }
+        // Check dependencies
+        if (studentRepository.countByStudentClassId(id) > 0) {
+            throw new IllegalArgumentException("Cannot delete class with enrolled students.");
+        }
+        // In a real implementation we would also check for class routines, subjects etc.
+        // For now, blocking if students exist is the primary safety check.
+        
+        classRepository.deleteById(id);
+    }
+    
+    // Subject Management
+    
+    public Subject updateSubject(Long id, String name, String code) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
+        subject.setName(name);
+        subject.setCode(code);
+        return subjectRepository.save(subject);
+    }
+    
+    public void deleteSubject(Long id) {
+        if (!subjectRepository.existsById(id)) {
+            throw new RuntimeException("Subject not found");
+        }
+        // Check if subject is associated with any class
+        // Due to lack of relationship mapping in Subject entity (unidirectional), we check the join table repository
+        
+        // This requires 'existsBySubjectId' in ClassSubjectRepository. Let's assume we add it or catch DataIntegrityViolationException.
+        // For cleaner code, we should check repositories.
+        
+        // We will catch DB exception in controller if linked, or add repository method.
+        // Adding repository method check is safer.
+        if (classSubjectRepository.existsBySubjectId(id)) {
+             throw new RuntimeException("Cannot delete subject assigned to classes.");
+        }
+        
+        subjectRepository.deleteById(id);
     }
 }

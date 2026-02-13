@@ -27,6 +27,7 @@ public class FinanceService {
     private final StudentRepository studentRepository;
     private final StudentFeeMapRepository studentFeeMapRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final FeeStructureItemRepository feeStructureItemRepository;
     private final ReceiptRepository receiptRepository;
     private final ReceiptService receiptService;
 
@@ -271,5 +272,78 @@ public class FinanceService {
         dto.setStatus(val.getStatus());
         dto.setPaymentDate(val.getPaymentDate());
         return dto;
+    }
+
+    // Fee Category Management
+    
+    public FeeCategoryDto updateCategory(Long id, FeeCategoryDto dto) {
+        FeeCategory category = feeCategoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        
+        if (!category.getName().equals(dto.getName()) && feeCategoryRepository.existsByName(dto.getName())) {
+             throw new IllegalArgumentException("Category name already exists");
+        }
+        
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        category.setIsMandatory(dto.getIsMandatory());
+        
+        return mapToDto(feeCategoryRepository.save(category));
+    }
+    
+    public void deleteCategory(Long id) {
+        if (!feeCategoryRepository.existsById(id)) {
+            throw new IllegalArgumentException("Category not found");
+        }
+        
+        if (feeStructureItemRepository.existsByFeeCategoryId(id)) {
+            throw new IllegalArgumentException("Cannot delete category used in fee structures");
+        }
+        
+        feeCategoryRepository.deleteById(id);
+    }
+    
+    // Fee Structure Management
+    
+    public FeeStructureDto updateStructure(Long id, FeeStructureDto dto) {
+        FeeStructure structure = feeStructureRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Structure not found"));
+        
+        structure.setName(dto.getName());
+        structure.setAcademicYear(dto.getAcademicYear());
+        structure.setFrequency(dto.getFrequency());
+        structure.setLateFeeAmount(dto.getLateFeeAmount());
+        structure.setGracePeriodDays(dto.getGracePeriodDays());
+        
+        if (dto.getItems() != null) {
+            structure.getItems().clear();
+            
+            List<FeeStructureItem> items = dto.getItems().stream().map(itemDto -> {
+                FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
+                        .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+                
+                FeeStructureItem item = new FeeStructureItem();
+                item.setFeeStructure(structure);
+                item.setFeeCategory(category);
+                item.setAmount(itemDto.getAmount());
+                return item;
+            }).collect(Collectors.toList());
+            
+            structure.getItems().addAll(items);
+        }
+        
+        return mapStructureToDto(feeStructureRepository.save(structure));
+    }
+    
+    public void deleteStructure(Long id) {
+        if (!feeStructureRepository.existsById(id)) {
+            throw new IllegalArgumentException("Structure not found");
+        }
+        
+        if (studentFeeMapRepository.existsByFeeStructureId(id)) {
+            throw new IllegalArgumentException("Cannot delete fee structure assigned to students");
+        }
+        
+        feeStructureRepository.deleteById(id);
     }
 }

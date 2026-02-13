@@ -1,6 +1,6 @@
 package com.cm.sanchalak;
 
-import com.cm.sanchalak.dto.MarkEntryRequest;
+import com.cm.sanchalak.dto.academic.MarkEntryRequest;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.*;
 import org.junit.jupiter.api.BeforeEach;

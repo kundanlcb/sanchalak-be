@@ -16,6 +16,9 @@ public class Student extends BaseEntity {
     @Column(length = 100, nullable = false)
     private String name;
 
+    @Column(length = 10)
+    private String gender;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
     private Class studentClass;
@@ -34,6 +37,14 @@ public class Student extends BaseEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public Class getStudentClass() {

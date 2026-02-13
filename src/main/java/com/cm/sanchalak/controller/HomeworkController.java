@@ -1,6 +1,6 @@
 package com.cm.sanchalak.controller;
 
-import com.cm.sanchalak.dto.HomeworkRequest;
+import com.cm.sanchalak.dto.academic.HomeworkRequest;
 import com.cm.sanchalak.entity.Homework;
 import com.cm.sanchalak.service.HomeworkService;
 import org.springframework.http.ResponseEntity;
