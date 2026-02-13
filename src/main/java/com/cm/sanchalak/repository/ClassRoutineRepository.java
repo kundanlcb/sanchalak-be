@@ -15,4 +15,8 @@ public interface ClassRoutineRepository extends JpaRepository<ClassRoutine, Long
     // Check conflicts
     boolean existsByStudentClassIdAndDayOfWeekAndPeriod(Long classId, DayOfWeek dayOfWeek, Integer period);
     boolean existsByTeacherIdAndDayOfWeekAndPeriod(Long teacherId, DayOfWeek dayOfWeek, Integer period);
+
+    // Integrity checks
+    boolean existsByTeacherId(Long teacherId);
+    boolean existsBySubjectId(Long subjectId);
 }

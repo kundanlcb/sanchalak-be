@@ -3,13 +3,15 @@ package com.cm.sanchalak.service;
 import com.cm.sanchalak.repository.ClassRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
+import com.cm.sanchalak.repository.AttendanceRepository;
+import com.cm.sanchalak.entity.AttendanceStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Service
 public class DashboardService {
@@ -23,11 +25,27 @@ public class DashboardService {
     @Autowired
     private ClassRepository classRepository;
 
-    public Map<String, Long> getStats() {
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("students", studentRepository.count());
-        stats.put("teachers", teacherRepository.count());
+    @Autowired
+    private AttendanceRepository attendanceRepository;
+
+    public Map<String, Object> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        long totalStudents = studentRepository.countByDeletedFalse();
+        
+        stats.put("students", totalStudents);
+        stats.put("teachers", teacherRepository.countByDeletedFalse());
         stats.put("classes", classRepository.count());
+        
+        // Attendance Calculation
+        if (totalStudents > 0) {
+             long present = attendanceRepository.countByDateAndStatus(LocalDate.now(), AttendanceStatus.PRESENT);
+             // Simple percentage
+             double percent = ((double) present / totalStudents) * 100;
+             stats.put("attendance", Math.round(percent)); // Store as Long (e.g., 95)
+        } else {
+             stats.put("attendance", 0L);
+        }
+        
         return stats;
     }
 

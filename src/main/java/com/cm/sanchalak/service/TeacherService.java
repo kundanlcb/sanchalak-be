@@ -33,18 +33,21 @@ public class TeacherService {
     private final PasswordEncoder passwordEncoder;
     private final SubjectRepository subjectRepository;
     private final ClassSubjectRepository classSubjectRepository;
+    private final com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository;
 
     @Autowired
     public TeacherService(TeacherRepository teacherRepository, UserRepository userRepository,
                           RoleRepository roleRepository, PasswordEncoder passwordEncoder,
                           SubjectRepository subjectRepository,
-                          ClassSubjectRepository classSubjectRepository) {
+                          ClassSubjectRepository classSubjectRepository,
+                          com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository) {
         this.teacherRepository = teacherRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.subjectRepository = subjectRepository;
         this.classSubjectRepository = classSubjectRepository;
+        this.classRoutineRepository = classRoutineRepository;
     }
 
     public TeacherResponse createTeacher(TeacherRequest request) {
@@ -117,9 +120,14 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
         
-        // Check dependencies
+        // Check dependencies (Assignments)
         if (classSubjectRepository.existsByTeacherId(id)) {
             throw new RuntimeException("Cannot delete teacher assigned to classes.");
+        }
+        
+        // Check dependencies (Routine)
+        if (classRoutineRepository.existsByTeacherId(id)) {
+            throw new RuntimeException("Cannot delete teacher who is active in the class routine.");
         }
         
         // Soft delete

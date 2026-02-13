@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: Student Management API
+  version: 1.0.0
+paths:
+  /api/students/{id}:
+    put:
+      summary: Update student details
+      operationId: updateStudent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                guardianName:
+                  type: string
+                guardianMobile:
+                  type: string
+                className:
+                  type: string
+      responses:
+        '200':
+          description: Updated student
+    delete:
+      summary: Soft delete student
+      operationId: deleteStudent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Student successfully archived
+        '400':
+          description: Invalid request

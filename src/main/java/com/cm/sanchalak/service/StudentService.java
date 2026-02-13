@@ -1,0 +1,111 @@
+package com.cm.sanchalak.service;
+
+import com.cm.sanchalak.dto.StudentRequest;
+import com.cm.sanchalak.dto.StudentResponse;
+import com.cm.sanchalak.entity.Class;
+import com.cm.sanchalak.entity.Student;
+import com.cm.sanchalak.repository.ClassRepository;
+import com.cm.sanchalak.repository.StudentRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@Transactional
+public class StudentService {
+
+    private final StudentRepository studentRepository;
+    private final ClassRepository classRepository;
+
+    @Autowired
+    public StudentService(StudentRepository studentRepository, ClassRepository classRepository) {
+        this.studentRepository = studentRepository;
+        this.classRepository = classRepository;
+    }
+
+    public StudentResponse createStudent(StudentRequest request) {
+        Class studentClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
+
+        Student student = new Student();
+        updateStudentFromRequest(student, request);
+        student.setStudentClass(studentClass);
+        student.setDeleted(false);
+
+        Student savedStudent = studentRepository.save(student);
+        return mapToResponse(savedStudent);
+    }
+
+    public StudentResponse updateStudent(Long id, StudentRequest request) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+
+        if (request.getClassId() != null && !request.getClassId().equals(student.getStudentClass().getId())) {
+             Class studentClass = classRepository.findById(request.getClassId())
+                .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
+             student.setStudentClass(studentClass);
+        }
+
+        updateStudentFromRequest(student, request);
+        Student updatedStudent = studentRepository.save(student);
+        return mapToResponse(updatedStudent);
+    }
+
+    public void deleteStudent(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+        student.setDeleted(true);
+        studentRepository.save(student);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StudentResponse> getAllStudents() {
+        return studentRepository.findByDeletedFalse().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public StudentResponse getStudentById(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+        // Even if deleted, we might want to see it by ID? 
+        // Typically GET /id should verify existence. 
+        // If soft deleted, do we 404? 
+        // Spec usually implies soft-deleted items are gone for general ops.
+        // I'll assume 404 if deleted for consistency with the filter.
+        if (student.isDeleted()) {
+           throw new EntityNotFoundException("Student not found (deleted) with id: " + id);
+        }
+        return mapToResponse(student);
+    }
+
+    // Helper methods
+    private void updateStudentFromRequest(Student student, StudentRequest request) {
+        student.setFirstName(request.getFirstName());
+        student.setLastName(request.getLastName());
+        student.setRollNo(request.getRollNo());
+        student.setGender(request.getGender());
+        student.setGuardianName(request.getGuardianName());
+        student.setGuardianMobile(request.getGuardianMobile());
+    }
+
+    private StudentResponse mapToResponse(Student student) {
+        return StudentResponse.builder()
+                .id(student.getId())
+                .firstName(student.getFirstName())
+                .lastName(student.getLastName())
+                .rollNo(student.getRollNo())
+                .gender(student.getGender())
+                .guardianName(student.getGuardianName())
+                .guardianMobile(student.getGuardianMobile())
+                .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)
+                .className(student.getStudentClass() != null ? student.getStudentClass().getClassName() : null)
+                .deleted(student.isDeleted())
+                .build();
+    }
+}

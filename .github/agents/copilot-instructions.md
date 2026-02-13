@@ -24,7 +24,6 @@ tests/
 ## Recent Changes
 - 004-finance-module: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 004-finance-module: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 003-attendance-service: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 
 <!-- MANUAL ADDITIONS START -->

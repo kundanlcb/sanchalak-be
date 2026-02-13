@@ -19,6 +19,15 @@ public class Student extends BaseEntity {
     @Column(length = 10)
     private String gender;
 
+    @Column(name = "guardian_name")
+    private String guardianName;
+
+    @Column(name = "guardian_mobile")
+    private String guardianMobile;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id")
     private Class studentClass;
@@ -45,6 +54,30 @@ public class Student extends BaseEntity {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getGuardianName() {
+        return guardianName;
+    }
+
+    public void setGuardianName(String guardianName) {
+        this.guardianName = guardianName;
+    }
+
+    public String getGuardianMobile() {
+        return guardianMobile;
+    }
+
+    public void setGuardianMobile(String guardianMobile) {
+        this.guardianMobile = guardianMobile;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public Class getStudentClass() {

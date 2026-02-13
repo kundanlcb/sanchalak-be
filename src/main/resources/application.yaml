@@ -2,15 +2,15 @@ spring:
   application:
     name: sanchalak
   datasource:
-    url: jdbc:postgresql://localhost:5432/sanchalak
-    username: postgres
-    password: postgres
+    url: jdbc:mysql://localhost:3306/sanchalak?createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: root
+    password: 
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect
 
 app:
   jwtSecret: 9a02115a835ee03d5fb83cd8a468ea33e4090a6a27e4e1a47321696435f3b7f1

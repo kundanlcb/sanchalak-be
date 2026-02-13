@@ -23,12 +23,14 @@ public class AcademicService {
     private final ClassRepository classRepository;
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
+    private final com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository;
 
     @Autowired
     public AcademicService(ExamTermRepository examTermRepository, SubjectRepository subjectRepository,
                            ClassSubjectRepository classSubjectRepository, ExamScheduleRepository examScheduleRepository,
                            StudentMarksRepository studentMarksRepository, ClassRepository classRepository,
-                           TeacherRepository teacherRepository, StudentRepository studentRepository) {
+                           TeacherRepository teacherRepository, StudentRepository studentRepository,
+                           com.cm.sanchalak.repository.ClassRoutineRepository classRoutineRepository) {
         this.examTermRepository = examTermRepository;
         this.subjectRepository = subjectRepository;
         this.classSubjectRepository = classSubjectRepository;
@@ -37,6 +39,7 @@ public class AcademicService {
         this.classRepository = classRepository;
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
+        this.classRoutineRepository = classRoutineRepository;
     }
 
     public ExamTerm createExamTerm(ExamTerm examTerm) {
@@ -193,15 +196,13 @@ public class AcademicService {
             throw new RuntimeException("Subject not found");
         }
         // Check if subject is associated with any class
-        // Due to lack of relationship mapping in Subject entity (unidirectional), we check the join table repository
-        
-        // This requires 'existsBySubjectId' in ClassSubjectRepository. Let's assume we add it or catch DataIntegrityViolationException.
-        // For cleaner code, we should check repositories.
-        
-        // We will catch DB exception in controller if linked, or add repository method.
-        // Adding repository method check is safer.
         if (classSubjectRepository.existsBySubjectId(id)) {
              throw new RuntimeException("Cannot delete subject assigned to classes.");
+        }
+        
+        // Check if subject is active in routine
+        if (classRoutineRepository.existsBySubjectId(id)) {
+            throw new RuntimeException("Cannot delete subject that is active in the class routine.");
         }
         
         subjectRepository.deleteById(id);

@@ -22,4 +22,6 @@ public interface AttendanceRepository extends JpaRepository<AttendanceRecord, Lo
     
     // For history between dates (used in summary or reports)
     List<AttendanceRecord> findBySchoolClass_IdAndDateBetween(Long classId, LocalDate startDate, LocalDate endDate);
+
+    long countByDateAndStatus(LocalDate date, com.cm.sanchalak.entity.AttendanceStatus status);
 }
