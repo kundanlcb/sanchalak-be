@@ -44,6 +44,8 @@ public class TimetableDto {
         
         private String roomNumber;
         
+        private String className; // For teachers to know which class
+        
         private String periodType; // LECTURE, LAB, LIBRARY, SPORTS, BREAK
     }
 }

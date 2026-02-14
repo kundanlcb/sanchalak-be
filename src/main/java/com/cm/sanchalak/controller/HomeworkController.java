@@ -37,4 +37,25 @@ public class HomeworkController {
     public ResponseEntity<List<Homework>> getAllHomework() {
         return ResponseEntity.ok(homeworkService.getAllHomework());
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<Homework> updateHomework(@PathVariable Long id, @Valid @RequestBody HomeworkRequest request) {
+        return ResponseEntity.ok(homeworkService.updateHomework(
+            id,
+            request.getClassId(),
+            request.getSubjectId(),
+            request.getTeacherId(),
+            request.getTitle(),
+            request.getDescription(),
+            request.getDueDate()
+        ));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<Void> deleteHomework(@PathVariable Long id) {
+        homeworkService.deleteHomework(id);
+        return ResponseEntity.noContent().build();
+    }
 }

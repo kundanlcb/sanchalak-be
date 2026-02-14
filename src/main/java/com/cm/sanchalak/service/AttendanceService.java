@@ -180,6 +180,34 @@ public class AttendanceService {
                  .build();
     }
 
+    @Transactional
+    public AttendanceRecordDto updateAttendance(Long id, UpdateAttendanceRequest request, String modifiedBy) {
+        AttendanceRecord record = attendanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Attendance record not found"));
+        
+        // Validation: Cannot update past a certain window? 
+        // For now, allow update if it's not in the future (which isn't possible for creation anyway)
+        
+        if (request.getStatus() != null) {
+            record.setStatus(request.getStatus());
+        }
+        
+        // Update remarks if provided (allow empty string to clear?)
+        // Let's assume null means no change, empty string acts as clear if intended, but usually for PUT we replace.
+        // But for partial update (PATCH behavior), we check null.
+        // Requirement says Correction, implies PUT usually.
+        if (request.getRemarks() != null) {
+            record.setRemarks(request.getRemarks());
+        }
+        
+        record.setModified(true);
+        record.setModifiedBy(modifiedBy);
+        
+        record = attendanceRepository.save(record);
+        
+        return mapToDto(record);
+    }
+
     private AttendanceRecordDto mapToDto(AttendanceRecord r) {
         AttendanceRecordDto dto = new AttendanceRecordDto();
         dto.setId(r.getId());

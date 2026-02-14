@@ -38,6 +38,9 @@ public class Student extends BaseEntity {
     @Column(name = "guardian_mobile")
     private String guardianMobile;
 
+    @Column(name = "admission_number", length = 50)
+    private String admissionNumber;
+
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -133,6 +136,14 @@ public class Student extends BaseEntity {
 
     public void setRollNo(Integer rollNo) {
         this.rollNo = rollNo;
+    }
+    
+    public String getAdmissionNumber() {
+        return admissionNumber;
+    }
+
+    public void setAdmissionNumber(String admissionNumber) {
+        this.admissionNumber = admissionNumber;
     }
     
     private void updateName() {

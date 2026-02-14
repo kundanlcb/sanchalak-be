@@ -14,28 +14,39 @@ public class DatabaseCleanup {
         // Disable referential integrity
         jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY FALSE");
         
-        // Get all tables and truncate
-        jdbcTemplate.execute("TRUNCATE TABLE attendance_records");
-        jdbcTemplate.execute("TRUNCATE TABLE payment_transactions");
-        jdbcTemplate.execute("TRUNCATE TABLE student_fee_maps");
-        jdbcTemplate.execute("TRUNCATE TABLE student_marks");
-        jdbcTemplate.execute("TRUNCATE TABLE homework_submissions");
-        jdbcTemplate.execute("TRUNCATE TABLE parent_student_links");
-        jdbcTemplate.execute("TRUNCATE TABLE student_transport_assignments");
-        jdbcTemplate.execute("TRUNCATE TABLE transport_events");
-        jdbcTemplate.execute("TRUNCATE TABLE students");
-        jdbcTemplate.execute("TRUNCATE TABLE classes");
-        jdbcTemplate.execute("TRUNCATE TABLE teacher_specializations");
-        jdbcTemplate.execute("TRUNCATE TABLE teachers");
-        jdbcTemplate.execute("TRUNCATE TABLE class_routines");
-        jdbcTemplate.execute("TRUNCATE TABLE exam_schedules");
-        jdbcTemplate.execute("TRUNCATE TABLE exam_terms");
-        jdbcTemplate.execute("TRUNCATE TABLE class_subjects");
-        jdbcTemplate.execute("TRUNCATE TABLE subjects");
-        jdbcTemplate.execute("TRUNCATE TABLE user_roles");
-        jdbcTemplate.execute("TRUNCATE TABLE users");
-        jdbcTemplate.execute("TRUNCATE TABLE otp_verifications");
-        // Don't truncate roles as they are needed
+        String[] tables = {
+            "attendance_records", "payment_transactions", "student_fee_maps", "student_marks", 
+            "homework_submissions", "parent_student_links", "student_transport_assignments", 
+            "transport_events", "students", "classes", "teacher_specializations", "teachers", 
+            "class_routines", "exam_schedules", "exam_terms", "class_subjects", "subjects", 
+            "user_roles", "users", "otp_verifications"
+        };
+        
+        for (String table : tables) {
+            try {
+                jdbcTemplate.execute("TRUNCATE TABLE " + table);
+            } catch (Exception e) {
+                // Ignore table not found errors (H2 error code 42104 or message contains "not found")
+                // Check cause because Spring wraps it in BadSqlGrammarException
+                boolean isTableNotFound = false;
+                Throwable cause = e;
+                while (cause != null) {
+                    String msg = cause.getMessage();
+                    if (msg != null && (msg.toLowerCase().contains("not found") || msg.contains("42104"))) {
+                        isTableNotFound = true;
+                        break;
+                    }
+                    cause = cause.getCause();
+                }
+                
+                if (isTableNotFound) {
+                     // System.out.println("Ignored missing table: " + table);
+                } else {
+                    System.err.println("Failed to truncate table: " + table + ". Root cause: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+                    throw new RuntimeException("Failed to truncate table: " + table, e);
+                }
+            }
+        }
         
         // Re-enable referential integrity
         jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY TRUE");

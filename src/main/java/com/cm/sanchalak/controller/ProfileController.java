@@ -7,6 +7,7 @@ import com.cm.sanchalak.dto.finance.StudentLedgerDto;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.HomeworkRepository;
 import com.cm.sanchalak.repository.StudentRepository;
+import com.cm.sanchalak.repository.TeacherRepository;
 import com.cm.sanchalak.repository.UserRepository;
 import com.cm.sanchalak.security.CurrentUser;
 import com.cm.sanchalak.security.UserPrincipal;
@@ -41,6 +42,7 @@ public class ProfileController {
     private final StudentRepository studentRepository;
     private final DashboardAggregationService dashboardService;
     private final ParentService parentService;
+    private final TeacherRepository teacherRepository;
     private final ParentAuthorizationService parentAuthorizationService;
     private final AttendanceService attendanceService;
     private final RoutineService routineService;
@@ -305,13 +307,55 @@ public class ProfileController {
      * Auto-resolves studentId and classId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/timetable")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT', 'TEACHER')")
     public ResponseEntity<ApiResult<TimetableDto>> getTimetable(
         @CurrentUser UserPrincipal currentUser,
         @RequestParam(required = false) Long studentId) {
         
         logger.info("Fetching timetable for user: {}", currentUser.getId());
         
+        Optional<User> userOpt = userRepository.findById(currentUser.getId());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userOpt.get();
+        
+        if (hasRole(user, RoleName.ROLE_TEACHER)) {
+             Optional<Teacher> teacherOpt = teacherRepository.findByUserId(user.getId());
+             if (teacherOpt.isEmpty()) {
+                 return ResponseEntity.badRequest()
+                     .body(ApiResult.error("TEACHER_NOT_FOUND", "Teacher profile not found"));
+             }
+             
+             List<RoutineResponse> routineList = routineService.getRoutineByTeacherId(teacherOpt.get().getId());
+             
+             // Transform RoutineResponse to TimetableDto format
+             Map<String, List<TimetableDto.PeriodDto>> weeklySchedule = routineList.stream()
+                 .collect(Collectors.groupingBy(
+                     r -> r.getDayOfWeek().name(),
+                     Collectors.mapping(
+                         r -> TimetableDto.PeriodDto.builder()
+                             .periodNumber(r.getPeriod())
+                             .startTime(r.getStartTime() != null ? r.getStartTime().toString() : null)
+                             .endTime(r.getEndTime() != null ? r.getEndTime().toString() : null)
+                             .subjectName(r.getSubjectName())
+                             .teacherName(r.getTeacherName())
+                             .className(r.getClassName()) // We might need className in DTO for teachers to know which class
+                             .periodType("LECTURE")
+                             .build(),
+                         Collectors.toList()
+                     )
+                 ));
+             
+             TimetableDto timetable = TimetableDto.builder()
+                 .studentId(null)
+                 .className("Teacher Schedule") 
+                 .weeklySchedule(weeklySchedule)
+                 .build();
+             
+             return ResponseEntity.ok(ApiResult.success(timetable));
+        }
+
         Long resolvedStudentId = resolveStudentIdWithAuthorization(currentUser, studentId);
         if (resolvedStudentId == null) {
             return ResponseEntity.badRequest()

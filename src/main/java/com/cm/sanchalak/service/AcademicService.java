@@ -112,7 +112,37 @@ public class AcademicService {
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
+        return buildReportCard(student, marks);
+    }
 
+    public List<ReportCardDto> getClassTermMarks(Long classId, Long termId) {
+         // Use findByStudentClass_Id which exists in repository
+         List<Student> students = studentRepository.findByStudentClass_Id(classId); 
+         
+         ExamTerm term = examTermRepository.findById(termId)
+                 .orElseThrow(() -> new RuntimeException("Term not found"));
+                 
+         List<ReportCardDto> classReports = new ArrayList<>();
+         
+         for (Student student : students) {
+             List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
+             // Filter by term
+             List<StudentMarks> termMarks = marks.stream()
+                 .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
+                 .collect(Collectors.toList());
+             
+             if (!termMarks.isEmpty()) {
+                 classReports.add(buildReportCard(student, termMarks));
+             } else {
+                 // Include student even if no marks? Yes, empty report.
+                 classReports.add(buildReportCard(student, new ArrayList<>()));
+             }
+         }
+         
+         return classReports;
+    }
+
+    private ReportCardDto buildReportCard(Student student, List<StudentMarks> marks) {
         ReportCardDto report = new ReportCardDto();
         report.setStudentName(student.getName());
         if (student.getStudentClass() != null) {

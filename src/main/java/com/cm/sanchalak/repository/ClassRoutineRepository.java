@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ClassRoutineRepository extends JpaRepository<ClassRoutine, Long> {
     List<ClassRoutine> findByStudentClassId(Long classId);
+    List<ClassRoutine> findByTeacherId(Long teacherId);
     
     // Check conflicts
     boolean existsByStudentClassIdAndDayOfWeekAndPeriod(Long classId, DayOfWeek dayOfWeek, Integer period);

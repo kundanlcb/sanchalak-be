@@ -17,6 +17,7 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    private final com.cm.sanchalak.service.StudentImportService studentImportService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -49,5 +50,20 @@ public class StudentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<StudentResponse> getStudentById(@PathVariable Long id) {
         return ResponseEntity.ok(studentService.getStudentById(id));
+    }
+
+    @PostMapping(value = "/bulk-import", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> bulkImportStudents(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Please select a file to upload");
+        }
+        
+        try {
+            int count = studentImportService.importStudents(file);
+            return ResponseEntity.ok("Successfully imported/processed " + count + " students");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to import students: " + e.getMessage());
+        }
     }
 }

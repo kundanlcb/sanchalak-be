@@ -13,8 +13,8 @@ import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
 import com.cm.sanchalak.repository.*;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,17 +64,18 @@ public class DashboardIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
+
     @BeforeEach
     void setUp() {
         this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context)
                 .apply(springSecurity())
                 .configureClient()
                 .build();
-        attendanceRepository.deleteAll();
-        studentRepository.deleteAll();
-        teacherRepository.deleteAll(); // Ensure Teachers first
-        classRepository.deleteAll();
-        userRepository.deleteAll();
+        
+        // Use centralized cleanup
+        databaseCleanup.cleanAllTables();
         
         createRoleIfMissing(RoleName.ROLE_ADMIN);
         createRoleIfMissing(RoleName.ROLE_TEACHER);

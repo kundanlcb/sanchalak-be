@@ -70,6 +70,8 @@ public class SecurityConfig {
                                 "/*.html",
                                 "/*.css",
                                 "/*.js",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
                                 "/api/auth/**",
                                 "/api/user/checkUsernameAvailability",
                                 "/api/user/checkEmailAvailability")

@@ -35,6 +35,12 @@ public class RoutineService {
                 .collect(Collectors.toList());
     }
 
+    public List<RoutineResponse> getRoutineByTeacherId(Long teacherId) {
+        return routineRepository.findByTeacherId(teacherId).stream()
+                .map(RoutineResponse::new)
+                .collect(Collectors.toList());
+    }
+
     public RoutineResponse assignSlot(RoutineRequest request) {
         // Validate conflicts
         if (routineRepository.existsByStudentClassIdAndDayOfWeekAndPeriod(

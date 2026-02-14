@@ -119,6 +119,74 @@ public class NoticeController {
     }
     
     /**
+     * Create a new notice
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ApiResult<NoticeDto> createNotice(
+            @CurrentUser UserPrincipal currentUser,
+            @RequestBody com.cm.sanchalak.dto.NoticeRequest request) {
+        
+        log.info("Creating notice for user {}", currentUser.getId());
+        
+        try {
+            NoticeDto notice = noticeService.createNotice(request, currentUser.getId());
+            return ApiResult.success(notice);
+            
+        } catch (Exception e) {
+            log.error("Error creating notice for user {}: {}", currentUser.getId(), e.getMessage());
+            return ApiResult.error("CREATE_FAILED", "Failed to create notice: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update an existing notice
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ApiResult<NoticeDto> updateNotice(
+            @CurrentUser UserPrincipal currentUser,
+            @PathVariable Long id,
+            @RequestBody com.cm.sanchalak.dto.NoticeRequest request) {
+        
+        log.info("Updating notice {} for user {}", id, currentUser.getId());
+        
+        try {
+            NoticeDto notice = noticeService.updateNotice(id, request, currentUser.getId());
+            return ApiResult.success(notice);
+            
+        } catch (RuntimeException e) {
+            return ApiResult.error("NOT_FOUND", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error updating notice {} for user {}: {}", id, currentUser.getId(), e.getMessage());
+            return ApiResult.error("UPDATE_FAILED", "Failed to update notice: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete a notice
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ApiResult<Void> deleteNotice(
+            @CurrentUser UserPrincipal currentUser,
+            @PathVariable Long id) {
+        
+        log.info("Deleting notice {} for user {}", id, currentUser.getId());
+        
+        try {
+            noticeService.deleteNotice(id, currentUser.getId());
+            return ApiResult.success(null);
+            
+        } catch (RuntimeException e) {
+            return ApiResult.error("NOT_FOUND", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error deleting notice {} for user {}: {}", id, currentUser.getId(), e.getMessage());
+            return ApiResult.error("DELETE_FAILED", "Failed to delete notice: " + e.getMessage());
+        }
+    }
+
+    /**
      * Determine target role based on user's authorities
      */
     private String determineTargetRole(UserPrincipal userPrincipal) {

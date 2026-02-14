@@ -131,7 +131,8 @@ class TransportControllerTest {
 
         // Execute
         mockMvc.perform(get("/api/transport/my-route")
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                 .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.routeId").value(routeId.intValue()))

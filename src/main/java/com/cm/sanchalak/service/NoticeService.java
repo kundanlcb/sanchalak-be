@@ -158,4 +158,75 @@ public class NoticeService {
             readStatus != null ? readStatus.getReadAt() : null
         );
     }
+    /**
+     * Create a new notice
+     */
+    @Transactional
+    public NoticeDto createNotice(com.cm.sanchalak.dto.NoticeRequest request, UUID userId) {
+        log.info("Creating notice for user {}", userId);
+        
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+            
+        Notice notice = new Notice();
+        notice.setTitle(request.getTitle());
+        notice.setContent(request.getContent());
+        notice.setPriority(request.getPriority());
+        notice.setTargetRole(request.getTargetRole());
+        notice.setPublishDate(request.getPublishDate() != null ? request.getPublishDate() : LocalDate.now());
+        notice.setExpiryDate(request.getExpiryDate());
+        notice.setAttachmentUrl(request.getAttachmentUrl());
+        notice.setCreatedBy(user);
+        notice.setIsActive(true);
+        
+        notice = noticeRepository.save(notice);
+        log.info("Created notice with ID: {}", notice.getId());
+        
+        return convertToDto(notice, userId);
+    }
+
+    /**
+     * Update an existing notice
+     */
+    @Transactional
+    public NoticeDto updateNotice(Long id, com.cm.sanchalak.dto.NoticeRequest request, UUID userId) {
+        log.info("Updating notice {} for user {}", id, userId);
+        
+        Notice notice = noticeRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notice not found"));
+            
+        // TODO: Add permission check if needed (e.g. only creator or admin can update)
+        
+        notice.setTitle(request.getTitle());
+        notice.setContent(request.getContent());
+        notice.setPriority(request.getPriority());
+        notice.setTargetRole(request.getTargetRole());
+        if (request.getPublishDate() != null) {
+            notice.setPublishDate(request.getPublishDate());
+        }
+        notice.setExpiryDate(request.getExpiryDate());
+        notice.setAttachmentUrl(request.getAttachmentUrl());
+        
+        notice = noticeRepository.save(notice);
+        log.info("Updated notice with ID: {}", notice.getId());
+        
+        return convertToDto(notice, userId);
+    }
+
+    /**
+     * Delete a notice (soft delete)
+     */
+    @Transactional
+    public void deleteNotice(Long id, UUID userId) {
+        log.info("Deleting notice {} for user {}", id, userId);
+        
+        Notice notice = noticeRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notice not found"));
+            
+        // Soft delete
+        notice.setIsActive(false);
+        noticeRepository.save(notice);
+        
+        log.info("Deleted (soft) notice with ID: {}", id);
+    }
 }

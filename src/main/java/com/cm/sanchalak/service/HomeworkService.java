@@ -53,4 +53,38 @@ public class HomeworkService {
     public List<Homework> getAllHomework() {
         return homeworkRepository.findAll();
     }
+
+    public Homework updateHomework(Long id, Long classId, Long subjectId, Long teacherId, String title, String description, LocalDate dueDate) {
+        Homework homework = homeworkRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        if (classId != null) {
+            SchoolClass clazz = classRepository.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+            homework.setStudentClass(clazz);
+        }
+        if (subjectId != null) {
+            Subject subject = subjectRepository.findById(subjectId)
+                    .orElseThrow(() -> new RuntimeException("Subject not found"));
+            homework.setSubject(subject);
+        }
+        if (teacherId != null) {
+            Teacher teacher = teacherRepository.findById(teacherId)
+                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
+            homework.setTeacher(teacher);
+        }
+        
+        homework.setTitle(title);
+        homework.setDescription(description);
+        homework.setDueDate(dueDate);
+
+        return homeworkRepository.save(homework);
+    }
+
+    public void deleteHomework(Long id) {
+        if (!homeworkRepository.existsById(id)) {
+            throw new RuntimeException("Homework not found");
+        }
+        homeworkRepository.deleteById(id);
+    }
 }

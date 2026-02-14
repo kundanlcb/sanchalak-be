@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     java.util.List<Teacher> findByDeletedFalse();
     long countByDeletedFalse();
+    java.util.Optional<Teacher> findByUserId(java.util.UUID userId);
 }

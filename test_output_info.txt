@@ -1,0 +1,200 @@
+Initialized native services in: /Users/kundan/.gradle/native
+Initialized jansi services in: /Users/kundan/.gradle/native
+Found daemon DaemonInfo{pid=45631, address=[07047b77-0a80-4b80-b970-4fb409e82656 port:55229, addresses:[/127.0.0.1]], state=Idle, lastBusy=1770998238630, context=DefaultDaemonContext[uid=24edc11f-d9dc-464a-9f18-68635e56b152,javaHome=/Users/kundan/.vscode/extensions/redhat.java-1.52.0-darwin-arm64/jre/21.0.9-macosx-aarch64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/Users/kundan/.gradle/daemon,pid=45631,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home (no Daemon JVM specified, using current Java home), daemonOpts=[-XX:MaxMetaspaceSize=384m, -XX:+HeapDumpOnOutOfMemoryError, -Xms256m, -Xmx512m, -Dfile.encoding=UTF-8, -Duser.country=IN, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=24edc11f-d9dc-464a-9f18-68635e56b152,javaHome=/Users/kundan/.vscode/extensions/redhat.java-1.52.0-darwin-arm64/jre/21.0.9-macosx-aarch64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/Users/kundan/.gradle/daemon,pid=45631,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country=IN,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 4436). The daemon log file: /Users/kundan/.gradle/daemon/9.3.0/daemon-4436.out.log
+Starting 136th build in daemon [uptime: 8 hrs 38 mins 58.771 secs, performance: 100%, GC rate: 0.00/s, heap usage: 27% of 512 MiB, non-heap usage: 28% of 384 MiB]
+Using 10 worker leases.
+Operational build model parameters: {requiresToolingModels=false, parallelProjectExecution=false, configureOnDemand=false, configurationCache=false, configurationCacheParallelStore=false, configurationCacheParallelLoad=true, isolatedProjects=false, parallelProjectConfiguration=false, intermediateModelCache=false, parallelToolingApiActions=false, invalidateCoupledProjects=false, modelAsProjectDependency=false, resilientModelBuilding=false}
+Now considering [/Users/kundan/Documents/codebase/sanchalak_be] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/Users/kundan/Documents/codebase/sanchalak_be/settings.gradle'.
+Projects loaded. Root project using build file '/Users/kundan/Documents/codebase/sanchalak_be/build.gradle'.
+Included projects: [root project 'sanchalak_be']
+
+> Configure project :
+Evaluating root project 'sanchalak_be' using build file '/Users/kundan/Documents/codebase/sanchalak_be/build.gradle'.
+Resolved plugin [id: 'java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2']
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7']
+Applying dependency management to configuration 'annotationProcessor' in project 'sanchalak_be'
+Applying dependency management to configuration 'apiElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'archives' in project 'sanchalak_be'
+Applying dependency management to configuration 'bootArchives' in project 'sanchalak_be'
+Applying dependency management to configuration 'compileClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'compileOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'default' in project 'sanchalak_be'
+Applying dependency management to configuration 'developmentOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'implementation' in project 'sanchalak_be'
+Applying dependency management to configuration 'mainSourceElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeElements' in project 'sanchalak_be'
+Applying dependency management to configuration 'runtimeOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'sanchalak_be'
+Applying dependency management to configuration 'testCompileClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'testCompileOnly' in project 'sanchalak_be'
+Applying dependency management to configuration 'testImplementation' in project 'sanchalak_be'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'sanchalak_be'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'sanchalak_be'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'sanchalak_be'
+All projects evaluated.
+Task name matched 'test'
+Selected primary task 'test' from project :
+Starting process 'command '/usr/libexec/java_home''. Working directory: /Users/kundan/.gradle/daemon/9.3.0 Command: /usr/libexec/java_home -V
+Successfully started process 'command '/usr/libexec/java_home''
+Resolving global dependency management for project 'sanchalak_be'
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':compileJava', task ':processResources', task ':classes', task ':compileTestJava', task ':processTestResources', task ':testClasses', task ':test']
+Tasks that were excluded: []
+Resolve mutations for :compileJava (Thread[#19432,Execution worker,5,main]) started.
+:compileJava (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :compileJava UP-TO-DATE
+Custom actions are attached to task ':compileJava'.
+Caching disabled for task ':compileJava' because:
+  Build cache is disabled
+Skipping task ':compileJava' as it is up-to-date.
+Resolve mutations for :processResources (Thread[#19432,Execution worker,5,main]) started.
+:processResources (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :processResources UP-TO-DATE
+Caching disabled for task ':processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processResources' as it is up-to-date.
+Resolve mutations for :classes (Thread[#19432,Execution worker,5,main]) started.
+:classes (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :classes UP-TO-DATE
+Skipping task ':classes' as it has no actions.
+Resolve mutations for :compileTestJava (Thread[#19432,Execution worker,5,main]) started.
+:compileTestJava (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :compileTestJava UP-TO-DATE
+Custom actions are attached to task ':compileTestJava'.
+Caching disabled for task ':compileTestJava' because:
+  Build cache is disabled
+Skipping task ':compileTestJava' as it is up-to-date.
+Resolve mutations for :processTestResources (Thread[#19432,Execution worker,5,main]) started.
+:processTestResources (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :processTestResources UP-TO-DATE
+Caching disabled for task ':processTestResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':processTestResources' as it is up-to-date.
+Resolve mutations for :testClasses (Thread[#19432,Execution worker,5,main]) started.
+:testClasses (Thread[#19432,Execution worker,5,main]) started.
+
+> Task :testClasses UP-TO-DATE
+Skipping task ':testClasses' as it has no actions.
+Resolve mutations for :test (Thread[#19432,Execution worker,5,main]) started.
+:test (Thread[#19432,Execution worker,5,main]) started.
+Gradle Test Executor 67 started executing tests.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Gradle Test Executor 67 finished executing tests.
+
+> Task :test FAILED
+Caching disabled for task ':test' because:
+  Build cache is disabled
+Task ':test' is not up-to-date because:
+  Task has failed previously.
+Starting process 'Gradle Test Executor 67'. Working directory: /Users/kundan/Documents/codebase/sanchalak_be Command: /Library/Java/JavaVirtualMachines/amazon-corretto-25.jdk/Contents/Home/bin/java -Dorg.gradle.internal.worker.tmpdir=/Users/kundan/Documents/codebase/sanchalak_be/build/tmp/test/work @/Users/kundan/.gradle/.tmp/gradle-worker-classpath3965220694367067774txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=IN -Duser.language=en -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 67'
+Successfully started process 'Gradle Test Executor 67'
+
+TransportControllerTest > testGetMyRoute_Student() STANDARD_ERROR
+    Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+    WARNING: A Java agent has been loaded dynamically (/Users/kundan/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.17.8/f09415827a71be7ed621c7bd02550678f28bc81c/byte-buddy-agent-1.17.8.jar)
+    WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+    WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+    WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+TransportControllerTest > testGetMyRoute_Student() STANDARD_OUT
+    21:39:34.188 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.0.1.Final
+    21:39:34.413 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+    21:39:34.413 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+    21:39:34.414 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+
+    MockHttpServletRequest:
+          HTTP Method = GET
+          Request URI = /api/transport/my-route
+           Parameters = {}
+              Headers = [Content-Type:"application/json"]
+                 Body = <no character encoding set>
+        Session Attrs = {}
+
+    Handler:
+                 Type = com.cm.sanchalak.controller.TransportController
+               Method = com.cm.sanchalak.controller.TransportController#getMyRoute(UserPrincipal, Long)
+
+    Async:
+        Async started = false
+         Async result = null
+
+    Resolved Exception:
+                 Type = com.cm.sanchalak.exception.BusinessException
+
+    ModelAndView:
+            View name = null
+                 View = null
+                Model = null
+
+    FlashMap:
+           Attributes = null
+
+    MockHttpServletResponse:
+               Status = 400
+        Error message = null
+              Headers = []
+         Content type = null
+                 Body = 
+        Forwarded URL = null
+       Redirected URL = null
+              Cookies = []
+
+TransportControllerTest > testGetMyRoute_Student() FAILED
+    java.lang.AssertionError: Status expected:<200> but was:<400>
+        at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:62)
+        at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:129)
+        at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$0(StatusResultMatchers.java:600)
+        at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:212)
+        at com.cm.sanchalak.controller.TransportControllerTest.testGetMyRoute_Student(TransportControllerTest.java:121)
+
+1 test completed, 1 failed
+Generating HTML test report...
+Finished generating test html results (0.002 secs) into: /Users/kundan/Documents/codebase/sanchalak_be/build/reports/tests/test
+Finished generating test XML results (0.0 secs) into: /Users/kundan/Documents/codebase/sanchalak_be/build/test-results/test
+
+[Incubating] Problems report is available at: file:///Users/kundan/Documents/codebase/sanchalak_be/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///Users/kundan/Documents/codebase/sanchalak_be/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+5 actionable tasks: 1 executed, 4 up-to-date
+Watched directory hierarchies: [/Users/kundan/Documents/codebase/sanchalak_be]

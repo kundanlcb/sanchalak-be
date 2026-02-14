@@ -106,6 +106,14 @@ public class AcademicController {
         return ResponseEntity.ok(academicService.generateReportCard(studentId));
     }
 
+    @GetMapping("/marks/class/{classId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<ReportCardDto>> getMarksForClass(
+            @PathVariable Long classId,
+            @RequestParam Long termId) {
+        return ResponseEntity.ok(academicService.getClassTermMarks(classId, termId));
+    }
+
     // Class Management
     
     @PutMapping("/classes/{id}")
