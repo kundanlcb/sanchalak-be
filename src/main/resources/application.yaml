@@ -2,9 +2,9 @@ spring:
   application:
     name: sanchalak
   datasource:
-    url: jdbc:mysql://localhost:3306/sanchalak?createDatabaseIfNotExist=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/sanchalak?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 
+    password: Sanghi@12345
   jpa:
     hibernate:
       ddl-auto: validate        # Changed from 'update' to 'validate' - Flyway manages schema
@@ -54,8 +54,8 @@ async:
     queue-capacity: 100
 
 # Mobile API - File Storage Provider Configuration
-file-storage:
-  provider: s3                         # Options: s3, azure, local
+storage:
+  provider: azure                         # Options: s3, azure, local
   upload-url-expiry-minutes: 5
   download-url-expiry-minutes: 15
   max-file-size-mb: 10

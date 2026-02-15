@@ -1,0 +1,23 @@
+services:
+  sanchalak-be:
+    build: .
+    container_name: sanchalak_backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Database Configuration (External MySQL)
+      # For Mac/Windows host access, use host.docker.internal
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/sanchalak?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      # Azure Blob Storage Configuration
+      STORAGE_PROVIDER: azure
+      AZURE_STORAGE_CONNECTION_STRING: ${AZURE_CONNECTION_STRING}
+      AZURE_CONTAINER_NAME: ${AZURE_CONTAINER_NAME:-sanchalak-homework-uploads}
+
+      # App Secrets
+      APP_JWTSECRET: ${JWT_SECRET:-9a02115a835ee03d5fb83cd8a468ea33e4090a6a27e4e1a47321696435f3b7f1}
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Required for Linux support, good practice for cross-platform

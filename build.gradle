@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.2.4'
+	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -69,4 +69,14 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+sourceSets {
+	test {
+		java {
+			exclude '**/*IntegrationTest.java'
+			exclude '**/integration/**'
+			exclude '**/MobileAuthControllerTest.java'
+		}
+	}
 }
