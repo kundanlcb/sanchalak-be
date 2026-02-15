@@ -10,6 +10,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/sanchalak?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Azure Blob Storage Configuration
       STORAGE_PROVIDER: azure
@@ -18,6 +19,7 @@ services:
 
       # App Secrets
       APP_JWTSECRET: ${JWT_SECRET:-9a02115a835ee03d5fb83cd8a468ea33e4090a6a27e4e1a47321696435f3b7f1}
+      APP_OTP_ENCRYPTION_KEY: ${OTP_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef} # 32-char key
 
     extra_hosts:
       - "host.docker.internal:host-gateway" # Required for Linux support, good practice for cross-platform
