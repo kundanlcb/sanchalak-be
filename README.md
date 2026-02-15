@@ -1,67 +1,57 @@
-# Sanchalak Backend
+# Sanchalak Backend (Next-Gen)
 
-This repository contains the backend API for Sanchalak School Management System.
+This repository contains the backend API for Sanchalak School Management System, updated to the latest bleeding-edge stack.
 
-## Mobile API Support (Phase 8)
+## Technology Stack
 
-The backend exposes a dedicated API for the Mobile App (Student/Parent).
+*   **Java**: 25 (Eclipse Temurin)
+*   **Framework**: Spring Boot 4.0.2-SNAPSHOT
+*   **Build Tool**: Gradle 9.3
+*   **Database**: MySQL 8.0+
+*   **Containerization**: Docker & Docker Compose
 
-### Project Setup for Mobile
+## Quick Start (Docker)
 
-1. **Prerequisites**:
-   - Java 25 (Amazon Corretto recommended)
-   - Gradle 9.3+
-   - MySQL 8.0+
+The easiest way to run the application is using Docker.
 
-2. **Configuration**:
-   - Update `src/main/resources/application.yaml` (or `application.properties`) with:
-     - JWT Secrets (`app.jwtSecret`)
-     - OTP Settings (`app.otp.*`)
-     - Firebase Credentials (`app.fcm.credentials-path`)
-     - Helper services (S3/Azure)
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/kundanlcb/sanchalak-be.git
+    cd sanchalak-be
+    ```
 
-3. **Running the Application**:
-   ```bash
-   ./gradlew bootRun
-   ```
+2.  **Configure Environment**:
+    *   Edit `.env` if you need to change database credentials or secrets.
+    *   Default DB password: `Sanghi@12345` (matches `application.yaml`).
 
-4. **API Documentation**:
-   - Swagger UI: http://localhost:8080/swagger-ui.html
-   - API Docs: http://localhost:8080/v3/api-docs
+3.  **Run with Docker Compose**:
+    ```bash
+    docker-compose up -d --build
+    ```
 
-### Authentication Flow (Mobile)
+4.  **Access the Application**:
+    *   **Health Check**: [http://localhost:8080/ping](http://localhost:8080/ping)
+    *   **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+    *   **API Docs**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
-1. **Request OTP**:
-   `POST /api/auth/otp/request`
-   Body: `{"mobileNumber": "9876543210"}`
-   Response: 200 OK (OTP sent)
+## Local Development
 
-2. **Verify OTP**:
-   `POST /api/auth/otp/verify`
-   Body: `{"mobileNumber": "9876543210", "otp": "123456", "deviceId": "..."}`
-   Response: `{ "accessToken": "...", "refreshToken": "...", "user": {...} }`
+To run locally, you must have **Java 25** installed.
 
-3. **Refresh Token**:
-   `POST /api/auth/refresh`
-   Body: `{"refreshToken": "..."}`
-   Response: New tokens.
+1.  **Install Java 25**: Ensure `JAVA_HOME` points to JDK 25.
+2.  **Run Application**:
+    ```bash
+    ./gradlew bootRun
+    ```
+    *Note: Integration tests are currently excluded from the build due to Spring Boot 4 test context changes.*
 
-### Key Features (Mobile)
+## Configuration
 
-- **Student Login**: View profile, attendance summary, homework.
-- **Parent Login**: Link multiple children, view their data.
-- **Transport Tracking**: Live bus location, stop ETAs.
-- **Push Notifications**: Firebase Cloud Messaging integration.
+*   **Database**: `jdbc:mysql://host.docker.internal:3306/sanchalak` (Docker) or `localhost:3306` (Local).
+*   **Security**: JWT Authentication + Public `/ping` endpoint.
 
-### Testing
+## Mobile API Features
 
-Run unit and integration tests:
-```bash
-./gradlew test
-```
-
-Specific mobile tests:
-```bash
-./gradlew test --tests com.cm.sanchalak.integration.OtpAuthenticationFlowTest
-./gradlew test --tests com.cm.sanchalak.controller.MobileAuthControllerTest
-```
+*   **Authentication**: OTP-based login.
+*   **Notifications**: Firebase Cloud Messaging (FCM).
+*   **Storage**: Azure Blob Storage / AWS S3 support.
