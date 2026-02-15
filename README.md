@@ -30,9 +30,9 @@ The easiest way to run the application is using Docker.
     ```
 
 4.  **Access the Application**:
-    *   **Health Check**: [http://localhost:8080/ping](http://localhost:8080/ping)
-    *   **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-    *   **API Docs**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+    *   **Health Check**: [http://localhost:8082/ping](http://localhost:8082/ping)
+    *   **Swagger UI**: [http://localhost:8082/swagger-ui/index.html](http://localhost:8082/swagger-ui/index.html)
+    *   **API Docs**: [http://localhost:8082/v3/api-docs](http://localhost:8082/v3/api-docs)
 
 ## Local Development
 

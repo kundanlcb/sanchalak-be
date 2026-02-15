@@ -33,37 +33,43 @@ public class FinanceService {
     private final FeeStructureItemRepository feeStructureItemRepository;
     private final ReceiptRepository receiptRepository;
     private final ReceiptService receiptService;
+    private final SchoolClassRepository schoolClassRepository; // Added missing repository
     private final AuditLogService auditLogService;
 
     @CacheEvict(value = "fee-categories", allEntries = true)
-    public FeeCategoryDto createCategory(FeeCategoryDto dto) {
-        if (feeCategoryRepository.existsByName(dto.getName())) {
-            throw new IllegalArgumentException("Fee category with name " + dto.getName() + " already exists");
+    public FeeCategoryDto createCategory(java.util.UUID schoolId, FeeCategoryDto dto) {
+        if (feeCategoryRepository.existsByNameAndSchoolId(dto.getName(), schoolId)) {
+            throw new IllegalArgumentException(
+                    "Fee category with name " + dto.getName() + " already exists for this school");
         }
         FeeCategory entity = new FeeCategory();
+        entity.setSchoolId(schoolId);
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setIsMandatory(dto.getIsMandatory());
-        
+
         FeeCategory saved = feeCategoryRepository.save(entity);
         return mapToDto(saved);
     }
 
     @Transactional(readOnly = true)
     @Cacheable("fee-categories")
-    public List<FeeCategoryDto> getAllCategories() {
-        return feeCategoryRepository.findAll().stream()
+    public List<FeeCategoryDto> getAllCategories(java.util.UUID schoolId) {
+        return feeCategoryRepository.findBySchoolId(schoolId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
     @CacheEvict(value = "fee-structures", allEntries = true)
-    public FeeStructureDto createStructure(FeeStructureDto dto) {
-        if (feeStructureRepository.existsByNameAndAcademicYear(dto.getName(), dto.getAcademicYear())) {
-            throw new IllegalArgumentException("Fee structure with name " + dto.getName() + " for year " + dto.getAcademicYear() + " already exists");
+    public FeeStructureDto createStructure(java.util.UUID schoolId, FeeStructureDto dto) {
+        if (feeStructureRepository.existsByNameAndAcademicYearAndSchoolId(dto.getName(), dto.getAcademicYear(),
+                schoolId)) {
+            throw new IllegalArgumentException("Fee structure with name " + dto.getName() + " for year "
+                    + dto.getAcademicYear() + " already exists");
         }
 
         FeeStructure entity = new FeeStructure();
+        entity.setSchoolId(schoolId);
         entity.setName(dto.getName());
         entity.setAcademicYear(dto.getAcademicYear());
         entity.setFrequency(dto.getFrequency());
@@ -73,8 +79,9 @@ public class FinanceService {
         if (dto.getItems() != null) {
             List<FeeStructureItem> items = dto.getItems().stream().map(itemDto -> {
                 FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
-                
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+
                 FeeStructureItem item = new FeeStructureItem();
                 item.setFeeStructure(entity);
                 item.setFeeCategory(category);
@@ -90,8 +97,8 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     @Cacheable("fee-structures")
-    public List<FeeStructureDto> getAllStructures() {
-        return feeStructureRepository.findAll().stream()
+    public List<FeeStructureDto> getAllStructures(java.util.UUID schoolId) {
+        return feeStructureRepository.findBySchoolId(schoolId).stream()
                 .map(this::mapStructureToDto)
                 .collect(Collectors.toList());
     }
@@ -99,14 +106,18 @@ public class FinanceService {
     public void assignStructureToClass(Long structureId, Long classId) {
         FeeStructure structure = feeStructureRepository.findById(structureId)
                 .orElseThrow(() -> new IllegalArgumentException("Structure not found"));
-        
+
+        SchoolClass schoolClass = schoolClassRepository.findById(classId)
+                .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+
         List<Student> students = studentRepository.findByStudentClass_Id(classId);
         if (students.isEmpty()) {
             throw new IllegalArgumentException("No students found for class ID: " + classId);
         }
 
         List<StudentFeeMap> newMaps = students.stream()
-                .filter(student -> !studentFeeMapRepository.existsByStudentIdAndFeeStructureId(student.getId(), structureId))
+                .filter(student -> !studentFeeMapRepository.existsByStudentIdAndFeeStructureId(student.getId(),
+                        structureId))
                 .map(student -> {
                     StudentFeeMap map = new StudentFeeMap();
                     map.setStudent(student);
@@ -115,16 +126,28 @@ public class FinanceService {
                     return map;
                 })
                 .collect(Collectors.toList());
-        
+
         if (!newMaps.isEmpty()) {
             studentFeeMapRepository.saveAll(newMaps);
         }
+
+        auditLogService.logAction(
+                null,
+                "FEE_ASSIGNMENT",
+                "CLASS",
+                classId.toString(),
+                "Assigned fee structure " + structure.getName() + " to class " + schoolClass.getName(), // Fixed
+                                                                                                        // getClassName
+                                                                                                        // to getName
+                null,
+                null,
+                "COMPLETED");
     }
 
     @Transactional(readOnly = true)
     public StudentLedgerDto getStudentLedger(Long studentId) {
         if (!studentRepository.existsById(studentId)) {
-             throw new IllegalArgumentException("Student not found");
+            throw new IllegalArgumentException("Student not found");
         }
 
         List<StudentFeeMap> feeMaps = studentFeeMapRepository.findByStudentId(studentId);
@@ -139,12 +162,13 @@ public class FinanceService {
             BigDecimal baseAmount = structure.getItems().stream()
                     .map(FeeStructureItem::getAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
+
             BigDecimal discount = map.getDiscountAmount() != null ? map.getDiscountAmount() : BigDecimal.ZERO;
             BigDecimal netAmount = baseAmount.subtract(discount);
-            
+
             BigDecimal lateFee = BigDecimal.ZERO;
-            if (map.getCreatedAt() != null && structure.getGracePeriodDays() != null && structure.getLateFeeAmount() != null) {
+            if (map.getCreatedAt() != null && structure.getGracePeriodDays() != null
+                    && structure.getLateFeeAmount() != null) {
                 Instant deadline = map.getCreatedAt().plus(structure.getGracePeriodDays(), ChronoUnit.DAYS);
                 if (Instant.now().isAfter(deadline)) {
                     lateFee = structure.getLateFeeAmount();
@@ -160,11 +184,11 @@ public class FinanceService {
             entry.setAcademicYear(structure.getAcademicYear());
             entry.setBaseAmount(baseAmount);
             entry.setDiscountAmount(discount);
-            entry.setNetAmount(netAmount); 
-            
+            entry.setNetAmount(netAmount);
+
             ledgerEntries.add(entry);
         }
-        
+
         BigDecimal totalPaid = transactions.stream()
                 .filter(t -> "SUCCESS".equals(t.getStatus()))
                 .map(PaymentTransaction::getAmount)
@@ -180,7 +204,7 @@ public class FinanceService {
         ledger.setLateFees(totalLateFees);
         ledger.setDues(ledgerEntries);
         ledger.setTransactions(transactions.stream().map(this::mapTransactionToDto).collect(Collectors.toList()));
-        
+
         return ledger;
     }
 
@@ -190,14 +214,15 @@ public class FinanceService {
                 throw new IllegalArgumentException("Duplicate transaction reference: " + dto.getTransactionReference());
             }
         }
-        
+
         Student student = studentRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-        
+
         StudentLedgerDto ledger = getStudentLedger(dto.getStudentId());
-        
+
         if (dto.getAmount().compareTo(ledger.getPendingBalance()) > 0) {
-              throw new IllegalArgumentException("Payment amount " + dto.getAmount() + " exceeds pending balance " + ledger.getPendingBalance());
+            throw new IllegalArgumentException(
+                    "Payment amount " + dto.getAmount() + " exceeds pending balance " + ledger.getPendingBalance());
         }
 
         PaymentTransaction tx = new PaymentTransaction();
@@ -207,37 +232,36 @@ public class FinanceService {
         tx.setTransactionReference(dto.getTransactionReference());
         tx.setStatus("SUCCESS");
         tx.setPaymentDate(java.time.LocalDateTime.now());
-        
+
         PaymentTransaction saved = paymentTransactionRepository.save(tx);
-        
+
         Receipt receipt = new Receipt();
         receipt.setTransaction(saved);
         // Clean Receipt Number
         receipt.setReceiptNumber("REC-" + saved.getId() + "-" + (System.currentTimeMillis() % 1000));
         receiptRepository.save(receipt);
-        
+
         auditLogService.logAction(
-            null,
-            "PAYMENT_RECORDED",
-            "TRANSACTION",
-            String.valueOf(saved.getId()),
-            "Payment of " + saved.getAmount() + " recorded for student " + student.getId(),
-            null,
-            null,
-            "SUCCESS"
-        );
-        
+                null,
+                "PAYMENT_RECORDED",
+                "TRANSACTION",
+                String.valueOf(saved.getId()),
+                "Payment of " + saved.getAmount() + " recorded for student " + student.getId(),
+                null,
+                null,
+                "SUCCESS");
+
         return mapTransactionToDto(saved);
     }
-    
+
     @Transactional(readOnly = true)
     public byte[] getReceiptPdf(String receiptNumber) {
         Receipt receipt = receiptRepository.findByReceiptNumber(receiptNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Receipt not found"));
-        
+
         PaymentTransaction tx = receipt.getTransaction();
         Student student = tx.getStudent();
-        
+
         Map<String, Object> data = new HashMap<>();
         data.put("receiptNumber", receipt.getReceiptNumber());
         data.put("date", tx.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
@@ -246,7 +270,7 @@ public class FinanceService {
         data.put("amount", tx.getAmount());
         data.put("paymentMethod", tx.getPaymentMethod());
         data.put("transactionRef", tx.getTransactionReference());
-        
+
         return receiptService.generateReceiptPdf(data);
     }
 
@@ -267,7 +291,7 @@ public class FinanceService {
         dto.setFrequency(entity.getFrequency());
         dto.setLateFeeAmount(entity.getLateFeeAmount());
         dto.setGracePeriodDays(entity.getGracePeriodDays());
-        
+
         if (entity.getItems() != null) {
             dto.setItems(entity.getItems().stream().map(item -> {
                 FeeStructureItemDto itemDto = new FeeStructureItemDto();
@@ -278,9 +302,10 @@ public class FinanceService {
                 return itemDto;
             }).collect(Collectors.toList()));
         }
+
         return dto;
     }
-    
+
     private PaymentTransactionDto mapTransactionToDto(PaymentTransaction val) {
         PaymentTransactionDto dto = new PaymentTransactionDto();
         dto.setId(val.getId());
@@ -293,78 +318,87 @@ public class FinanceService {
         return dto;
     }
 
-    // Fee Category Management
-    
-    @CacheEvict(value = {"fee-categories", "fee-structures"}, allEntries = true)
+    @CacheEvict(value = { "fee-categories", "fee-structures" }, allEntries = true)
     public FeeCategoryDto updateCategory(Long id, FeeCategoryDto dto) {
         FeeCategory category = feeCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-        
+
         if (!category.getName().equals(dto.getName()) && feeCategoryRepository.existsByName(dto.getName())) {
-             throw new IllegalArgumentException("Category name already exists");
+            throw new IllegalArgumentException("Category name already exists");
         }
-        
+
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         category.setIsMandatory(dto.getIsMandatory());
-        
+
         return mapToDto(feeCategoryRepository.save(category));
     }
-    
-    @CacheEvict(value = {"fee-categories", "fee-structures"}, allEntries = true)
+
+    @CacheEvict(value = { "fee-categories", "fee-structures" }, allEntries = true)
     public void deleteCategory(Long id) {
         if (!feeCategoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found");
         }
-        
+
         if (feeStructureItemRepository.existsByFeeCategoryId(id)) {
             throw new IllegalArgumentException("Cannot delete category used in fee structures");
         }
-        
+
         feeCategoryRepository.deleteById(id);
     }
-    
-    // Fee Structure Management
-    
+
     public FeeStructureDto updateStructure(Long id, FeeStructureDto dto) {
         FeeStructure structure = feeStructureRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Structure not found"));
-        
+
         structure.setName(dto.getName());
         structure.setAcademicYear(dto.getAcademicYear());
         structure.setFrequency(dto.getFrequency());
         structure.setLateFeeAmount(dto.getLateFeeAmount());
         structure.setGracePeriodDays(dto.getGracePeriodDays());
-        
+
         if (dto.getItems() != null) {
             structure.getItems().clear();
-            
             List<FeeStructureItem> items = dto.getItems().stream().map(itemDto -> {
                 FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
-                
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+
                 FeeStructureItem item = new FeeStructureItem();
                 item.setFeeStructure(structure);
                 item.setFeeCategory(category);
                 item.setAmount(itemDto.getAmount());
                 return item;
             }).collect(Collectors.toList());
-            
+
             structure.getItems().addAll(items);
         }
-        
+
         return mapStructureToDto(feeStructureRepository.save(structure));
     }
-    
+
     public void deleteStructure(Long id) {
         if (!feeStructureRepository.existsById(id)) {
             throw new IllegalArgumentException("Structure not found");
         }
-        
+
         if (studentFeeMapRepository.existsByFeeStructureId(id)) {
             throw new IllegalArgumentException("Cannot delete fee structure assigned to students");
         }
-        
+
         feeStructureRepository.deleteById(id);
+    }
+
+    public void generateInvoicesForSchool(java.util.UUID schoolId) {
+        // Placeholder for invoice generation logic
+        auditLogService.logAction(
+                null,
+                "INVOICE_GENERATION",
+                "SCHOOL",
+                schoolId.toString(),
+                "Triggered invoice generation for school " + schoolId,
+                null,
+                null,
+                "STARTED");
     }
 }

@@ -5,8 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
-@Table(name = "fee_categories")
+@Table(name = "fee_categories", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "school_id", "name" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +20,10 @@ public class FeeCategory extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "school_id", nullable = false)
+    private UUID schoolId;
+
+    @Column(nullable = false)
     private String name;
 
     private String description;
@@ -24,7 +31,8 @@ public class FeeCategory extends BaseEntity {
     @Column(name = "is_mandatory", nullable = false)
     private Boolean isMandatory = false;
 
-    public FeeCategory(String name, String description, Boolean isMandatory) {
+    public FeeCategory(UUID schoolId, String name, String description, Boolean isMandatory) {
+        this.schoolId = schoolId;
         this.name = name;
         this.description = description;
         this.isMandatory = isMandatory != null ? isMandatory : false;

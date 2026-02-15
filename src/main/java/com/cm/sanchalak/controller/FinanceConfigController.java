@@ -18,28 +18,34 @@ public class FinanceConfigController {
 
     private final FinanceService financeService;
 
+    private java.util.UUID getSchoolId() {
+        // TODO: Implement actual school ID resolution from security context or user
+        // profile
+        return java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
+    }
+
     @PostMapping("/categories")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeCategoryDto> createCategory(@Valid @RequestBody FeeCategoryDto dto) {
-        return ResponseEntity.ok(financeService.createCategory(dto));
+        return ResponseEntity.ok(financeService.createCategory(getSchoolId(), dto));
     }
 
     @GetMapping("/categories")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<FeeCategoryDto>> getAllCategories() {
-        return ResponseEntity.ok(financeService.getAllCategories());
+        return ResponseEntity.ok(financeService.getAllCategories(getSchoolId()));
     }
 
     @PostMapping("/structures")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeStructureDto> createStructure(@Valid @RequestBody FeeStructureDto dto) {
-        return ResponseEntity.ok(financeService.createStructure(dto));
+        return ResponseEntity.ok(financeService.createStructure(getSchoolId(), dto));
     }
 
     @GetMapping("/structures")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<FeeStructureDto>> getAllStructures() {
-        return ResponseEntity.ok(financeService.getAllStructures());
+        return ResponseEntity.ok(financeService.getAllStructures(getSchoolId()));
     }
 
     @PostMapping("/structures/{id}/assign")
@@ -51,7 +57,8 @@ public class FinanceConfigController {
 
     @PutMapping("/categories/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FeeCategoryDto> updateCategory(@PathVariable Long id, @Valid @RequestBody FeeCategoryDto dto) {
+    public ResponseEntity<FeeCategoryDto> updateCategory(@PathVariable Long id,
+            @Valid @RequestBody FeeCategoryDto dto) {
         return ResponseEntity.ok(financeService.updateCategory(id, dto));
     }
 
@@ -64,7 +71,8 @@ public class FinanceConfigController {
 
     @PutMapping("/structures/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FeeStructureDto> updateStructure(@PathVariable Long id, @Valid @RequestBody FeeStructureDto dto) {
+    public ResponseEntity<FeeStructureDto> updateStructure(@PathVariable Long id,
+            @Valid @RequestBody FeeStructureDto dto) {
         return ResponseEntity.ok(financeService.updateStructure(id, dto));
     }
 

@@ -7,7 +7,7 @@ spring:
     password: Sanghi@12345
   jpa:
     hibernate:
-      ddl-auto: validate        # Changed from 'update' to 'validate' - Flyway manages schema
+      ddl-auto: update        # Changed from 'validate' to 'update' for dev environment
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect

@@ -7,9 +7,12 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "fee_structures")
+@Table(name = "fee_structures", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "school_id", "name", "academic_year" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,6 +21,9 @@ public class FeeStructure extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "school_id", nullable = false)
+    private UUID schoolId;
 
     @Column(nullable = false)
     private String name;
