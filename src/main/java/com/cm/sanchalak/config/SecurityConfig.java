@@ -18,12 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.core.annotation.Order;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -49,6 +49,13 @@ public class SecurityConfig {
         }
 
         @Bean
+        public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilterRegistration(JwtAuthenticationFilter filter) {
+                FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+                registration.setEnabled(false);
+                return registration;
+        }
+
+        @Bean
         @Order(1)
         public SecurityFilterChain platformFilterChain(HttpSecurity http) throws Exception {
                 http
@@ -60,7 +67,7 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(authorize -> authorize
-                                                .requestMatchers("/api/platform/v1/auth/**").permitAll()
+                                                .requestMatchers("/api/platform/v1/auth/**", "/error").permitAll()
                                                 .anyRequest().authenticated())
                                 .userDetailsService(platformUserDetailsService);
 
@@ -95,10 +102,12 @@ public class SecurityConfig {
                                                                 "/api/auth/**",
                                                                 "/api/user/checkUsernameAvailability",
                                                                 "/api/user/checkEmailAvailability",
-                                                                "/ping")
+                                                                "/ping",
+                                                                "/error")
                                                 .permitAll()
                                                 .anyRequest()
-                                                .authenticated());
+                                                .authenticated())
+                                .userDetailsService(customUserDetailsService);
 
                 http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
