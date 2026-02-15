@@ -1,5 +1,7 @@
 package com.cm.sanchalak.platform.auth;
 
+import java.util.UUID;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +22,14 @@ public class PlatformUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         PlatformUser user = platformUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email : " + email));
+
+        return PlatformUserDetails.create(user);
+    }
+
+    @Transactional
+    public UserDetails loadUserById(UUID id) {
+        PlatformUser user = platformUserRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id : " + id));
 
         return PlatformUserDetails.create(user);
     }

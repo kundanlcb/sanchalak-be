@@ -1,5 +1,6 @@
 package com.cm.sanchalak.security;
 
+import com.cm.sanchalak.platform.auth.PlatformUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
@@ -30,13 +31,22 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String userId;
+
+        if (principal instanceof UserPrincipal userPrincipal) {
+            userId = userPrincipal.getId().toString();
+        } else if (principal instanceof PlatformUserDetails platformUserDetails) {
+            userId = platformUserDetails.getId().toString();
+        } else {
+            throw new IllegalArgumentException("Unknown principal type: " + principal.getClass());
+        }
 
         Instant now = Instant.now();
         Instant expiryDate = now.plusMillis(jwtExpirationInMs);
 
         return Jwts.builder()
-                .subject(userPrincipal.getId().toString())
+                .subject(userId)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiryDate))
                 .signWith(getSigningKey())
