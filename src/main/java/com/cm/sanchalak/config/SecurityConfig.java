@@ -74,7 +74,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api/auth/**",
                                 "/api/user/checkUsernameAvailability",
-                                "/api/user/checkEmailAvailability")
+                                "/api/user/checkEmailAvailability",
+                                "/ping")
                         .permitAll()
                         .anyRequest()
                         .authenticated()
