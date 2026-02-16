@@ -7,19 +7,48 @@ import lombok.Data;
 @Builder
 public class StudentResponse {
     private Long id;
-    private String name;
+    private String studentID; // For frontend compatibility
     private String firstName;
     private String lastName;
-    private Integer rollNo;
+    private String name;
+    private String dateOfBirth;
     private String gender;
+    private String email;
     private String guardianName;
     private String guardianMobile;
-    private Long classId; // Keep for backward compat if needed
-    private String classID; // For frontend compatibility
+    private Long classId;
+    private String classID;
     private String className;
     private String section;
+    private Integer rollNo; // For StudentList compatibility
+    private Integer rollNumber; // For StudentDetail compatibility
     private String admissionNumber;
     private String mobileNumber;
     private String status;
     private boolean deleted;
+
+    // Nested objects for StudentDetail compatibility
+    private AddressResponse address;
+    private ParentResponse primaryParent;
+    private ParentResponse secondaryParent;
+
+    @Data
+    @Builder
+    public static class AddressResponse {
+        private String street;
+        private String city;
+        private String state;
+        private String pincode;
+        private String country;
+    }
+
+    @Data
+    @Builder
+    public static class ParentResponse {
+        private String name;
+        private String relationship;
+        private String mobileNumber;
+        private String email;
+        private String occupation;
+    }
 }

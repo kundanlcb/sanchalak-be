@@ -101,21 +101,37 @@ public class StudentService {
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .studentID("STU-" + student.getId())
                 .name(student.getName())
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
-                .rollNo(student.getRollNo())
+                .dateOfBirth("2010-01-01") // Mock for now
                 .gender(student.getGender())
+                .email("student" + student.getId() + "@school.com") // Mock for now
                 .guardianName(student.getGuardianName())
                 .guardianMobile(student.getGuardianMobile())
                 .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)
-                .classID(student.getStudentClass() != null ? String.valueOf(student.getStudentClass().getId()) : "")
+                .classID(student.getStudentClass() != null ? "CLS-01-" + student.getStudentClass().getId() : "")
                 .className(student.getStudentClass() != null ? student.getStudentClass().getName() : "")
-                .section("A") // Default until SchoolClass has section
+                .section("A")
+                .rollNo(student.getRollNo())
+                .rollNumber(student.getRollNo())
                 .admissionNumber(student.getAdmissionNumber())
-                .mobileNumber(student.getGuardianMobile()) // Use guardian mobile as primary contact for now
+                .mobileNumber(student.getGuardianMobile())
                 .status(student.isDeleted() ? "Inactive" : "Active")
                 .deleted(student.isDeleted())
+                .address(StudentResponse.AddressResponse.builder()
+                        .street("Main Street")
+                        .city("City")
+                        .state("State")
+                        .pincode("123456")
+                        .country("Country")
+                        .build())
+                .primaryParent(StudentResponse.ParentResponse.builder()
+                        .name(student.getGuardianName())
+                        .relationship("Guardian")
+                        .mobileNumber(student.getGuardianMobile())
+                        .build())
                 .build();
     }
 }
