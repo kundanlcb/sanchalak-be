@@ -1,5 +1,6 @@
 package com.cm.sanchalak.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ public class StudentResponse {
     private String userId;
     private String createdAt;
     private String updatedAt;
+    @JsonProperty("studentID")
     private String studentID; // For frontend compatibility
     private String firstName;
     private String lastName;
@@ -19,7 +21,9 @@ public class StudentResponse {
     private String email;
     private String guardianName;
     private String guardianMobile;
+    @JsonProperty("classId")
     private Long classId;
+    @JsonProperty("classID")
     private String classID;
     private String className;
     private String section;

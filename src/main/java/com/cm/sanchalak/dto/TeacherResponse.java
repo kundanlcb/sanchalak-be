@@ -2,10 +2,12 @@ package com.cm.sanchalak.dto;
 
 import com.cm.sanchalak.entity.Subject;
 import com.cm.sanchalak.entity.Teacher;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 
 public class TeacherResponse {
     private Long id;
+    @JsonProperty("teacherID")
     private String teacherID;
     private String name;
     private String email;
