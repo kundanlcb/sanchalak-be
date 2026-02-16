@@ -48,7 +48,7 @@ public class StudentController {
     public ResponseEntity<Page<StudentResponse>> getAllStudents(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "rollNumber") String sortBy,
+            @RequestParam(defaultValue = "rollNo") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
         return ResponseEntity.ok(studentService.getAllStudents(page, limit, sortBy, sortOrder));
     }
