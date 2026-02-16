@@ -21,7 +21,8 @@ public class AttendanceController {
 
     @PostMapping("/bulk")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity<BulkMarkAttendanceResponse> markBulkAttendance(@RequestBody BulkMarkAttendanceRequest request) {
+    public ResponseEntity<BulkMarkAttendanceResponse> markBulkAttendance(
+            @RequestBody BulkMarkAttendanceRequest request) {
         return ResponseEntity.ok(attendanceService.markBulkAttendance(request));
     }
 
@@ -33,45 +34,48 @@ public class AttendanceController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity<AttendanceRecordDto> updateAttendance(@PathVariable Long id, @RequestBody com.cm.sanchalak.dto.UpdateAttendanceRequest request) {
+    public ResponseEntity<AttendanceRecordDto> updateAttendance(@PathVariable Long id,
+            @RequestBody com.cm.sanchalak.dto.UpdateAttendanceRequest request) {
         // We need the current user name for 'modifiedBy'
         // For now, hardcode "TEACHER" or extract from SecurityContext if available
-        // Let's rely on SecurityContext in a real app, but here I'll use a placeholder or injected principal
+        // Let's rely on SecurityContext in a real app, but here I'll use a placeholder
+        // or injected principal
         // The service expects a String modifiedBy.
-        // Let's use "TEACHER" as default if principal not easily available without adding argument
+        // Let's use "TEACHER" as default if principal not easily available without
+        // adding argument
         // actually, I can add Principal principal to method
         return ResponseEntity.ok(attendanceService.updateAttendance(id, request, "TEACHER/ADMIN"));
     }
 
     @GetMapping("/class/{classId}/date/{date}")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'USER')")
     public ResponseEntity<ClassAttendanceSheetDto> getClassAttendanceSheet(
-            @PathVariable Long classId,
+            @PathVariable String classId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(attendanceService.getClassAttendanceSheet(classId, date));
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENT') or hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'USER')")
     public ResponseEntity<List<AttendanceRecordDto>> getStudentAttendanceHistory(
-            @RequestParam Long studentId,
+            @RequestParam String studentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(attendanceService.getStudentAttendanceHistory(studentId, startDate, endDate));
     }
 
     @GetMapping("/summary")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('PARENT') or hasRole('TEACHER') or hasRole('ADMIN')")
-    public ResponseEntity<AttendanceSummaryDto> getStudentAttendanceSummary(@RequestParam Long studentId) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'USER')")
+    public ResponseEntity<AttendanceSummaryDto> getStudentAttendanceSummary(@RequestParam String studentId) {
         return ResponseEntity.ok(attendanceService.getStudentAttendanceSummary(studentId));
     }
-    
+
     @GetMapping("/class/{classId}/statistics")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<ClassAttendanceStatistics> getClassAttendanceStatistics(
-             @PathVariable Long classId,
-             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @PathVariable Long classId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(attendanceService.getClassAttendanceStatistics(classId, startDate, endDate));
     }
 }

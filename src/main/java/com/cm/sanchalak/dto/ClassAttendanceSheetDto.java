@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ClassAttendanceSheetDto {
     private Long classId;
+    private String classID;
     private LocalDate date;
     private int presentCount;
     private int absentCount;

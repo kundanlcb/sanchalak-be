@@ -34,4 +34,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     long countByGender(String gender);
 
     long countByDeletedFalse();
+
+    java.util.Optional<Student> findByStudentID(String studentID);
 }

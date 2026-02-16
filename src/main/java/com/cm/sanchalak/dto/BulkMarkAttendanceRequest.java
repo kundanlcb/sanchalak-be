@@ -6,32 +6,70 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class BulkMarkAttendanceRequest {
-    private Long classId;
+    private String classId;
     private LocalDate date;
     private List<StudentAttendanceStatus> attendances;
     private String markedBy;
 
-    public Long getClassId() { return classId; }
-    public LocalDate getDate() { return date; }
-    public List<StudentAttendanceStatus> getAttendances() { return attendances; }
-    public String getMarkedBy() { return markedBy; }
+    public String getClassId() {
+        return classId;
+    }
 
-    public void setClassId(Long classId) { this.classId = classId; }
-    public void setDate(LocalDate date) { this.date = date; }
-    public void setAttendances(List<StudentAttendanceStatus> attendances) { this.attendances = attendances; }
-    public void setMarkedBy(String markedBy) { this.markedBy = markedBy; }
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public List<StudentAttendanceStatus> getAttendances() {
+        return attendances;
+    }
+
+    public String getMarkedBy() {
+        return markedBy;
+    }
+
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public void setAttendances(List<StudentAttendanceStatus> attendances) {
+        this.attendances = attendances;
+    }
+
+    public void setMarkedBy(String markedBy) {
+        this.markedBy = markedBy;
+    }
 
     public static class StudentAttendanceStatus {
-        private Long studentId;
+        private String studentId;
         private AttendanceStatus status;
         private String remarks;
 
-        public Long getStudentId() { return studentId; }
-        public AttendanceStatus getStatus() { return status; }
-        public String getRemarks() { return remarks; }
+        public String getStudentId() {
+            return studentId;
+        }
 
-        public void setStudentId(Long studentId) { this.studentId = studentId; }
-        public void setStatus(AttendanceStatus status) { this.status = status; }
-        public void setRemarks(String remarks) { this.remarks = remarks; }
+        public AttendanceStatus getStatus() {
+            return status;
+        }
+
+        public String getRemarks() {
+            return remarks;
+        }
+
+        public void setStudentId(String studentId) {
+            this.studentId = studentId;
+        }
+
+        public void setStatus(AttendanceStatus status) {
+            this.status = status;
+        }
+
+        public void setRemarks(String remarks) {
+            this.remarks = remarks;
+        }
     }
 }

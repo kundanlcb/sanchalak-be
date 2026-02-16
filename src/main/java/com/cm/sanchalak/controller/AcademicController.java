@@ -30,6 +30,13 @@ public class AcademicController {
         this.academicService = academicService;
     }
 
+    // Classes
+    @GetMapping("/classes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<List<SchoolClass>> getAllClasses() {
+        return ResponseEntity.ok(academicService.getAllClasses());
+    }
+
     // Terms
     @PostMapping("/terms")
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,10 +75,9 @@ public class AcademicController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ClassSubject> assignSubjectToClass(@Valid @RequestBody ClassSubjectRequest request) {
         return ResponseEntity.ok(academicService.assignSubjectToClass(
-            request.getClassId(), 
-            request.getSubjectId(), 
-            request.getTeacherId()
-        ));
+                request.getClassId(),
+                request.getSubjectId(),
+                request.getTeacherId()));
     }
 
     // Schedules
@@ -79,12 +85,11 @@ public class AcademicController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ExamSchedule> scheduleExam(@Valid @RequestBody ExamScheduleRequest request) {
         return ResponseEntity.ok(academicService.scheduleExam(
-            request.getExamTermId(),
-            request.getClassId(),
-            request.getSubjectId(),
-            request.getExamDate(),
-            request.getMaxMarks()
-        ));
+                request.getExamTermId(),
+                request.getClassId(),
+                request.getSubjectId(),
+                request.getExamDate(),
+                request.getMaxMarks()));
     }
 
     // Marks
@@ -92,11 +97,10 @@ public class AcademicController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<StudentMarks> saveStudentMarks(@Valid @RequestBody MarkEntryRequest request) {
         return ResponseEntity.ok(academicService.saveStudentMarks(
-            request.getExamScheduleId(),
-            request.getStudentId(),
-            request.getMarksObtained(),
-            request.getRemarks()
-        ));
+                request.getExamScheduleId(),
+                request.getStudentId(),
+                request.getMarksObtained(),
+                request.getRemarks()));
     }
 
     // Reports
@@ -115,7 +119,7 @@ public class AcademicController {
     }
 
     // Class Management
-    
+
     @PutMapping("/classes/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SchoolClass> updateClass(@PathVariable Long id, @RequestBody Map<String, String> body) {
@@ -132,9 +136,9 @@ public class AcademicController {
         academicService.deleteClass(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     // Subject Management
-    
+
     @PutMapping("/subjects/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectRequest request) {
@@ -149,4 +153,4 @@ public class AcademicController {
     }
 }
 
-    // Class Management
+// Class Management

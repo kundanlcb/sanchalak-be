@@ -23,17 +23,16 @@ public class HomeworkController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Homework> createHomework(@Valid @RequestBody HomeworkRequest request) {
         return ResponseEntity.ok(homeworkService.createHomework(
-            request.getClassId(),
-            request.getSubjectId(),
-            request.getTeacherId(),
-            request.getTitle(),
-            request.getDescription(),
-            request.getDueDate()
-        ));
+                request.getClassId(),
+                request.getSubjectId(),
+                request.getTeacherId(),
+                request.getTitle(),
+                request.getDescription(),
+                request.getDueDate()));
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")
     public ResponseEntity<List<Homework>> getAllHomework() {
         return ResponseEntity.ok(homeworkService.getAllHomework());
     }
@@ -42,14 +41,13 @@ public class HomeworkController {
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Homework> updateHomework(@PathVariable Long id, @Valid @RequestBody HomeworkRequest request) {
         return ResponseEntity.ok(homeworkService.updateHomework(
-            id,
-            request.getClassId(),
-            request.getSubjectId(),
-            request.getTeacherId(),
-            request.getTitle(),
-            request.getDescription(),
-            request.getDueDate()
-        ));
+                id,
+                request.getClassId(),
+                request.getSubjectId(),
+                request.getTeacherId(),
+                request.getTitle(),
+                request.getDescription(),
+                request.getDueDate()));
     }
 
     @DeleteMapping("/{id}")

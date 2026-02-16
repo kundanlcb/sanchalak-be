@@ -31,7 +31,7 @@ public class AcademicService {
     public ExamTerm createExamTerm(ExamTerm examTerm) {
         return examTermRepository.save(examTerm);
     }
-    
+
     public List<ExamTerm> getAllTerms() {
         return examTermRepository.findAll();
     }
@@ -44,12 +44,16 @@ public class AcademicService {
         return subjectRepository.findAll();
     }
 
+    public List<SchoolClass> getAllClasses() {
+        return classRepository.findAll();
+    }
+
     public ClassSubject assignSubjectToClass(Long classId, Long subjectId, Long teacherId) {
         SchoolClass studentClass = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
-        
+
         Teacher teacher = null;
         if (teacherId != null) {
             teacher = teacherRepository.findById(teacherId)
@@ -60,11 +64,12 @@ public class AcademicService {
         classSubject.setStudentClass(studentClass);
         classSubject.setSubject(subject);
         classSubject.setTeacher(teacher);
-        
+
         return classSubjectRepository.save(classSubject);
     }
 
-    public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, java.time.LocalDate date, Integer maxMarks) {
+    public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, java.time.LocalDate date,
+            Integer maxMarks) {
         ExamTerm term = examTermRepository.findById(termId)
                 .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
         SchoolClass studentClass = classRepository.findById(classId)
@@ -87,7 +92,8 @@ public class AcademicService {
                 .orElseThrow(() -> new RuntimeException("Exam Schedule not found"));
 
         if (marksObtained > schedule.getMaxMarks()) {
-            throw new IllegalArgumentException("Marks obtained cannot exceed max marks (" + schedule.getMaxMarks() + ")");
+            throw new IllegalArgumentException(
+                    "Marks obtained cannot exceed max marks (" + schedule.getMaxMarks() + ")");
         }
 
         Student student = studentRepository.findById(studentId)
@@ -116,30 +122,30 @@ public class AcademicService {
     }
 
     public List<ReportCardDto> getClassTermMarks(Long classId, Long termId) {
-         // Use findByStudentClass_Id which exists in repository
-         List<Student> students = studentRepository.findByStudentClass_Id(classId); 
-         
-         ExamTerm term = examTermRepository.findById(termId)
-                 .orElseThrow(() -> new RuntimeException("Term not found"));
-                 
-         List<ReportCardDto> classReports = new ArrayList<>();
-         
-         for (Student student : students) {
-             List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
-             // Filter by term
-             List<StudentMarks> termMarks = marks.stream()
-                 .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
-                 .collect(Collectors.toList());
-             
-             if (!termMarks.isEmpty()) {
-                 classReports.add(buildReportCard(student, termMarks));
-             } else {
-                 // Include student even if no marks? Yes, empty report.
-                 classReports.add(buildReportCard(student, new ArrayList<>()));
-             }
-         }
-         
-         return classReports;
+        // Use findByStudentClass_Id which exists in repository
+        List<Student> students = studentRepository.findByStudentClass_Id(classId);
+
+        ExamTerm term = examTermRepository.findById(termId)
+                .orElseThrow(() -> new RuntimeException("Term not found"));
+
+        List<ReportCardDto> classReports = new ArrayList<>();
+
+        for (Student student : students) {
+            List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
+            // Filter by term
+            List<StudentMarks> termMarks = marks.stream()
+                    .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
+                    .collect(Collectors.toList());
+
+            if (!termMarks.isEmpty()) {
+                classReports.add(buildReportCard(student, termMarks));
+            } else {
+                // Include student even if no marks? Yes, empty report.
+                classReports.add(buildReportCard(student, new ArrayList<>()));
+            }
+        }
+
+        return classReports;
     }
 
     private ReportCardDto buildReportCard(Student student, List<StudentMarks> marks) {
@@ -175,14 +181,14 @@ public class AcademicService {
     }
 
     // Class Management
-    
+
     public SchoolClass updateClass(Long id, String name) {
         SchoolClass studentClass = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         studentClass.setName(name);
         return classRepository.save(studentClass);
     }
-    
+
     public void deleteClass(Long id) {
         if (!classRepository.existsById(id)) {
             throw new IllegalArgumentException("Class not found");
@@ -191,14 +197,15 @@ public class AcademicService {
         if (studentRepository.countByStudentClassId(id) > 0) {
             throw new IllegalArgumentException("Cannot delete class with enrolled students.");
         }
-        // In a real implementation we would also check for class routines, subjects etc.
+        // In a real implementation we would also check for class routines, subjects
+        // etc.
         // For now, blocking if students exist is the primary safety check.
-        
+
         classRepository.deleteById(id);
     }
-    
+
     // Subject Management
-    
+
     public Subject updateSubject(Long id, String name, String code) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
@@ -206,21 +213,21 @@ public class AcademicService {
         subject.setCode(code);
         return subjectRepository.save(subject);
     }
-    
+
     public void deleteSubject(Long id) {
         if (!subjectRepository.existsById(id)) {
             throw new RuntimeException("Subject not found");
         }
         // Check if subject is associated with any class
         if (classSubjectRepository.existsBySubjectId(id)) {
-             throw new RuntimeException("Cannot delete subject assigned to classes.");
+            throw new RuntimeException("Cannot delete subject assigned to classes.");
         }
-        
+
         // Check if subject is active in routine
         if (classRoutineRepository.existsBySubjectId(id)) {
             throw new RuntimeException("Cannot delete subject that is active in the class routine.");
         }
-        
+
         subjectRepository.deleteById(id);
     }
 }
