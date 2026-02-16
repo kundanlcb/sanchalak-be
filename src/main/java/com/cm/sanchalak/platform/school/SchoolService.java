@@ -46,4 +46,27 @@ public class SchoolService {
         school.setStatus(newStatus);
         return schoolRepository.save(school);
     }
+
+    @Transactional
+    public School updateSchool(UUID schoolId, School updatedSchool) {
+        School existingSchool = getSchoolById(schoolId);
+
+        if (updatedSchool.getName() != null) {
+            existingSchool.setName(updatedSchool.getName());
+        }
+        if (updatedSchool.getBoard() != null) {
+            existingSchool.setBoard(updatedSchool.getBoard());
+        }
+        if (updatedSchool.getContactInfo() != null) {
+            existingSchool.setContactInfo(updatedSchool.getContactInfo());
+        }
+        if (updatedSchool.getRegistrationNumber() != null) {
+            existingSchool.setRegistrationNumber(updatedSchool.getRegistrationNumber());
+        }
+        if (updatedSchool.getTimezone() != null) {
+            existingSchool.setTimezone(updatedSchool.getTimezone());
+        }
+
+        return schoolRepository.save(existingSchool);
+    }
 }

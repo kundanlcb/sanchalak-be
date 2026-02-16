@@ -49,4 +49,9 @@ public class SchoolController {
             @RequestBody BootstrapAdminRequest request) {
         return ResponseEntity.ok(bootstrapAdminService.bootstrapAdmin(schoolId, request));
     }
+
+    @PutMapping("/{schoolId}")
+    public ResponseEntity<School> updateSchool(@PathVariable UUID schoolId, @RequestBody School school) {
+        return ResponseEntity.ok(schoolService.updateSchool(schoolId, school));
+    }
 }
