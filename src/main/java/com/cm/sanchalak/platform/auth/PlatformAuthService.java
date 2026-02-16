@@ -18,10 +18,16 @@ public class PlatformAuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final PlatformUserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public PlatformAuthService(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider) {
+    public PlatformAuthService(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider,
+            PlatformUserRepository userRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AuthTokenResponseDto authenticate(LoginRequestDto loginRequest) {
@@ -55,5 +61,41 @@ public class PlatformAuthService {
                         .map(a -> PlatformRole.valueOf(a.getAuthority()))
                         .collect(Collectors.toSet()))
                 .build();
+    }
+
+    public java.util.List<PlatformUserDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> PlatformUserDto.builder()
+                        .id(user.getId().toString())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .roles(user.getRoles())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public PlatformUserDto createUser(PlatformUserDto userDto, String password) {
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        PlatformUser user = new PlatformUser();
+        user.setName(userDto.getName());
+        user.setEmail(userDto.getEmail());
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRoles(userDto.getRoles());
+
+        PlatformUser savedUser = userRepository.save(user);
+
+        return PlatformUserDto.builder()
+                .id(savedUser.getId().toString())
+                .name(savedUser.getName())
+                .email(savedUser.getEmail())
+                .roles(savedUser.getRoles())
+                .build();
+    }
+
+    public void deleteUser(java.util.UUID userId) {
+        userRepository.deleteById(userId);
     }
 }
