@@ -68,7 +68,7 @@ public class TeacherService {
         }
 
         Teacher savedTeacher = teacherRepository.save(teacher);
-        return new TeacherResponse(savedTeacher);
+        return TeacherResponse.from(savedTeacher);
     }
 
     public TeacherResponse updateTeacher(Long id, TeacherRequest request) {
@@ -99,7 +99,7 @@ public class TeacherService {
         }
 
         Teacher updatedTeacher = teacherRepository.save(teacher);
-        return new TeacherResponse(updatedTeacher);
+        return TeacherResponse.from(updatedTeacher);
     }
 
     public void deleteTeacher(Long id) {
@@ -133,7 +133,7 @@ public class TeacherService {
 
     public List<TeacherResponse> getAllTeachers() {
         return teacherRepository.findByDeletedFalse().stream()
-                .map(TeacherResponse::new)
+                .map(TeacherResponse::from)
                 .collect(Collectors.toList());
     }
 
@@ -141,6 +141,6 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(id)
                 .filter(t -> !t.isDeleted())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        return new TeacherResponse(teacher);
+        return TeacherResponse.from(teacher);
     }
 }

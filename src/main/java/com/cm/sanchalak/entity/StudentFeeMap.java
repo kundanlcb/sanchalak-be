@@ -1,9 +1,7 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
@@ -11,6 +9,8 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StudentFeeMap extends BaseEntity {
 
     @Id
@@ -31,6 +31,7 @@ public class StudentFeeMap extends BaseEntity {
     @Column(name = "discount_reason")
     private String discountReason;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 }

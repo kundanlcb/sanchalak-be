@@ -1,9 +1,8 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +15,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FeeStructure extends BaseEntity {
 
     @Id
@@ -40,6 +41,7 @@ public class FeeStructure extends BaseEntity {
     @Column(name = "grace_period_days")
     private Integer gracePeriodDays;
 
+    @Builder.Default
     @OneToMany(mappedBy = "feeStructure", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeeStructureItem> items = new ArrayList<>();
 }

@@ -281,7 +281,8 @@ public class ProfileController {
                     .body(ApiResult.error("UNSUPPORTED_ROLE", "This endpoint is for students and parents only"));
         }
 
-        AttendanceSummaryDto summary = attendanceService.getStudentAttendanceSummary(String.valueOf(resolvedStudentId));
+        AttendanceSummaryDto summary = attendanceService.getStudentAttendanceSummary(resolvedStudentId,
+                LocalDate.now().withDayOfMonth(1), LocalDate.now());
         return ResponseEntity.ok(ApiResult.success(summary));
     }
 
@@ -309,7 +310,7 @@ public class ProfileController {
         }
 
         List<AttendanceRecordDto> attendance = attendanceService
-                .getStudentAttendanceHistory(String.valueOf(resolvedStudentId), startDate, endDate);
+                .getStudentAttendanceHistory(resolvedStudentId, startDate, endDate);
         return ResponseEntity.ok(ApiResult.success(attendance));
     }
 

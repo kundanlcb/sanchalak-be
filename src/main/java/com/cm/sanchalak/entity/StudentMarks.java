@@ -1,11 +1,17 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "student_marks", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"student_id", "exam_schedule_id"})
+        @UniqueConstraint(columnNames = { "student_id", "exam_schedule_id" })
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StudentMarks extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,17 +30,4 @@ public class StudentMarks extends BaseEntity {
 
     @Column(name = "remarks")
     private String remarks;
-
-    public StudentMarks() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Student getStudent() { return student; }
-    public void setStudent(Student student) { this.student = student; }
-    public ExamSchedule getExamSchedule() { return examSchedule; }
-    public void setExamSchedule(ExamSchedule examSchedule) { this.examSchedule = examSchedule; }
-    public Double getMarksObtained() { return marksObtained; }
-    public void setMarksObtained(Double marksObtained) { this.marksObtained = marksObtained; }
-    public String getRemarks() { return remarks; }
-    public void setRemarks(String remarks) { this.remarks = remarks; }
 }

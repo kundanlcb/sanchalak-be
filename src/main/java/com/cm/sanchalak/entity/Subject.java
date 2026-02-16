@@ -1,10 +1,16 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.util.UUID;
 
 @Entity
 @Table(name = "subjects")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Subject extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,44 +25,4 @@ public class Subject extends BaseEntity {
 
     @Column(nullable = false)
     private String code;
-
-    public Subject() {
-    }
-
-    public Subject(String name, String code) {
-        this.name = name;
-        this.code = code;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public UUID getSchoolId() {
-        return schoolId;
-    }
-
-    public void setSchoolId(UUID schoolId) {
-        this.schoolId = schoolId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
 }

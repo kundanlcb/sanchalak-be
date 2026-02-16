@@ -3,10 +3,16 @@ package com.cm.sanchalak.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 import java.util.UUID;
 
 @Entity
 @Table(name = "students")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Student extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +50,7 @@ public class Student extends BaseEntity {
     @Column(name = "student_id", length = 50, unique = true)
     private String studentID;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -51,110 +58,14 @@ public class Student extends BaseEntity {
     @JoinColumn(name = "class_id")
     private SchoolClass studentClass;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getGuardianName() {
-        return guardianName;
-    }
-
-    public void setGuardianName(String guardianName) {
-        this.guardianName = guardianName;
-    }
-
-    public String getGuardianMobile() {
-        return guardianMobile;
-    }
-
-    public void setGuardianMobile(String guardianMobile) {
-        this.guardianMobile = guardianMobile;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public SchoolClass getStudentClass() {
-        return studentClass;
-    }
-
-    public void setStudentClass(SchoolClass studentClass) {
-        this.studentClass = studentClass;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
     public void setFirstName(String firstName) {
         this.firstName = firstName;
         updateName();
     }
 
-    public String getLastName() {
-        return lastName;
-    }
-
     public void setLastName(String lastName) {
         this.lastName = lastName;
         updateName();
-    }
-
-    public Integer getRollNo() {
-        return rollNo;
-    }
-
-    public void setRollNo(Integer rollNo) {
-        this.rollNo = rollNo;
-    }
-
-    public String getStudentID() {
-        return studentID;
-    }
-
-    public void setStudentID(String studentID) {
-        this.studentID = studentID;
-    }
-
-    public String getAdmissionNumber() {
-        return admissionNumber;
-    }
-
-    public void setAdmissionNumber(String admissionNumber) {
-        this.admissionNumber = admissionNumber;
     }
 
     private void updateName() {

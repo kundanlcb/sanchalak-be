@@ -1,10 +1,14 @@
 package com.cm.sanchalak.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class StudentResponse {
     private Long id;
@@ -42,6 +46,8 @@ public class StudentResponse {
     private ParentResponse secondaryParent;
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class ClassResponse {
         private Long id;
@@ -51,6 +57,8 @@ public class StudentResponse {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class AddressResponse {
         private String street;
@@ -61,6 +69,8 @@ public class StudentResponse {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class ParentResponse {
         private String name;

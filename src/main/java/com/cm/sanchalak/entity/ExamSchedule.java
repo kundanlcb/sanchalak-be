@@ -1,12 +1,19 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "exam_schedules", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"exam_term_id", "class_id", "subject_id"})
+        @UniqueConstraint(columnNames = { "exam_term_id", "class_id", "subject_id" })
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ExamSchedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,19 +36,4 @@ public class ExamSchedule extends BaseEntity {
 
     @Column(name = "exam_date")
     private LocalDate examDate;
-
-    public ExamSchedule() {}
-    
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public ExamTerm getExamTerm() { return examTerm; }
-    public void setExamTerm(ExamTerm examTerm) { this.examTerm = examTerm; }
-    public SchoolClass getStudentClass() { return studentClass; }
-    public void setStudentClass(SchoolClass studentClass) { this.studentClass = studentClass; }
-    public Subject getSubject() { return subject; }
-    public void setSubject(Subject subject) { this.subject = subject; }
-    public Integer getMaxMarks() { return maxMarks; }
-    public void setMaxMarks(Integer maxMarks) { this.maxMarks = maxMarks; }
-    public LocalDate getExamDate() { return examDate; }
-    public void setExamDate(LocalDate examDate) { this.examDate = examDate; }
 }

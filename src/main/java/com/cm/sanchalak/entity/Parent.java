@@ -3,6 +3,7 @@ package com.cm.sanchalak.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 /**
  * Parent entity for student guardians
@@ -13,6 +14,11 @@ import jakarta.validation.constraints.Size;
         @Index(name = "idx_parent_user_id", columnList = "user_id", unique = true),
         @Index(name = "idx_parent_mobile", columnList = "mobile_number")
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Parent extends BaseEntity {
 
     @Id
@@ -48,6 +54,7 @@ public class Parent extends BaseEntity {
     @Column(length = 50)
     private String occupation;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
@@ -58,101 +65,5 @@ public class Parent extends BaseEntity {
         return (firstName != null ? firstName : "") +
                 (firstName != null && lastName != null ? " " : "") +
                 (lastName != null ? lastName : "");
-    }
-
-    public Parent() {
-    }
-
-    public Parent(Long id, User user, String firstName, String lastName, String mobileNumber, String email,
-            String address, String occupation, boolean isActive) {
-        this.id = id;
-        this.user = user;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.mobileNumber = mobileNumber;
-        this.email = email;
-        this.address = address;
-        this.occupation = occupation;
-        this.isActive = isActive;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getMobileNumber() {
-        return mobileNumber;
-    }
-
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getOccupation() {
-        return occupation;
-    }
-
-    public void setOccupation(String occupation) {
-        this.occupation = occupation;
-    }
-
-    public boolean getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public String getParentID() {
-        return parentID;
-    }
-
-    public void setParentID(String parentID) {
-        this.parentID = parentID;
     }
 }

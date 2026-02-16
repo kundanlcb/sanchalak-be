@@ -3,8 +3,17 @@ package com.cm.sanchalak.dto;
 import com.cm.sanchalak.entity.Subject;
 import com.cm.sanchalak.entity.Teacher;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class TeacherResponse {
     private Long id;
     @JsonProperty("teacherID")
@@ -19,108 +28,19 @@ public class TeacherResponse {
     private String createdAt;
     private String updatedAt;
 
-    public TeacherResponse() {
-    }
-
-    public TeacherResponse(Teacher teacher) {
-        this.id = teacher.getId();
-        this.teacherID = "TCH-" + teacher.getId();
-        this.name = teacher.getName();
-        this.email = teacher.getEmail();
-        this.phone = teacher.getMobileNumber();
-        this.mobileNumber = teacher.getMobileNumber();
-        this.qualification = teacher.getQualification();
-        this.profileImage = teacher.getProfileImage();
-        this.specializations = teacher.getSpecializations();
-        this.createdAt = teacher.getCreatedAt() != null ? teacher.getCreatedAt().toString() : null;
-        this.updatedAt = teacher.getUpdatedAt() != null ? teacher.getUpdatedAt().toString() : null;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getQualification() {
-        return qualification;
-    }
-
-    public void setQualification(String qualification) {
-        this.qualification = qualification;
-    }
-
-    public String getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(String profileImage) {
-        this.profileImage = profileImage;
-    }
-
-    public String getMobileNumber() {
-        return mobileNumber;
-    }
-
-    public void setMobileNumber(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
-
-    public String getTeacherID() {
-        return teacherID;
-    }
-
-    public void setTeacherID(String teacherID) {
-        this.teacherID = teacherID;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Set<Subject> getSpecializations() {
-        return specializations;
-    }
-
-    public void setSpecializations(Set<Subject> specializations) {
-        this.specializations = specializations;
+    public static TeacherResponse from(Teacher teacher) {
+        return TeacherResponse.builder()
+                .id(teacher.getId())
+                .teacherID(String.valueOf(teacher.getId()))
+                .name(teacher.getName())
+                .email(teacher.getEmail())
+                .phone(teacher.getMobileNumber())
+                .mobileNumber(teacher.getMobileNumber())
+                .qualification(teacher.getQualification())
+                .profileImage(teacher.getProfileImage())
+                .specializations(teacher.getSpecializations())
+                .createdAt(teacher.getCreatedAt() != null ? teacher.getCreatedAt().toString() : null)
+                .updatedAt(teacher.getUpdatedAt() != null ? teacher.getUpdatedAt().toString() : null)
+                .build();
     }
 }

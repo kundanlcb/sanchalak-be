@@ -5,6 +5,7 @@ import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
@@ -26,8 +28,10 @@ public class AttendanceService {
     private final SchoolClassRepository classRepository;
 
     @Transactional
-    public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkAttendanceRequest request) {
-        Long classId = resolveClassId(request.getClassId());
+    public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkAttendanceRequest request, String markedBy) {
+        log.info("Bulk marking attendance for class: {} on date: {}", request.getClassId(), request.getDate());
+
+        Long classId = request.getClassId();
         SchoolClass clazz = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
@@ -42,13 +46,12 @@ public class AttendanceService {
                 ? request.getAttendances()
                 : new ArrayList<>();
 
-        Map<String, BulkMarkAttendanceRequest.StudentAttendanceStatus> inputMap = inputs.stream()
-                .collect(Collectors.toMap(BulkMarkAttendanceRequest.StudentAttendanceStatus::getStudentId,
-                        Function.identity()));
+        Map<Long, BulkMarkAttendanceRequest.StudentAttendanceStatus> inputMap = inputs.stream()
+                .collect(Collectors.toMap(BulkMarkAttendanceRequest.StudentAttendanceStatus::getStudentId, a -> a));
 
         List<AttendanceRecord> toSave = new ArrayList<>();
         int markedCount = 0;
-        String user = request.getMarkedBy() != null ? request.getMarkedBy() : "SYSTEM";
+        String user = markedBy != null ? markedBy : (request.getMarkedBy() != null ? request.getMarkedBy() : "SYSTEM");
 
         for (Student student : students) {
             AttendanceRecord record = existingMap.getOrDefault(student.getId(), new AttendanceRecord());
@@ -63,13 +66,9 @@ public class AttendanceService {
                 record.setModified(true);
             }
 
-            // Derive human-readable studentID for lookup (e.g., STU-1)
-            String humanId = "STU-" + student.getId();
-            // Handle case where input might have full human ID or just numeric ID as String
-            BulkMarkAttendanceRequest.StudentAttendanceStatus input = inputMap.get(humanId);
-            if (input == null) {
-                input = inputMap.get(student.getId().toString());
-            }
+            // Derive studentId for lookup
+            Long sid = student.getId();
+            BulkMarkAttendanceRequest.StudentAttendanceStatus input = inputMap.get(sid);
 
             if (input != null) {
                 record.setStatus(input.getStatus() != null ? input.getStatus() : AttendanceStatus.PRESENT);
@@ -83,27 +82,33 @@ public class AttendanceService {
         }
 
         attendanceRepository.saveAll(toSave);
-
         return new BulkMarkAttendanceResponse(true, markedCount, 0, "Attendance marked successfully");
     }
 
     @Transactional
-    public AttendanceRecord markAttendance(MarkAttendanceRequest request) {
+    public AttendanceRecord markAttendance(MarkAttendanceRequest request, String markedBy) {
+        log.info("Marking attendance for student: {} in class: {} on date: {}", request.getStudentId(),
+                request.getClassId(), request.getDate());
+
+        // Use Long directly
+        Long studentId = request.getStudentId();
+        Long classId = request.getClassId();
+
         if (request.getDate().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Cannot mark attendance for future dates");
         }
 
-        AttendanceRecord record = attendanceRepository.findByStudentIdAndDate(request.getStudentId(), request.getDate())
+        AttendanceRecord record = attendanceRepository.findByStudentIdAndDate(studentId, request.getDate())
                 .orElse(new AttendanceRecord());
 
         if (record.getId() == null) {
-            Student student = studentRepository.findById(request.getStudentId())
+            Student student = studentRepository.findById(studentId)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             SchoolClass clazz = student.getStudentClass();
             if (clazz == null) {
-                if (request.getClassId() != null) {
-                    clazz = classRepository.findById(request.getClassId())
+                if (classId != null) {
+                    clazz = classRepository.findById(classId)
                             .orElseThrow(() -> new RuntimeException("Class not found"));
                 } else {
                     throw new RuntimeException("Student has no class assigned and classId not provided");
@@ -113,10 +118,10 @@ public class AttendanceService {
             record.setStudent(student);
             record.setSchoolClass(clazz);
             record.setDate(request.getDate());
-            record.setMarkedBy("SYSTEM");
+            record.setMarkedBy(markedBy != null ? markedBy : "SYSTEM");
         } else {
             record.setModified(true);
-            record.setModifiedBy("SYSTEM");
+            record.setModifiedBy(markedBy != null ? markedBy : "SYSTEM");
         }
 
         record.setStatus(request.getStatus());
@@ -125,8 +130,10 @@ public class AttendanceService {
         return attendanceRepository.save(record);
     }
 
-    public ClassAttendanceSheetDto getClassAttendanceSheet(String classIdStr, LocalDate date) {
-        Long classId = resolveClassId(classIdStr);
+    @Transactional(readOnly = true)
+    public ClassAttendanceSheetDto getClassAttendanceSheet(Long classId, LocalDate date) {
+        log.info("Fetching attendance sheet for class: {} on date: {}", classId, date);
+
         List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDate(classId, date);
 
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
@@ -136,7 +143,7 @@ public class AttendanceService {
 
         return ClassAttendanceSheetDto.builder()
                 .classId(classId)
-                .classID(classIdStr.startsWith("CLS-") ? classIdStr : "CLS-01-" + classId)
+                .classID(String.valueOf(classId))
                 .date(date)
                 .presentCount(present)
                 .absentCount(absent)
@@ -145,37 +152,11 @@ public class AttendanceService {
                 .build();
     }
 
-    private Long resolveClassId(String classIdStr) {
-        if (classIdStr == null || classIdStr.isEmpty()) {
-            throw new IllegalArgumentException("Class ID cannot be null or empty");
-        }
-
-        try {
-            return Long.parseLong(classIdStr);
-        } catch (NumberFormatException e) {
-            // Not a plain number
-        }
-
-        if (classIdStr.startsWith("CLS-")) {
-            // Try to see if it's "CLS-numeric" or "CLS-XX-numeric"
-            String[] parts = classIdStr.split("-");
-            String lastPart = parts[parts.length - 1];
-            try {
-                return Long.parseLong(lastPart);
-            } catch (NumberFormatException e) {
-                // Not numeric
-            }
-        }
-
-        // Search by name as last resort?
-        return classRepository.findByName(classIdStr)
-                .map(SchoolClass::getId)
-                .orElseThrow(() -> new RuntimeException("Class not found with ID/Name: " + classIdStr));
-    }
-
-    public List<AttendanceRecordDto> getStudentAttendanceHistory(String studentIdStr, LocalDate startDate,
+    @Transactional(readOnly = true)
+    public List<AttendanceRecordDto> getStudentAttendanceHistory(Long studentId, LocalDate startDate,
             LocalDate endDate) {
-        Long studentId = resolveStudentId(studentIdStr);
+        log.info("Fetching attendance history for student: {} from {} to {}", studentId, startDate, endDate);
+
         List<AttendanceRecord> records;
         if (startDate != null && endDate != null) {
             records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate, endDate);
@@ -187,61 +168,23 @@ public class AttendanceService {
                 .collect(Collectors.toList());
     }
 
-    public AttendanceSummaryDto getStudentAttendanceSummary(String studentIdStr) {
-        Long studentId = resolveStudentId(studentIdStr);
-        List<AttendanceRecord> records = attendanceRepository.findByStudentId(studentId);
+    @Transactional(readOnly = true)
+    public AttendanceSummaryDto getStudentAttendanceSummary(Long studentId, LocalDate startDate, LocalDate endDate) {
+        log.info("Fetching attendance summary for student: {} from {} to {}", studentId, startDate, endDate);
+
+        List<AttendanceRecord> records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate,
+                endDate);
         int total = records.size();
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
 
         return AttendanceSummaryDto.builder()
                 .studentId(studentId)
-                .studentID(studentIdStr.startsWith("STU-") ? studentIdStr : "STU-" + studentId)
+                .studentIdStr(String.valueOf(studentId))
                 .totalDays(total)
                 .presentDays(present)
                 .percentage(pct)
                 .build();
-    }
-
-    private Long resolveStudentId(String studentIdStr) {
-        if (studentIdStr == null || studentIdStr.isEmpty()) {
-            throw new IllegalArgumentException("Student ID cannot be null or empty");
-        }
-
-        // 1. Try if it's a plain numeric ID
-        try {
-            return Long.parseLong(studentIdStr);
-        } catch (NumberFormatException e) {
-            // Not a plain number
-        }
-
-        // 2. Try if it's "STU-X" format
-        if (studentIdStr.startsWith("STU-")) {
-            // Try to see if it's "STU-numeric"
-            String numericPart = studentIdStr.substring(4);
-            try {
-                return Long.parseLong(numericPart);
-            } catch (NumberFormatException e) {
-                // Might be STU-2026-00001 format
-            }
-
-            // 3. Search by studentID field in database
-            return studentRepository.findByStudentID(studentIdStr)
-                    .map(Student::getId)
-                    .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentIdStr));
-        }
-
-        // 4. Try as UUID (userId)
-        try {
-            java.util.UUID userId = java.util.UUID.fromString(studentIdStr);
-            return studentRepository.findByUserId(userId)
-                    .map(Student::getId)
-                    .orElseThrow(() -> new RuntimeException("Student not found for User ID: " + studentIdStr));
-        } catch (IllegalArgumentException e) {
-            // Not a UUID
-        }
-
-        throw new RuntimeException("Invalid Student ID format: " + studentIdStr);
     }
 
     public ClassAttendanceStatistics getClassAttendanceStatistics(Long classId, LocalDate startDate,
@@ -268,19 +211,10 @@ public class AttendanceService {
         AttendanceRecord record = attendanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Attendance record not found"));
 
-        // Validation: Cannot update past a certain window?
-        // For now, allow update if it's not in the future (which isn't possible for
-        // creation anyway)
-
         if (request.getStatus() != null) {
             record.setStatus(request.getStatus());
         }
 
-        // Update remarks if provided (allow empty string to clear?)
-        // Let's assume null means no change, empty string acts as clear if intended,
-        // but usually for PUT we replace.
-        // But for partial update (PATCH behavior), we check null.
-        // Requirement says Correction, implies PUT usually.
         if (request.getRemarks() != null) {
             record.setRemarks(request.getRemarks());
         }
@@ -297,9 +231,9 @@ public class AttendanceService {
         AttendanceRecordDto dto = new AttendanceRecordDto();
         dto.setId(r.getId());
         dto.setStudentId(r.getStudent().getId());
-        dto.setStudentID("STU-" + r.getStudent().getId());
+        dto.setStudentIdStr(String.valueOf(r.getStudent().getId()));
         dto.setClassId(r.getSchoolClass().getId());
-        dto.setClassID("CLS-01-" + r.getSchoolClass().getId());
+        dto.setClassIdStr(String.valueOf(r.getSchoolClass().getId()));
         dto.setDate(r.getDate());
         dto.setStatus(r.getStatus());
         dto.setRemarks(r.getRemarks());

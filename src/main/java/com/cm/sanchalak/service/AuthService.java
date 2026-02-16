@@ -87,9 +87,11 @@ public class AuthService {
             return ApiResult.error("EMAIL_EXISTS", "Email Address already in use!");
         }
 
-        User user = new User(signUpRequest.name(),
-                signUpRequest.email(),
-                signUpRequest.password());
+        User user = User.builder()
+                .name(signUpRequest.name())
+                .email(signUpRequest.email())
+                .password(signUpRequest.password())
+                .build();
 
         user.setPassword(passwordEncoder.encode(signUpRequest.password()));
 

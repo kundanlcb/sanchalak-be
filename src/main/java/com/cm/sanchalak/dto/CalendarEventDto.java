@@ -1,6 +1,7 @@
 package com.cm.sanchalak.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CalendarEventDto {
     private String eventType; // EXAM, HOLIDAY, NOTICE, HOMEWORK_DUE
     private Long eventId; // ID of the source entity (examScheduleId, noticeId, etc.)

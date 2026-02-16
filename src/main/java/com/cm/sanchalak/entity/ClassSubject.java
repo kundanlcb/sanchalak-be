@@ -1,11 +1,17 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "class_subjects", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"class_id", "subject_id"})
+        @UniqueConstraint(columnNames = { "class_id", "subject_id" })
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ClassSubject extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,15 +28,4 @@ public class ClassSubject extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
-
-    public ClassSubject() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public SchoolClass getStudentClass() { return studentClass; }
-    public void setStudentClass(SchoolClass studentClass) { this.studentClass = studentClass; }
-    public Subject getSubject() { return subject; }
-    public void setSubject(Subject subject) { this.subject = subject; }
-    public Teacher getTeacher() { return teacher; }
-    public void setTeacher(Teacher teacher) { this.teacher = teacher; }
 }

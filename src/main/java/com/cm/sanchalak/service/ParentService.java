@@ -86,7 +86,7 @@ public class ParentService {
 
         return LinkedStudentDto.builder()
                 .studentId(student.getId())
-                .studentID("STU-" + student.getId())
+                .studentID(String.valueOf(student.getId()))
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
                 .fullName(student.getName())
