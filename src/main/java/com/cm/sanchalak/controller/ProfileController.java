@@ -71,11 +71,23 @@ public class ProfileController {
         User user = userOpt.get();
 
         // Build base profile
+        String fullName = user.getName();
+        String firstName = fullName;
+        String lastName = "";
+
+        if (fullName != null && fullName.contains(" ")) {
+            int lastSpaceIndex = fullName.lastIndexOf(" ");
+            firstName = fullName.substring(0, lastSpaceIndex);
+            lastName = fullName.substring(lastSpaceIndex + 1);
+        }
+
         UserProfileDto.UserProfileDtoBuilder profileBuilder = UserProfileDto.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
                 .mobileNumber(user.getMobileNumber())
-                .name(user.getName())
+                .name(fullName)
+                .firstName(firstName)
+                .lastName(lastName)
                 .role(user.getRoles().iterator().next().getName().name());
 
         // Auto-resolve student info if ROLE_STUDENT

@@ -1,9 +1,10 @@
 package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.ApiResult;
-import com.cm.sanchalak.dto.JwtAuthenticationResponse;
+import com.cm.sanchalak.dto.AuthTokenResponseDto;
 import com.cm.sanchalak.dto.LoginRequest;
 import com.cm.sanchalak.dto.SignUpRequest;
+import com.cm.sanchalak.dto.UserProfileDto;
 import com.cm.sanchalak.entity.Role;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.entity.User;
@@ -37,7 +38,7 @@ public class AuthService {
     @org.springframework.beans.factory.annotation.Value("${app.jwt.access-token-expiry-ms:900000}")
     private Long accessTokenExpiryMs;
 
-    public com.cm.sanchalak.dto.AuthTokenResponseDto authenticateUser(LoginRequest loginRequest) {
+    public AuthTokenResponseDto authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
@@ -51,18 +52,27 @@ public class AuthService {
         String jwt = tokenProvider.generateToken(authentication);
         String refreshToken = refreshTokenService.createRefreshToken(user, "WEB", "BROWSER");
 
-        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto.UserProfileDtoBuilder userProfileBuilder = com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto
-                .builder()
-                .userId(user.getId().toString())
+        String fullName = user.getName();
+        String firstName = fullName;
+        String lastName = "";
+
+        if (fullName != null && fullName.contains(" ")) {
+            int lastSpaceIndex = fullName.lastIndexOf(" ");
+            firstName = fullName.substring(0, lastSpaceIndex);
+            lastName = fullName.substring(lastSpaceIndex + 1);
+        }
+
+        UserProfileDto userProfile = UserProfileDto.builder()
+                .userId(user.getId())
                 .mobileNumber(user.getMobileNumber())
                 .email(user.getEmail())
-                .firstName(user.getName())
-                .lastName("")
-                .role(user.getRoles().iterator().next().getName().name());
+                .name(fullName)
+                .firstName(firstName)
+                .lastName(lastName)
+                .role(user.getRoles().iterator().next().getName().name())
+                .build();
 
-        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto userProfile = userProfileBuilder.build();
-
-        return com.cm.sanchalak.dto.AuthTokenResponseDto.builder()
+        return AuthTokenResponseDto.builder()
                 .accessToken(jwt)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")

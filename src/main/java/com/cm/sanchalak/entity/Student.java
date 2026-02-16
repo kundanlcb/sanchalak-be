@@ -141,6 +141,14 @@ public class Student extends BaseEntity {
         this.rollNo = rollNo;
     }
 
+    public String getStudentID() {
+        return studentID;
+    }
+
+    public void setStudentID(String studentID) {
+        this.studentID = studentID;
+    }
+
     public String getAdmissionNumber() {
         return admissionNumber;
     }

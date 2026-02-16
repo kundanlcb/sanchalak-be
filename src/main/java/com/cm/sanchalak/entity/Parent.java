@@ -147,4 +147,12 @@ public class Parent extends BaseEntity {
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
+
+    public String getParentID() {
+        return parentID;
+    }
+
+    public void setParentID(String parentID) {
+        this.parentID = parentID;
+    }
 }

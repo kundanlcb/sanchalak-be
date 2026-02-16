@@ -179,12 +179,23 @@ public class AuthController {
                 request.deviceType());
 
         // Build user profile
-        AuthTokenResponseDto.UserProfileDto userProfile = AuthTokenResponseDto.UserProfileDto.builder()
-                .userId(user.getId().toString())
+        String fullName = user.getName();
+        String firstName = fullName;
+        String lastName = "";
+
+        if (fullName != null && fullName.contains(" ")) {
+            int lastSpaceIndex = fullName.lastIndexOf(" ");
+            firstName = fullName.substring(0, lastSpaceIndex);
+            lastName = fullName.substring(lastSpaceIndex + 1);
+        }
+
+        UserProfileDto userProfile = UserProfileDto.builder()
+                .userId(user.getId())
                 .mobileNumber(user.getMobileNumber())
                 .email(user.getEmail())
-                .firstName(user.getName())
-                .lastName("")
+                .name(fullName)
+                .firstName(firstName)
+                .lastName(lastName)
                 .role(user.getRoles().iterator().next().getName().name())
                 .build();
 
@@ -246,12 +257,23 @@ public class AuthController {
             String accessToken = jwtTokenProvider.generateToken(authentication);
 
             // Build user profile
-            AuthTokenResponseDto.UserProfileDto userProfile = AuthTokenResponseDto.UserProfileDto.builder()
-                    .userId(user.getId().toString())
+            String fullName = user.getName();
+            String firstName = fullName;
+            String lastName = "";
+
+            if (fullName != null && fullName.contains(" ")) {
+                int lastSpaceIndex = fullName.lastIndexOf(" ");
+                firstName = fullName.substring(0, lastSpaceIndex);
+                lastName = fullName.substring(lastSpaceIndex + 1);
+            }
+
+            UserProfileDto userProfile = UserProfileDto.builder()
+                    .userId(user.getId())
                     .mobileNumber(user.getMobileNumber())
                     .email(user.getEmail())
-                    .firstName(user.getName())
-                    .lastName("")
+                    .name(fullName)
+                    .firstName(firstName)
+                    .lastName(lastName)
                     .role(user.getRoles().iterator().next().getName().name())
                     .build();
 
