@@ -30,8 +30,8 @@ public class Teacher extends BaseEntity {
 
     @NotBlank
     @Size(max = 15)
-    @Column(length = 15)
-    private String phone;
+    @Column(name = "mobile_number", length = 15)
+    private String mobileNumber;
 
     @Size(max = 100)
     @Column(length = 100)
@@ -41,13 +41,9 @@ public class Teacher extends BaseEntity {
     private String profileImage;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "teacher_specializations",
-        joinColumns = @JoinColumn(name = "teacher_id"),
-        inverseJoinColumns = @JoinColumn(name = "subject_id")
-    )
+    @JoinTable(name = "teacher_specializations", joinColumns = @JoinColumn(name = "teacher_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> specializations = new HashSet<>();
-    
+
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -83,12 +79,20 @@ public class Teacher extends BaseEntity {
         this.email = email;
     }
 
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
     public String getPhone() {
-        return phone;
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
 
     public void setPhone(String phone) {
-        this.phone = phone;
+        this.mobileNumber = phone;
     }
 
     public String getQualification() {

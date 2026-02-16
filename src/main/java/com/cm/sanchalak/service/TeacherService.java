@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,7 +58,7 @@ public class TeacherService {
         teacher.setUser(user);
         teacher.setName(request.getName());
         teacher.setEmail(request.getEmail());
-        teacher.setPhone(request.getPhone());
+        teacher.setMobileNumber(request.getMobileNumber());
         teacher.setQualification(request.getQualification());
         teacher.setProfileImage(request.getProfileImage());
 
@@ -82,7 +81,7 @@ public class TeacherService {
 
         teacher.setName(request.getName());
         teacher.setEmail(request.getEmail());
-        teacher.setPhone(request.getPhone());
+        teacher.setMobileNumber(request.getMobileNumber());
         teacher.setQualification(request.getQualification());
         teacher.setProfileImage(request.getProfileImage());
 
@@ -106,27 +105,29 @@ public class TeacherService {
     public void deleteTeacher(Long id) {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        
+
         // Check dependencies (Assignments)
         if (classSubjectRepository.existsByTeacherId(id)) {
             throw new RuntimeException("Cannot delete teacher assigned to classes.");
         }
-        
+
         // Check dependencies (Routine)
         if (classRoutineRepository.existsByTeacherId(id)) {
             throw new RuntimeException("Cannot delete teacher who is active in the class routine.");
         }
-        
+
         // Soft delete
         teacher.setDeleted(true);
         teacherRepository.save(teacher);
-        
+
         // Disable user login
         User user = teacher.getUser();
         if (user != null) {
-            // In a real app we might have an 'active' flag on User, 
-            // for now we'll just leave the user account but maybe scramble the password or remove roles
-            // Implementing soft delete on User is out of scope for this immediate task but recommended.
+            // In a real app we might have an 'active' flag on User,
+            // for now we'll just leave the user account but maybe scramble the password or
+            // remove roles
+            // Implementing soft delete on User is out of scope for this immediate task but
+            // recommended.
         }
     }
 

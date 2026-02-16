@@ -14,10 +14,12 @@ public class TeacherRequest {
 
     @NotBlank
     private String phone;
-    
+
+    private String mobileNumber;
+
     private String qualification;
     private String profileImage;
-    
+
     private List<Long> specializationIds;
 
     public String getName() {
@@ -42,6 +44,14 @@ public class TeacherRequest {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber != null ? mobileNumber : phone;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
 
     public String getQualification() {

@@ -7,6 +7,9 @@ import lombok.Data;
 @Builder
 public class StudentResponse {
     private Long id;
+    private String userId;
+    private String createdAt;
+    private String updatedAt;
     private String studentID; // For frontend compatibility
     private String firstName;
     private String lastName;
@@ -27,10 +30,21 @@ public class StudentResponse {
     private String status;
     private boolean deleted;
 
+    private ClassResponse studentClass; // For backward compatibility with generated models
+
     // Nested objects for StudentDetail compatibility
     private AddressResponse address;
     private ParentResponse primaryParent;
     private ParentResponse secondaryParent;
+
+    @Data
+    @Builder
+    public static class ClassResponse {
+        private Long id;
+        private String name;
+        private String createdAt;
+        private String updatedAt;
+    }
 
     @Data
     @Builder

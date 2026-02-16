@@ -11,9 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -92,15 +89,25 @@ public class StudentService {
     private void updateStudentFromRequest(Student student, StudentRequest request) {
         student.setFirstName(request.getFirstName());
         student.setLastName(request.getLastName());
-        student.setRollNo(request.getRollNo());
+
+        // Handle dual-field rollNumber/rollNo
+        Integer rollNumber = request.getRollNumber() != null ? request.getRollNumber() : request.getRollNo();
+        student.setRollNo(rollNumber);
+
         student.setGender(request.getGender());
         student.setGuardianName(request.getGuardianName());
-        student.setGuardianMobile(request.getGuardianMobile());
+
+        // Handle dual-field mobileNumber/guardianMobile
+        String mobile = request.getMobileNumber() != null ? request.getMobileNumber() : request.getGuardianMobile();
+        student.setGuardianMobile(mobile);
     }
 
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .userId(student.getUserId() != null ? student.getUserId().toString() : null)
+                .createdAt(student.getCreatedAt() != null ? student.getCreatedAt().toString() : null)
+                .updatedAt(student.getUpdatedAt() != null ? student.getUpdatedAt().toString() : null)
                 .studentID("STU-" + student.getId())
                 .name(student.getName())
                 .firstName(student.getFirstName())
@@ -113,6 +120,10 @@ public class StudentService {
                 .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)
                 .classID(student.getStudentClass() != null ? "CLS-01-" + student.getStudentClass().getId() : "")
                 .className(student.getStudentClass() != null ? student.getStudentClass().getName() : "")
+                .studentClass(student.getStudentClass() != null ? StudentResponse.ClassResponse.builder()
+                        .id(student.getStudentClass().getId())
+                        .name(student.getStudentClass().getName())
+                        .build() : null)
                 .section("A")
                 .rollNo(student.getRollNo())
                 .rollNumber(student.getRollNo())
