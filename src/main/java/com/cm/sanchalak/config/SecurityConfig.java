@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,9 +39,14 @@ public class SecurityConfig {
         private final PlatformUserDetailsService platformUserDetailsService;
 
         @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-                        throws Exception {
-                return authenticationConfiguration.getAuthenticationManager();
+        public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
+                DaoAuthenticationProvider platformProvider = new DaoAuthenticationProvider(platformUserDetailsService);
+                platformProvider.setPasswordEncoder(passwordEncoder);
+
+                DaoAuthenticationProvider customProvider = new DaoAuthenticationProvider(customUserDetailsService);
+                customProvider.setPasswordEncoder(passwordEncoder);
+
+                return new ProviderManager(platformProvider, customProvider);
         }
 
         @Bean
