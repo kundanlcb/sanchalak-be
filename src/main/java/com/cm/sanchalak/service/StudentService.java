@@ -23,8 +23,11 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final SchoolClassRepository classRepository;
+    private final com.cm.sanchalak.platform.master.MasterDataService masterDataService;
 
     public StudentResponse createStudent(StudentRequest request) {
+        masterDataService.validateValue("GENDER", request.getGender());
+
         SchoolClass studentClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
 
@@ -38,6 +41,8 @@ public class StudentService {
     }
 
     public StudentResponse updateStudent(Long id, StudentRequest request) {
+        masterDataService.validateValue("GENDER", request.getGender());
+
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
 
