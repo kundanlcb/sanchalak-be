@@ -3,6 +3,7 @@ package com.cm.sanchalak.platform.web;
 import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.platform.onboarding.BootstrapAdminRequest;
 import com.cm.sanchalak.platform.onboarding.BootstrapAdminService;
+import com.cm.sanchalak.platform.onboarding.OnboardingStatus;
 import com.cm.sanchalak.platform.school.School;
 import com.cm.sanchalak.platform.school.SchoolService;
 import com.cm.sanchalak.platform.school.SchoolStatus;
@@ -53,5 +54,10 @@ public class SchoolController {
     @PutMapping("/{schoolId}")
     public ResponseEntity<School> updateSchool(@PathVariable UUID schoolId, @RequestBody School school) {
         return ResponseEntity.ok(schoolService.updateSchool(schoolId, school));
+    }
+
+    @GetMapping("/{schoolId}/onboarding-status")
+    public ResponseEntity<OnboardingStatus> getOnboardingStatus(@PathVariable UUID schoolId) {
+        return ResponseEntity.ok(schoolService.getOnboardingStatus(schoolId));
     }
 }

@@ -139,7 +139,7 @@ Config values:
 
 ## 9.1 Dependencies
 Add:
-- `testImplementation 'com.intuit.karate:karate-junit5:1.4.1'`
+- `testImplementation 'com.intuit.karate:karate-junit5:1.5.2'`
 
 ## 9.2 Runner Classes
 Create dedicated JUnit 5 runners selecting paths + tags.

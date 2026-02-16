@@ -5,6 +5,8 @@ import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.entity.User;
 
 import com.cm.sanchalak.platform.school.SchoolRepository;
+import com.cm.sanchalak.platform.school.SchoolUser;
+import com.cm.sanchalak.platform.school.SchoolUserRepository;
 import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,13 +22,15 @@ public class BootstrapAdminService {
     private final SchoolRepository schoolRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final SchoolUserRepository schoolUserRepository;
     private final PasswordEncoder passwordEncoder;
 
     public BootstrapAdminService(SchoolRepository schoolRepository, UserRepository userRepository,
-            RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+            RoleRepository roleRepository, SchoolUserRepository schoolUserRepository, PasswordEncoder passwordEncoder) {
         this.schoolRepository = schoolRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.schoolUserRepository = schoolUserRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -51,15 +55,12 @@ public class BootstrapAdminService {
 
         user.setRoles(Collections.singleton(adminRole));
 
-        // TODO: Link user to school via SchoolUser or similar mapping entity if it
-        // exists
-        // For now, assuming user is created within the school's tenant context or
-        // globally but assigned to school
-        // If sanchalak_be uses a separate schema per tenant or a discriminator, that
-        // logic goes here.
-        // Assuming a simpler model where User might have a schoolId if multi-tenancy is
-        // shared-db-discriminator
+        User savedUser = userRepository.save(user);
 
-        return userRepository.save(user);
+        // Link user to school
+        SchoolUser schoolUser = new SchoolUser(schoolId, savedUser.getId());
+        schoolUserRepository.save(schoolUser);
+
+        return savedUser;
     }
 }

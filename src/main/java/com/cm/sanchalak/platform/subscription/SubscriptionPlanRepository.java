@@ -10,10 +10,3 @@ import java.util.UUID;
 @Repository
 public interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, UUID> {
 }
-
-@Repository
-interface SchoolSubscriptionRepository extends JpaRepository<SchoolSubscription, UUID> {
-    List<SchoolSubscription> findBySchoolId(UUID schoolId);
-
-    Optional<SchoolSubscription> findBySchoolIdAndStatus(UUID schoolId, SubscriptionStatus status);
-}

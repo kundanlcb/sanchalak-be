@@ -63,7 +63,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'com.intuit.karate:karate-junit5:1.4.1'
+	testImplementation 'com.intuit.karate:karate-junit5:1.5.2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testRuntimeOnly 'com.h2database:h2'
 }
@@ -78,6 +78,28 @@ sourceSets {
 			exclude '**/*IntegrationTest.java'
 			exclude '**/integration/**'
 			exclude '**/MobileAuthControllerTest.java'
+			exclude '**/karate/**'
 		}
 	}
+}
+
+tasks.register('karateSmoke', Test) {
+	useJUnitPlatform()
+	include '**/KarateSmokeRunner.class'
+	systemProperty 'karate.env', System.getProperty('karate.env', 'local')
+	systemProperty 'karate.baseUrl', System.getProperty('karate.baseUrl', 'http://localhost:8082')
+}
+
+tasks.register('karateRegression', Test) {
+	useJUnitPlatform()
+	include '**/KarateRegressionRunner.class'
+	systemProperty 'karate.env', System.getProperty('karate.env', 'local')
+	systemProperty 'karate.baseUrl', System.getProperty('karate.baseUrl', 'http://localhost:8082')
+}
+
+tasks.register('karateJourney', Test) {
+	useJUnitPlatform()
+	include '**/KarateJourneyRunner.class'
+	systemProperty 'karate.env', System.getProperty('karate.env', 'local')
+	systemProperty 'karate.baseUrl', System.getProperty('karate.baseUrl', 'http://localhost:8082')
 }

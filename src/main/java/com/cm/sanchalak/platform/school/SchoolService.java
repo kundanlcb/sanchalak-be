@@ -1,9 +1,12 @@
 package com.cm.sanchalak.platform.school;
 
+import com.cm.sanchalak.platform.academic.AcademicYearRepository;
+import com.cm.sanchalak.platform.onboarding.OnboardingStatus;
+import com.cm.sanchalak.platform.subscription.SchoolSubscriptionRepository;
+import com.cm.sanchalak.platform.subscription.SubscriptionStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,9 +14,35 @@ import java.util.UUID;
 public class SchoolService {
 
     private final SchoolRepository schoolRepository;
+    private final AcademicYearRepository academicYearRepository;
+    private final SchoolUserRepository schoolUserRepository;
+    private final SchoolSubscriptionRepository subscriptionRepository;
 
-    public SchoolService(SchoolRepository schoolRepository) {
+    public SchoolService(SchoolRepository schoolRepository,
+            AcademicYearRepository academicYearRepository,
+            SchoolUserRepository schoolUserRepository,
+            SchoolSubscriptionRepository subscriptionRepository) {
         this.schoolRepository = schoolRepository;
+        this.academicYearRepository = academicYearRepository;
+        this.schoolUserRepository = schoolUserRepository;
+        this.subscriptionRepository = subscriptionRepository;
+    }
+
+    public OnboardingStatus getOnboardingStatus(UUID schoolId) {
+        School school = getSchoolById(schoolId);
+
+        boolean profileComplete = school.getStatus() != SchoolStatus.DRAFT;
+        boolean academicYearCreated = !academicYearRepository.findBySchoolId(schoolId).isEmpty();
+        boolean adminUserInvited = schoolUserRepository.existsBySchoolId(schoolId);
+        boolean subscriptionActive = subscriptionRepository.findBySchoolIdAndStatus(schoolId, SubscriptionStatus.ACTIVE)
+                .isPresent();
+
+        return OnboardingStatus.builder()
+                .profileComplete(profileComplete)
+                .academicYearCreated(academicYearCreated)
+                .adminUserInvited(adminUserInvited)
+                .subscriptionActive(subscriptionActive)
+                .build();
     }
 
     public List<School> getAllSchools() {
