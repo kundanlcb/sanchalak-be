@@ -101,6 +101,7 @@ public class StudentService {
     private StudentResponse mapToResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
+                .name(student.getName())
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
                 .rollNo(student.getRollNo())

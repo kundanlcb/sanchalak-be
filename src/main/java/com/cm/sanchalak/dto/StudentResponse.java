@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class StudentResponse {
     private Long id;
+    private String name;
     private String firstName;
     private String lastName;
     private Integer rollNo;
