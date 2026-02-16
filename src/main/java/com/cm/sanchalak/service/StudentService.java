@@ -14,6 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,9 +45,9 @@ public class StudentService {
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
 
         if (request.getClassId() != null && !request.getClassId().equals(student.getStudentClass().getId())) {
-             SchoolClass studentClass = classRepository.findById(request.getClassId())
-                .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
-             student.setStudentClass(studentClass);
+            SchoolClass studentClass = classRepository.findById(request.getClassId())
+                    .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
+            student.setStudentClass(studentClass);
         }
 
         updateStudentFromRequest(student, request);
@@ -58,23 +63,27 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<StudentResponse> getAllStudents() {
-        return studentRepository.findByDeletedFalse().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<StudentResponse> getAllStudents(int page, int size, String sortBy, String sortOrder) {
+        Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        // Handle case where sortBy might be mapped differently or validate it
+        // For now trusting the input matches entity fields
+        Pageable pageable = PageRequest.of(page > 0 ? page - 1 : 0, size, Sort.by(direction, sortBy));
+
+        return studentRepository.findByDeletedFalse(pageable)
+                .map(this::mapToResponse);
     }
 
     @Transactional(readOnly = true)
     public StudentResponse getStudentById(Long id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
-        // Even if deleted, we might want to see it by ID? 
-        // Typically GET /id should verify existence. 
-        // If soft deleted, do we 404? 
+        // Even if deleted, we might want to see it by ID?
+        // Typically GET /id should verify existence.
+        // If soft deleted, do we 404?
         // Spec usually implies soft-deleted items are gone for general ops.
         // I'll assume 404 if deleted for consistency with the filter.
         if (student.isDeleted()) {
-           throw new EntityNotFoundException("Student not found (deleted) with id: " + id);
+            throw new EntityNotFoundException("Student not found (deleted) with id: " + id);
         }
         return mapToResponse(student);
     }

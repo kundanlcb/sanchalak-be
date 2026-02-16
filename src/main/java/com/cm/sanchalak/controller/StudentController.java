@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 @RestController
 @RequestMapping("/api/academics/students")
 @RequiredArgsConstructor
@@ -28,7 +30,8 @@ public class StudentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<StudentResponse> updateStudent(@PathVariable Long id, @Valid @RequestBody StudentRequest request) {
+    public ResponseEntity<StudentResponse> updateStudent(@PathVariable Long id,
+            @Valid @RequestBody StudentRequest request) {
         StudentResponse student = studentService.updateStudent(id, request);
         return ResponseEntity.ok(student);
     }
@@ -42,8 +45,12 @@ public class StudentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<List<StudentResponse>> getAllStudents() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public ResponseEntity<Page<StudentResponse>> getAllStudents(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "rollNumber") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        return ResponseEntity.ok(studentService.getAllStudents(page, limit, sortBy, sortOrder));
     }
 
     @GetMapping("/{id}")
@@ -54,11 +61,12 @@ public class StudentController {
 
     @PostMapping(value = "/bulk-import", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> bulkImportStudents(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    public ResponseEntity<String> bulkImportStudents(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Please select a file to upload");
         }
-        
+
         try {
             int count = studentImportService.importStudents(file);
             return ResponseEntity.ok("Successfully imported/processed " + count + " students");

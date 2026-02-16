@@ -32,23 +32,47 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
-    public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
+    private final RefreshTokenService refreshTokenService;
+
+    @org.springframework.beans.factory.annotation.Value("${app.jwt.access-token-expiry-ms:900000}")
+    private Long accessTokenExpiryMs;
+
+    public com.cm.sanchalak.dto.AuthTokenResponseDto authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
-                        loginRequest.password()
-                )
-        );
+                        loginRequest.password()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        User user = userRepository.findByEmail(loginRequest.email())
+                .orElseThrow(() -> new AppException("User not found"));
+
         String jwt = tokenProvider.generateToken(authentication);
-        return new JwtAuthenticationResponse(jwt);
+        String refreshToken = refreshTokenService.createRefreshToken(user, "WEB", "BROWSER");
+
+        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto userProfile = com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto
+                .builder()
+                .userId(user.getId().toString())
+                .mobileNumber(user.getMobileNumber())
+                .email(user.getEmail())
+                .firstName(user.getName())
+                .lastName("")
+                .role(user.getRoles().iterator().next().getName().name())
+                .build();
+
+        return com.cm.sanchalak.dto.AuthTokenResponseDto.builder()
+                .accessToken(jwt)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .expiresIn(accessTokenExpiryMs / 1000)
+                .user(userProfile)
+                .build();
     }
 
     @Transactional
     public ApiResult<String> registerUser(SignUpRequest signUpRequest) {
-        if(userRepository.existsByEmail(signUpRequest.email())) {
+        if (userRepository.existsByEmail(signUpRequest.email())) {
             return ApiResult.error("EMAIL_EXISTS", "Email Address already in use!");
         }
 
@@ -66,10 +90,10 @@ public class AuthService {
                 // Ignore
             }
         }
-        
+
         Role userRole = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new AppException("User Role not set."));
-        
+
         user.setRoles(Collections.singleton(userRole));
 
         userRepository.save(user);
