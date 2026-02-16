@@ -35,17 +35,19 @@ public class AttendanceService {
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
         List<Student> students = studentRepository.findByStudentClass_Id(request.getClassId());
-        
-        List<AttendanceRecord> existingRecords = attendanceRepository.findBySchoolClass_IdAndDate(request.getClassId(), request.getDate());
+
+        List<AttendanceRecord> existingRecords = attendanceRepository.findBySchoolClass_IdAndDate(request.getClassId(),
+                request.getDate());
         Map<Long, AttendanceRecord> existingMap = existingRecords.stream()
                 .collect(Collectors.toMap(r -> r.getStudent().getId(), Function.identity()));
-        
-        List<BulkMarkAttendanceRequest.StudentAttendanceStatus> inputs = request.getAttendances() != null 
-                ? request.getAttendances() 
+
+        List<BulkMarkAttendanceRequest.StudentAttendanceStatus> inputs = request.getAttendances() != null
+                ? request.getAttendances()
                 : new ArrayList<>();
-                
+
         Map<Long, BulkMarkAttendanceRequest.StudentAttendanceStatus> inputMap = inputs.stream()
-                .collect(Collectors.toMap(BulkMarkAttendanceRequest.StudentAttendanceStatus::getStudentId, Function.identity()));
+                .collect(Collectors.toMap(BulkMarkAttendanceRequest.StudentAttendanceStatus::getStudentId,
+                        Function.identity()));
 
         List<AttendanceRecord> toSave = new ArrayList<>();
         int markedCount = 0;
@@ -53,15 +55,15 @@ public class AttendanceService {
 
         for (Student student : students) {
             AttendanceRecord record = existingMap.getOrDefault(student.getId(), new AttendanceRecord());
-            
+
             if (record.getId() == null) {
                 record.setStudent(student);
                 record.setSchoolClass(clazz);
                 record.setDate(request.getDate());
                 record.setMarkedBy(user);
             } else {
-               record.setModifiedBy(user);
-               record.setModified(true);
+                record.setModifiedBy(user);
+                record.setModified(true);
             }
 
             BulkMarkAttendanceRequest.StudentAttendanceStatus input = inputMap.get(student.getId());
@@ -71,7 +73,7 @@ public class AttendanceService {
             } else {
                 record.setStatus(AttendanceStatus.PRESENT);
             }
-            
+
             toSave.add(record);
             markedCount++;
         }
@@ -86,47 +88,47 @@ public class AttendanceService {
         if (request.getDate().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Cannot mark attendance for future dates");
         }
-        
+
         AttendanceRecord record = attendanceRepository.findByStudentIdAndDate(request.getStudentId(), request.getDate())
                 .orElse(new AttendanceRecord());
 
         if (record.getId() == null) {
             Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-            
-             SchoolClass clazz = student.getStudentClass(); 
-             if (clazz == null) {
-                 if (request.getClassId() != null) {
-                      clazz = classRepository.findById(request.getClassId())
-                          .orElseThrow(() -> new RuntimeException("Class not found"));
-                 } else {
-                     throw new RuntimeException("Student has no class assigned and classId not provided");
-                 }
-             }
-             
-             record.setStudent(student);
-             record.setSchoolClass(clazz);
-             record.setDate(request.getDate());
-             record.setMarkedBy("SYSTEM");
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+
+            SchoolClass clazz = student.getStudentClass();
+            if (clazz == null) {
+                if (request.getClassId() != null) {
+                    clazz = classRepository.findById(request.getClassId())
+                            .orElseThrow(() -> new RuntimeException("Class not found"));
+                } else {
+                    throw new RuntimeException("Student has no class assigned and classId not provided");
+                }
+            }
+
+            record.setStudent(student);
+            record.setSchoolClass(clazz);
+            record.setDate(request.getDate());
+            record.setMarkedBy("SYSTEM");
         } else {
-             record.setModified(true);
-             record.setModifiedBy("SYSTEM");
+            record.setModified(true);
+            record.setModifiedBy("SYSTEM");
         }
-        
+
         record.setStatus(request.getStatus());
         record.setRemarks(request.getRemarks());
-        
+
         return attendanceRepository.save(record);
     }
 
     public ClassAttendanceSheetDto getClassAttendanceSheet(Long classId, LocalDate date) {
         List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDate(classId, date);
-        
+
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         int absent = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.ABSENT).count();
-        
+
         List<AttendanceRecordDto> dtos = records.stream().map(this::mapToDto).collect(Collectors.toList());
-        
+
         return ClassAttendanceSheetDto.builder()
                 .classId(classId)
                 .date(date)
@@ -136,75 +138,81 @@ public class AttendanceService {
                 .students(dtos)
                 .build();
     }
-    
-    public List<AttendanceRecordDto> getStudentAttendanceHistory(Long studentId, LocalDate startDate, LocalDate endDate) {
+
+    public List<AttendanceRecordDto> getStudentAttendanceHistory(Long studentId, LocalDate startDate,
+            LocalDate endDate) {
         List<AttendanceRecord> records;
         if (startDate != null && endDate != null) {
             records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate, endDate);
         } else {
-             records = attendanceRepository.findByStudentId(studentId);
+            records = attendanceRepository.findByStudentId(studentId);
         }
         return records.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
-    
+
     public AttendanceSummaryDto getStudentAttendanceSummary(Long studentId) {
         List<AttendanceRecord> records = attendanceRepository.findByStudentId(studentId);
         int total = records.size();
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
-        
+
         return AttendanceSummaryDto.builder()
                 .studentId(studentId)
+                .studentID("STU-" + studentId)
                 .totalDays(total)
                 .presentDays(present)
                 .percentage(pct)
                 .build();
     }
 
-    public ClassAttendanceStatistics getClassAttendanceStatistics(Long classId, LocalDate startDate, LocalDate endDate) {
-         List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDateBetween(classId, startDate, endDate);
-         int total = records.size();
-         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
-         double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
-         
-         long days = records.stream().map(AttendanceRecord::getDate).distinct().count();
-         
-         return ClassAttendanceStatistics.builder()
-                 .classId(classId)
-                 .averagePercentage(pct)
-                 .totalWorkingDays((int) days)
-                 .startDate(startDate)
-                 .endDate(endDate)
-                 .build();
+    public ClassAttendanceStatistics getClassAttendanceStatistics(Long classId, LocalDate startDate,
+            LocalDate endDate) {
+        List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDateBetween(classId, startDate,
+                endDate);
+        int total = records.size();
+        int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
+        double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
+
+        long days = records.stream().map(AttendanceRecord::getDate).distinct().count();
+
+        return ClassAttendanceStatistics.builder()
+                .classId(classId)
+                .averagePercentage(pct)
+                .totalWorkingDays((int) days)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
     }
 
     @Transactional
     public AttendanceRecordDto updateAttendance(Long id, UpdateAttendanceRequest request, String modifiedBy) {
         AttendanceRecord record = attendanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Attendance record not found"));
-        
-        // Validation: Cannot update past a certain window? 
-        // For now, allow update if it's not in the future (which isn't possible for creation anyway)
-        
+
+        // Validation: Cannot update past a certain window?
+        // For now, allow update if it's not in the future (which isn't possible for
+        // creation anyway)
+
         if (request.getStatus() != null) {
             record.setStatus(request.getStatus());
         }
-        
+
         // Update remarks if provided (allow empty string to clear?)
-        // Let's assume null means no change, empty string acts as clear if intended, but usually for PUT we replace.
+        // Let's assume null means no change, empty string acts as clear if intended,
+        // but usually for PUT we replace.
         // But for partial update (PATCH behavior), we check null.
         // Requirement says Correction, implies PUT usually.
         if (request.getRemarks() != null) {
             record.setRemarks(request.getRemarks());
         }
-        
+
         record.setModified(true);
         record.setModifiedBy(modifiedBy);
-        
+
         record = attendanceRepository.save(record);
-        
+
         return mapToDto(record);
     }
 
@@ -212,7 +220,9 @@ public class AttendanceService {
         AttendanceRecordDto dto = new AttendanceRecordDto();
         dto.setId(r.getId());
         dto.setStudentId(r.getStudent().getId());
+        dto.setStudentID("STU-" + r.getStudent().getId());
         dto.setClassId(r.getSchoolClass().getId());
+        dto.setClassID("CLS-01-" + r.getSchoolClass().getId());
         dto.setDate(r.getDate());
         dto.setStatus(r.getStatus());
         dto.setRemarks(r.getRemarks());

@@ -13,18 +13,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthTokenResponseDto {
-    
+
     private String accessToken;
-    
+
     private String refreshToken;
-    
+
     @Builder.Default
     private String tokenType = "Bearer";
-    
-    private Long expiresIn;  // seconds
-    
+
+    private Long expiresIn; // seconds
+
     private UserProfileDto user;
-    
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -36,5 +36,12 @@ public class AuthTokenResponseDto {
         private String firstName;
         private String lastName;
         private String role;
+        // Aliases for consistent identification
+        private Long studentId;
+        private String studentID;
+        private Integer rollNo;
+        private Integer rollNumber;
+        private Long parentId;
+        private String parentID;
     }
 }

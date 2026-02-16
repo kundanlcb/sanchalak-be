@@ -51,15 +51,16 @@ public class AuthService {
         String jwt = tokenProvider.generateToken(authentication);
         String refreshToken = refreshTokenService.createRefreshToken(user, "WEB", "BROWSER");
 
-        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto userProfile = com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto
+        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto.UserProfileDtoBuilder userProfileBuilder = com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto
                 .builder()
                 .userId(user.getId().toString())
                 .mobileNumber(user.getMobileNumber())
                 .email(user.getEmail())
                 .firstName(user.getName())
                 .lastName("")
-                .role(user.getRoles().iterator().next().getName().name())
-                .build();
+                .role(user.getRoles().iterator().next().getName().name());
+
+        com.cm.sanchalak.dto.AuthTokenResponseDto.UserProfileDto userProfile = userProfileBuilder.build();
 
         return com.cm.sanchalak.dto.AuthTokenResponseDto.builder()
                 .accessToken(jwt)

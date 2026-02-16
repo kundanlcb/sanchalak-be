@@ -1,5 +1,6 @@
 package com.cm.sanchalak.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,22 +14,28 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LinkedStudentDto {
-    
+
+    @JsonProperty("studentId")
     private Long studentId;
-    
+
+    @JsonProperty("studentID")
+    private String studentID;
+
     private String firstName;
-    
+
     private String lastName;
-    
+
     private String fullName;
-    
+
     private String className;
-    
+
     private Integer rollNo;
-    
-    private String relationshipType;  // FATHER, MOTHER, GUARDIAN
-    
+
+    private Integer rollNumber;
+
+    private String relationshipType; // FATHER, MOTHER, GUARDIAN
+
     private Boolean isPrimary;
-    
+
     private Boolean isActive;
 }
