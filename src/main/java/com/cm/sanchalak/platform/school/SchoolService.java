@@ -96,6 +96,11 @@ public class SchoolService {
             existingSchool.setTimezone(updatedSchool.getTimezone());
         }
 
+        // Transition from DRAFT to ACTIVE on profile update
+        if (existingSchool.getStatus() == SchoolStatus.DRAFT) {
+            existingSchool.setStatus(SchoolStatus.ACTIVE);
+        }
+
         return schoolRepository.save(existingSchool);
     }
 }
