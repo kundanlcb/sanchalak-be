@@ -13,14 +13,14 @@ public class Student extends BaseEntity {
     private Long id;
 
     @Column(name = "user_id", columnDefinition = "BINARY(16)")
-    private UUID userId;  // Links student to user account for authentication. Nullable for legacy data.
+    private UUID userId; // Links student to user account for authentication. Nullable for legacy data.
 
     @Column(length = 50)
     private String firstName;
 
     @Column(length = 50)
     private String lastName;
-    
+
     @Column(name = "roll_no")
     private Integer rollNo;
 
@@ -40,6 +40,9 @@ public class Student extends BaseEntity {
 
     @Column(name = "admission_number", length = 50)
     private String admissionNumber;
+
+    @Column(name = "student_id", length = 50, unique = true)
+    private String studentID;
 
     @Column(nullable = false)
     private boolean deleted = false;
@@ -137,7 +140,7 @@ public class Student extends BaseEntity {
     public void setRollNo(Integer rollNo) {
         this.rollNo = rollNo;
     }
-    
+
     public String getAdmissionNumber() {
         return admissionNumber;
     }
@@ -145,11 +148,11 @@ public class Student extends BaseEntity {
     public void setAdmissionNumber(String admissionNumber) {
         this.admissionNumber = admissionNumber;
     }
-    
+
     private void updateName() {
-        this.name = (this.firstName != null ? this.firstName : "") + 
-                   (this.firstName != null && this.lastName != null ? " " : "") + 
-                   (this.lastName != null ? this.lastName : "");
+        this.name = (this.firstName != null ? this.firstName : "") +
+                (this.firstName != null && this.lastName != null ? " " : "") +
+                (this.lastName != null ? this.lastName : "");
         this.name = this.name.trim();
     }
 }

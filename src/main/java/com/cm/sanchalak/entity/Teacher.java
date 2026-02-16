@@ -44,6 +44,9 @@ public class Teacher extends BaseEntity {
     @JoinTable(name = "teacher_specializations", joinColumns = @JoinColumn(name = "teacher_id"), inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> specializations = new HashSet<>();
 
+    @Column(name = "teacher_id", length = 50, unique = true)
+    private String teacherID;
+
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -117,6 +120,14 @@ public class Teacher extends BaseEntity {
 
     public void setSpecializations(Set<Subject> specializations) {
         this.specializations = specializations;
+    }
+
+    public String getTeacherID() {
+        return teacherID;
+    }
+
+    public void setTeacherID(String teacherID) {
+        this.teacherID = teacherID;
     }
 
     public boolean isDeleted() {

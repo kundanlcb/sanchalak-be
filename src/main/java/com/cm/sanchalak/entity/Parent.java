@@ -51,6 +51,9 @@ public class Parent extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "parent_id", length = 50, unique = true)
+    private String parentID;
+
     public String getFullName() {
         return (firstName != null ? firstName : "") +
                 (firstName != null && lastName != null ? " " : "") +
