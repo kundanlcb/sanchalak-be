@@ -109,7 +109,12 @@ public class StudentService {
                 .guardianName(student.getGuardianName())
                 .guardianMobile(student.getGuardianMobile())
                 .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)
-                .className(student.getStudentClass() != null ? student.getStudentClass().getName() : null)
+                .classID(student.getStudentClass() != null ? String.valueOf(student.getStudentClass().getId()) : "")
+                .className(student.getStudentClass() != null ? student.getStudentClass().getName() : "")
+                .section("A") // Default until SchoolClass has section
+                .admissionNumber(student.getAdmissionNumber())
+                .mobileNumber(student.getGuardianMobile()) // Use guardian mobile as primary contact for now
+                .status(student.isDeleted() ? "Inactive" : "Active")
                 .deleted(student.isDeleted())
                 .build();
     }

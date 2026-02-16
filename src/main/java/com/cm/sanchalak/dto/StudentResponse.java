@@ -14,7 +14,12 @@ public class StudentResponse {
     private String gender;
     private String guardianName;
     private String guardianMobile;
-    private Long classId;
-    private String className; // Helpful for UI
+    private Long classId; // Keep for backward compat if needed
+    private String classID; // For frontend compatibility
+    private String className;
+    private String section;
+    private String admissionNumber;
+    private String mobileNumber;
+    private String status;
     private boolean deleted;
 }
