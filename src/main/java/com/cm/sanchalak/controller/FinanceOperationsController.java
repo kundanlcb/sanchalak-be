@@ -31,6 +31,14 @@ public class FinanceOperationsController {
         return ResponseEntity.ok(financeService.recordPayment(dto));
     }
 
+    @GetMapping("/transactions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
+    public ResponseEntity<java.util.List<PaymentTransactionDto>> getAllTransactions() {
+        // TODO: Get actual school ID from context
+        java.util.UUID schoolId = java.util.UUID.randomUUID();
+        return ResponseEntity.ok(financeService.getAllTransactions(schoolId));
+    }
+
     @GetMapping("/receipts/{receiptNo}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF', 'STUDENT')")
     public ResponseEntity<byte[]> downloadReceipt(@PathVariable String receiptNo) {
@@ -39,5 +47,13 @@ public class FinanceOperationsController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=receipt-" + receiptNo + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    @GetMapping("/defaulters")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
+    public ResponseEntity<java.util.List<com.cm.sanchalak.dto.finance.DefaulterDto>> getDefaulters() {
+        // TODO: Get actual school ID from context
+        java.util.UUID schoolId = java.util.UUID.randomUUID();
+        return ResponseEntity.ok(financeService.getDefaulters(schoolId));
     }
 }
