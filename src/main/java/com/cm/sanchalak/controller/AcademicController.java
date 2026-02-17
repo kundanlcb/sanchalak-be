@@ -31,6 +31,12 @@ public class AcademicController {
     }
 
     // Classes
+    @PostMapping("/classes")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<SchoolClass> createClass(@Valid @RequestBody SchoolClass schoolClass) {
+        return ResponseEntity.ok(academicService.createClass(schoolClass));
+    }
+
     @GetMapping("/classes")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<SchoolClass>> getAllClasses() {

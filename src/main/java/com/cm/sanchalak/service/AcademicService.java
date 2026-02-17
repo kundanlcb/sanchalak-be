@@ -44,6 +44,10 @@ public class AcademicService {
         return subjectRepository.findAll();
     }
 
+    public SchoolClass createClass(SchoolClass schoolClass) {
+        return classRepository.save(schoolClass);
+    }
+
     public List<SchoolClass> getAllClasses() {
         return classRepository.findAll();
     }
