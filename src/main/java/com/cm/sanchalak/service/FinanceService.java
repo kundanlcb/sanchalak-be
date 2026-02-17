@@ -411,6 +411,14 @@ public class FinanceService {
     }
 
     @Transactional(readOnly = true)
+    public List<PaymentTransactionDto> getTransactionsByStudentId(Long studentId) {
+        return paymentTransactionRepository.findByStudentId(studentId).stream()
+                .sorted((t1, t2) -> t2.getPaymentDate().compareTo(t1.getPaymentDate()))
+                .map(this::mapTransactionToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<DefaulterDto> getDefaulters(java.util.UUID schoolId) {
         List<Student> students = studentRepository.findAll(); // Should actully filter by schoolId if multi-tenant
                                                               // properly

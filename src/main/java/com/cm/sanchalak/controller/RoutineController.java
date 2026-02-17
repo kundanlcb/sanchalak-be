@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/academics/routine")
+@RequestMapping({ "/api/academics/routine", "/api/academic/routine" })
 @RequiredArgsConstructor
 public class RoutineController {
 

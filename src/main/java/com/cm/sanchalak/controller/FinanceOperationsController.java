@@ -19,7 +19,7 @@ public class FinanceOperationsController {
 
     private final FinanceService financeService;
 
-    @GetMapping("/students/{id}/ledger")
+    @GetMapping({ "/students/{id}/ledger", "/ledger/{id}" })
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF', 'STUDENT')")
     public ResponseEntity<StudentLedgerDto> getStudentLedger(@PathVariable Long id) {
         return ResponseEntity.ok(financeService.getStudentLedger(id));
@@ -29,6 +29,12 @@ public class FinanceOperationsController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<PaymentTransactionDto> recordPayment(@Valid @RequestBody PaymentRequestDto dto) {
         return ResponseEntity.ok(financeService.recordPayment(dto));
+    }
+
+    @GetMapping("/transactions/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF', 'STUDENT')")
+    public ResponseEntity<java.util.List<PaymentTransactionDto>> getStudentTransactions(@PathVariable Long studentId) {
+        return ResponseEntity.ok(financeService.getTransactionsByStudentId(studentId));
     }
 
     @GetMapping("/transactions")
