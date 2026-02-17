@@ -26,5 +26,18 @@ public class SchoolClass extends BaseEntity {
     @NotBlank
     @Size(max = 50)
     @Column(length = 50, nullable = false)
+    @com.fasterxml.jackson.annotation.JsonProperty("className")
     private String name;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("classID")
+    @Column(name = "class_id", length = 50, unique = true)
+    private String classID; // Business ID
+
+    private Integer grade;
+
+    @Column(length = 10)
+    private String section;
+
+    @Column(length = 20)
+    private String room;
 }

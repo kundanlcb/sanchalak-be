@@ -45,6 +45,12 @@ public class AcademicService {
     }
 
     public SchoolClass createClass(SchoolClass schoolClass) {
+        if (schoolClass.getClassID() == null || schoolClass.getClassID().isEmpty()) {
+            schoolClass.setClassID("CLS-" + System.currentTimeMillis());
+        }
+        if (schoolClass.getName() == null || schoolClass.getName().isEmpty()) {
+            schoolClass.setName("Class " + schoolClass.getGrade() + "-" + schoolClass.getSection());
+        }
         return classRepository.save(schoolClass);
     }
 
