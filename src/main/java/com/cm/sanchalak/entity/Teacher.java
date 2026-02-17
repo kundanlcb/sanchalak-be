@@ -36,7 +36,7 @@ public class Teacher extends BaseEntity {
 
     @NotBlank
     @Size(max = 15)
-    @Column(name = "mobile_number", length = 15)
+    @Column(name = "phone", length = 15)
     private String mobileNumber;
 
     @Size(max = 100)
@@ -53,6 +53,9 @@ public class Teacher extends BaseEntity {
 
     @Column(name = "teacher_id", length = 50, unique = true)
     private String teacherID;
+
+    @Column(name = "joining_date")
+    private String joiningDate;
 
     @Builder.Default
     @Column(nullable = false)

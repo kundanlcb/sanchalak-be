@@ -28,6 +28,7 @@ public class TeacherRequest {
 
     private String qualification;
     private String profileImage;
+    private String joiningDate;
 
     private List<Long> specializationIds;
 

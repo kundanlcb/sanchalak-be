@@ -61,6 +61,8 @@ public class TeacherService {
         teacher.setMobileNumber(request.getMobileNumber());
         teacher.setQualification(request.getQualification());
         teacher.setProfileImage(request.getProfileImage());
+        teacher.setJoiningDate(request.getJoiningDate());
+        teacher.setTeacherID("TCH-" + System.currentTimeMillis()); // Generate unique ID
 
         if (request.getSpecializationIds() != null && !request.getSpecializationIds().isEmpty()) {
             List<Subject> subjects = subjectRepository.findAllById(request.getSpecializationIds());
@@ -84,6 +86,7 @@ public class TeacherService {
         teacher.setMobileNumber(request.getMobileNumber());
         teacher.setQualification(request.getQualification());
         teacher.setProfileImage(request.getProfileImage());
+        teacher.setJoiningDate(request.getJoiningDate());
 
         if (request.getSpecializationIds() != null) {
             List<Subject> subjects = subjectRepository.findAllById(request.getSpecializationIds());
