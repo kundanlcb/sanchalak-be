@@ -33,11 +33,11 @@ public class AcademicStructureService {
     @Transactional
     public AcademicYear createAcademicYear(AcademicYear academicYear) {
         // Enforce only one current year per school (simplification)
-        if (academicYear.isCurrent()) {
+        if (Boolean.TRUE.equals(academicYear.getIsCurrent())) {
             List<AcademicYear> existing = academicYearRepository.findBySchoolId(academicYear.getSchoolId());
             existing.forEach(y -> {
-                if (y.isCurrent()) {
-                    y.setCurrent(false);
+                if (Boolean.TRUE.equals(y.getIsCurrent())) {
+                    y.setIsCurrent(false);
                     academicYearRepository.save(y);
                 }
             });

@@ -41,5 +41,5 @@ public class AcademicYear extends BaseEntity {
 
     @Builder.Default
     @Column(name = "is_current")
-    private boolean isCurrent = false;
+    private Boolean isCurrent = false;
 }
