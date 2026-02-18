@@ -12,9 +12,6 @@ public class PaymentRequestDto {
     @JsonProperty("studentId")
     private Long studentId;
 
-    @JsonProperty("studentID")
-    private String studentID;
-
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be positive")
     private BigDecimal amount;

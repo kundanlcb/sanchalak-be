@@ -47,9 +47,6 @@ public class Student extends BaseEntity {
     @Column(name = "admission_number", length = 50)
     private String admissionNumber;
 
-    @Column(name = "student_id", length = 50, unique = true)
-    private String studentID;
-
     @Builder.Default
     @Column(nullable = false)
     private boolean deleted = false;

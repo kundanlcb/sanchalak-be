@@ -180,7 +180,6 @@ public class AttendanceService {
 
         return AttendanceSummaryDto.builder()
                 .studentId(studentId)
-                .studentIdStr(String.valueOf(studentId))
                 .totalDays(total)
                 .presentDays(present)
                 .percentage(pct)
@@ -231,9 +230,7 @@ public class AttendanceService {
         AttendanceRecordDto dto = new AttendanceRecordDto();
         dto.setId(r.getId());
         dto.setStudentId(r.getStudent().getId());
-        dto.setStudentIdStr(String.valueOf(r.getStudent().getId()));
         dto.setClassId(r.getSchoolClass().getId());
-        dto.setClassIdStr(String.valueOf(r.getSchoolClass().getId()));
         dto.setDate(r.getDate());
         dto.setStatus(r.getStatus());
         dto.setRemarks(r.getRemarks());

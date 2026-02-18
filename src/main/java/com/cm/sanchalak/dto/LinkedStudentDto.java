@@ -18,9 +18,6 @@ public class LinkedStudentDto {
     @JsonProperty("studentId")
     private Long studentId;
 
-    @JsonProperty("studentID")
-    private String studentID;
-
     private String firstName;
 
     private String lastName;

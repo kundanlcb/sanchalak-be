@@ -29,8 +29,6 @@ public class UserProfileDto {
     // Student-specific fields (populated only for ROLE_STUDENT)
     @JsonProperty("studentId")
     private Long studentId;
-    @JsonProperty("studentID")
-    private String studentID;
 
     private String className;
     private Integer rollNo;

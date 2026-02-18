@@ -19,9 +19,6 @@ public class AttendanceSummaryDto {
     @JsonProperty("studentId")
     private Long studentId;
 
-    @JsonProperty("studentID")
-    private String studentIdStr;
-
     private String studentName;
 
     private String className;

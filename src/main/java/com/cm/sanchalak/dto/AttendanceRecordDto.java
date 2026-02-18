@@ -19,13 +19,9 @@ public class AttendanceRecordDto {
 
     @JsonProperty("studentId")
     private Long studentId;
-    @JsonProperty("studentID")
-    private String studentIdStr;
 
     @JsonProperty("classId")
     private Long classId;
-    @JsonProperty("classID")
-    private String classIdStr;
 
     private LocalDate date;
     private AttendanceStatus status;

@@ -15,8 +15,6 @@ public class StudentResponse {
     private String userId;
     private String createdAt;
     private String updatedAt;
-    @JsonProperty("studentID")
-    private String studentID; // For frontend compatibility
     private String firstName;
     private String lastName;
     private String name;

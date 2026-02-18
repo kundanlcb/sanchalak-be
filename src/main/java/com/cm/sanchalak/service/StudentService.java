@@ -113,7 +113,6 @@ public class StudentService {
                 .userId(student.getUserId() != null ? student.getUserId().toString() : null)
                 .createdAt(student.getCreatedAt() != null ? student.getCreatedAt().toString() : null)
                 .updatedAt(student.getUpdatedAt() != null ? student.getUpdatedAt().toString() : null)
-                .studentID(String.valueOf(student.getId()))
                 .name(student.getName())
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
