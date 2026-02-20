@@ -25,6 +25,7 @@ public class UserProfileDto {
     private String firstName;
     private String lastName;
     private String role;
+    private java.util.List<String> permissions;
 
     // Student-specific fields (populated only for ROLE_STUDENT)
     @JsonProperty("studentId")

@@ -22,6 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import com.cm.sanchalak.platform.school.SchoolUserRepository;
+import com.cm.sanchalak.platform.subscription.SubscriptionService;
+import com.cm.sanchalak.platform.subscription.Feature;
+import com.cm.sanchalak.platform.subscription.SchoolSubscription;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +40,8 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     private final RefreshTokenService refreshTokenService;
+    private final SchoolUserRepository schoolUserRepository;
+    private final SubscriptionService subscriptionService;
 
     @org.springframework.beans.factory.annotation.Value("${app.jwt.access-token-expiry-ms:900000}")
     private Long accessTokenExpiryMs;
@@ -62,6 +70,14 @@ public class AuthService {
             lastName = fullName.substring(lastSpaceIndex + 1);
         }
 
+        List<String> permissions = schoolUserRepository.findByUserId(user.getId())
+                .map(schoolUser -> subscriptionService.getActiveSubscription(schoolUser.getSchoolId()))
+                .map(SchoolSubscription::getPlan)
+                .map(plan -> plan.getFeatures().stream()
+                        .map(Feature::getCode)
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
+
         UserProfileDto userProfile = UserProfileDto.builder()
                 .userId(user.getId())
                 .mobileNumber(user.getMobileNumber())
@@ -70,6 +86,7 @@ public class AuthService {
                 .firstName(firstName)
                 .lastName(lastName)
                 .role(user.getRoles().iterator().next().getName().name())
+                .permissions(permissions)
                 .build();
 
         return AuthTokenResponseDto.builder()
