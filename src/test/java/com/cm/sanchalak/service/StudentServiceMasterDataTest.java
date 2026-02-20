@@ -1,7 +1,6 @@
 package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.StudentRequest;
-import com.cm.sanchalak.dto.StudentResponse;
 import com.cm.sanchalak.entity.Role;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.entity.User;
@@ -20,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 

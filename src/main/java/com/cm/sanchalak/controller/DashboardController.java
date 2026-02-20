@@ -1,5 +1,8 @@
 package com.cm.sanchalak.controller;
 
+import com.cm.sanchalak.security.CurrentUser;
+import com.cm.sanchalak.security.UserPrincipal;
+import com.cm.sanchalak.service.DashboardAggregationService;
 import com.cm.sanchalak.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +40,25 @@ public class DashboardController {
     @PreAuthorize("hasRole('SCHOOL_ADMIN') or hasRole('ROLE_TEACHER')")
     public ResponseEntity<?> getActivityFeed() {
         return ResponseEntity.ok(dashboardService.getActivityFeed());
+    }
+
+    private final DashboardAggregationService aggregationService;
+
+    @GetMapping("/overview/student")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public ResponseEntity<?> getStudentDashboard(@CurrentUser UserPrincipal currentUser) {
+        return ResponseEntity.ok(aggregationService.getDashboardForStudentByUser(currentUser.getId()));
+    }
+
+    @GetMapping("/overview/teacher")
+    @PreAuthorize("hasRole('ROLE_TEACHER')")
+    public ResponseEntity<?> getTeacherDashboard(@CurrentUser UserPrincipal currentUser) {
+        return ResponseEntity.ok(aggregationService.getDashboardForTeacher(currentUser.getId()));
+    }
+
+    @GetMapping("/overview/parent")
+    @PreAuthorize("hasRole('ROLE_PARENT')")
+    public ResponseEntity<?> getParentDashboard(@CurrentUser UserPrincipal currentUser) {
+        return ResponseEntity.ok(aggregationService.getDashboardForParentByUser(currentUser.getId()));
     }
 }

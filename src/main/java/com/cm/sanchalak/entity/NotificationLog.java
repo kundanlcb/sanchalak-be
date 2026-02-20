@@ -66,6 +66,13 @@ public class NotificationLog extends BaseEntity {
     @Column(name = "reference_type", length = 50)
     private String referenceType; // ATTENDANCE, FEE, NOTICE, TRANSPORT
 
+    @Builder.Default
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
+
+    @Column(name = "read_at")
+    private Instant readAt;
+
     public void setTargetPlatform(String platform) {
         this.platform = platform;
     }

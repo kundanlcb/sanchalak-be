@@ -41,6 +41,12 @@ public class UserProfileDto {
     @JsonProperty("parentID")
     private String parentID;
 
+    // Teacher-specific fields (populated only for ROLE_TEACHER)
+    @JsonProperty("teacherId")
+    private Long teacherId;
+    private String qualification;
+    private java.util.List<String> specializations;
+
     // Constructor, Getters, Setters, and Builder are now handled by Lombok @Data,
     // @Builder, @NoArgsConstructor, and @AllArgsConstructor
 }

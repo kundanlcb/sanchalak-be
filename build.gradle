@@ -75,9 +75,6 @@ tasks.named('test') {
 sourceSets {
 	test {
 		java {
-			exclude '**/*IntegrationTest.java'
-			exclude '**/integration/**'
-			exclude '**/MobileAuthControllerTest.java'
 			exclude '**/karate/**'
 		}
 	}

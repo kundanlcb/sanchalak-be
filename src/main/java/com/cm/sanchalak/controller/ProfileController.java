@@ -107,6 +107,21 @@ public class ProfileController {
             Optional<Parent> parentOpt = parentService.getParentByUserId(user.getId());
             if (parentOpt.isPresent()) {
                 profileBuilder.parentId(parentOpt.get().getId());
+                profileBuilder.parentID(parentOpt.get().getParentID());
+            }
+        }
+
+        // Auto-resolve teacher info if ROLE_TEACHER
+        if (hasRole(user, RoleName.ROLE_TEACHER)) {
+            Optional<Teacher> teacherOpt = teacherRepository.findByUserId(user.getId());
+            if (teacherOpt.isPresent()) {
+                Teacher teacher = teacherOpt.get();
+                profileBuilder
+                        .teacherId(teacher.getId())
+                        .qualification(teacher.getQualification())
+                        .specializations(teacher.getSpecializations().stream()
+                                .map(Subject::getName)
+                                .collect(Collectors.toList()));
             }
         }
 
@@ -176,19 +191,16 @@ public class ProfileController {
                 }
             } else {
                 // Parent viewing aggregated dashboard of all children
-                // TODO: Implement parent aggregated dashboard
-                dashboard = DashboardDto.builder().build();
+                dashboard = dashboardService.getDashboardForParent(user.getId());
             }
 
         } else if (hasRole(user, RoleName.ROLE_TEACHER)) {
             // Get teacher dashboard
-            // TODO: Implement teacher dashboard (classes, homework to review, etc.)
-            dashboard = DashboardDto.builder().build();
+            dashboard = dashboardService.getDashboardForTeacher(user.getId());
 
         } else if (hasRole(user, RoleName.ROLE_SCHOOL_ADMIN)) {
             // Get admin dashboard
-            // TODO: Could redirect to /api/dashboard/stats or return summary
-            dashboard = DashboardDto.builder().build();
+            dashboard = dashboardService.getDashboardForParent(user.getId()); // Use shared notice logic for now
 
         } else {
             return ResponseEntity

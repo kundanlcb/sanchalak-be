@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -55,7 +54,8 @@ class HomeworkSubmissionServiceTest {
 
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(new Homework()));
         when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
-        when(fileStorageService.generateUploadUrl(anyString(), anyString(), anyInt())).thenReturn("https://s3.aws.com/upload-url");
+        when(fileStorageService.generateUploadUrl(anyString(), anyString(), anyInt()))
+                .thenReturn("https://s3.aws.com/upload-url");
 
         PresignedUrlDto result = submissionService.generateUploadUrl(homeworkId, studentId, fileName, contentType);
 
@@ -69,36 +69,38 @@ class HomeworkSubmissionServiceTest {
     void testSubmitHomework_Success_Late() {
         Long homeworkId = 1L;
         Long studentId = 100L;
-        
+
         Homework homework = new Homework();
         homework.setDueDate(LocalDate.now().minusDays(1)); // Due yesterday
-        
+
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
         when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
         when(submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId)).thenReturn(Optional.empty());
         when(submissionRepository.save(any(HomeworkSubmission.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId, Collections.singletonList("http://file.url"), "Here is my work");
+        HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId,
+                Collections.singletonList("http://file.url"), "Here is my work");
 
         assertNotNull(result);
         assertEquals("SUBMITTED", result.getStatus());
         assertTrue(result.getIsLate());
     }
-    
+
     @Test
     void testSubmitHomework_Success_OnTime() {
         Long homeworkId = 1L;
         Long studentId = 100L;
-        
+
         Homework homework = new Homework();
         homework.setDueDate(LocalDate.now().plusDays(1)); // Due tomorrow
-        
+
         when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
         when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
         when(submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId)).thenReturn(Optional.empty());
         when(submissionRepository.save(any(HomeworkSubmission.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId, Collections.singletonList("http://file.url"), "Here is my work");
+        HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId,
+                Collections.singletonList("http://file.url"), "Here is my work");
 
         assertNotNull(result);
         assertEquals("SUBMITTED", result.getStatus());

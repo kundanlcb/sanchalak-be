@@ -31,14 +31,22 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class SchoolOperationsIntegrationTest {
 
-    @Autowired private WebApplicationContext context;
-    @Autowired private TeacherRepository teacherRepo;
-    @Autowired private SubjectRepository subjectRepo;
-    @Autowired private SchoolClassRepository classRepo;
-    @Autowired private StudentRepository studentRepo;
-    @Autowired private ClassRoutineRepository routineRepo;
-    @Autowired private RoleRepository roleRepo;
-    @Autowired private UserRepository userRepo;
+    @Autowired
+    private WebApplicationContext context;
+    @Autowired
+    private TeacherRepository teacherRepo;
+    @Autowired
+    private SubjectRepository subjectRepo;
+    @Autowired
+    private SchoolClassRepository classRepo;
+    @Autowired
+    private StudentRepository studentRepo;
+    @Autowired
+    private ClassRoutineRepository routineRepo;
+    @Autowired
+    private RoleRepository roleRepo;
+    @Autowired
+    private UserRepository userRepo;
 
     private WebTestClient webTestClient;
 
@@ -60,11 +68,13 @@ public class SchoolOperationsIntegrationTest {
         createRoleIfMissing(RoleName.ROLE_STUDENT);
 
         // Clear related academic data
-        classRepo.deleteAll(); // Subjects usually depend on nothing but Classes depend on nothing. 
-        // Order: Teachers -> Users. Students -> Class. Routines -> Class/Teacher/Subject.
+        classRepo.deleteAll(); // Subjects usually depend on nothing but Classes depend on nothing.
+        // Order: Teachers -> Users. Students -> Class. Routines ->
+        // Class/Teacher/Subject.
         // Routine deleted first.
         subjectRepo.deleteAll(); // Teachers -> Specialization -> Subject. Teacher deleted. Ok.
-        // Actually Teacher -> Specialization is ManyToMany. Teacher deleted -> Join table cleared. Subject safe to delete.
+        // Actually Teacher -> Specialization is ManyToMany. Teacher deleted -> Join
+        // table cleared. Subject safe to delete.
     }
 
     @Test
@@ -107,8 +117,11 @@ public class SchoolOperationsIntegrationTest {
         clsEntity.setName("10-A");
         clsEntity = classRepo.save(clsEntity);
 
-        Subject sub = subjectRepo.save(new Subject("Math", "M1"));
-        
+        Subject sub = subjectRepo.save(Subject.builder()
+                .name("Math")
+                .code("M1")
+                .build());
+
         Teacher t = new Teacher();
         t.setName("Mr. Math");
         t.setEmail("math@test.com");
@@ -181,11 +194,11 @@ public class SchoolOperationsIntegrationTest {
 
     private void createRoleIfMissing(RoleName roleName) {
         if (roleRepo.findByName(roleName).isEmpty()) {
-             try {
-                 roleRepo.save(new Role(roleName));
-             } catch (Exception e) {
-                 // Ignore if added concurrently or exists
-             }
+            try {
+                roleRepo.save(new Role(roleName));
+            } catch (Exception e) {
+                // Ignore if added concurrently or exists
+            }
         }
     }
 }

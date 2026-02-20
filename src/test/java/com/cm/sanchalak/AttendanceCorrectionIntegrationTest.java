@@ -15,8 +15,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,25 +30,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class AttendanceCorrectionIntegrationTest {
 
-    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private AttendanceRepository attendanceRepository;
-    
+
     @Autowired
     private StudentRepository studentRepository;
-    
+
     @Autowired
     private SchoolClassRepository classRepository;
-    
+
     @Autowired
     private RoleRepository roleRepository;
 
@@ -58,10 +60,13 @@ public class AttendanceCorrectionIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         // Cleaning up DB is risky if other tests are running, but for local it's fine.
-        // Actually, @Transactional on test method is better, but this is IntegrationTest class.
-        // databaseCleanup.execute(); // skipping for now to rely on dirties context or just unique data?
-        
+        // Actually, @Transactional on test method is better, but this is
+        // IntegrationTest class.
+        // databaseCleanup.execute(); // skipping for now to rely on dirties context or
+        // just unique data?
+
         // Setup data
         if (roleRepository.count() == 0) {
             roleRepository.save(new Role(RoleName.ROLE_STUDENT));
@@ -84,12 +89,12 @@ public class AttendanceCorrectionIntegrationTest {
         record.setStatus(AttendanceStatus.ABSENT);
         record.setMarkedBy("SYSTEM");
         record = attendanceRepository.save(record);
-        
+
         attendanceId = record.getId();
     }
 
     @Test
-    @WithMockUser(username = "teacher", roles = {"TEACHER"})
+    @WithMockUser(username = "teacher", roles = { "TEACHER" })
     void testUpdateAttendance() throws Exception {
         UpdateAttendanceRequest request = new UpdateAttendanceRequest();
         request.setStatus(AttendanceStatus.PRESENT);

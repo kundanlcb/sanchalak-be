@@ -3,6 +3,7 @@ package com.cm.sanchalak.security;
 import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,29 +13,28 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
+@Primary
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+        private final UserRepository userRepository;
 
-    @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String email)
-            throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found with email : " + email)
-                );
+        @Override
+        @Transactional
+        public UserDetails loadUserByUsername(String email)
+                        throws UsernameNotFoundException {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new UsernameNotFoundException(
+                                                "User not found with email : " + email));
 
-        return UserPrincipal.create(user);
-    }
+                return UserPrincipal.create(user);
+        }
 
-    @Transactional
-    public UserDetails loadUserById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with id : " + id)
-        );
+        @Transactional
+        public UserDetails loadUserById(UUID id) {
+                User user = userRepository.findById(id).orElseThrow(
+                                () -> new UsernameNotFoundException("User not found with id : " + id));
 
-        return UserPrincipal.create(user);
-    }
+                return UserPrincipal.create(user);
+        }
 }

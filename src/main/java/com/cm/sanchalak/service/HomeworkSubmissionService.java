@@ -31,67 +31,68 @@ import java.util.UUID;
 @Transactional
 @RequiredArgsConstructor
 public class HomeworkSubmissionService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HomeworkSubmissionService.class);
-    
+
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final List<String> ALLOWED_FILE_TYPES = Arrays.asList(
-        "image/jpeg", "image/jpg", "image/png", "application/pdf"
-    );
+            "image/jpeg", "image/jpg", "image/png", "application/pdf");
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList(
-        "jpg", "jpeg", "png", "pdf"
-    );
-    
+            "jpg", "jpeg", "png", "pdf");
+
     private final HomeworkSubmissionRepository submissionRepository;
     private final HomeworkRepository homeworkRepository;
     private final StudentRepository studentRepository;
     private final FileStorageService fileStorageService;
-    
+
     /**
      * Generate presigned upload URL for homework submission file
      */
     public PresignedUrlDto generateUploadUrl(Long homeworkId, Long studentId, String fileName, String contentType) {
         // Validate file
         validateFileType(contentType, fileName);
-        
+
         // Verify homework and student exist
         Homework homework = homeworkRepository.findById(homeworkId)
-            .orElseThrow(() -> new IllegalArgumentException("Homework not found"));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Homework not found"));
+
         Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
         // Generate unique object key
         String extension = getFileExtension(fileName);
-        String objectKey = String.format("homework/%d/student_%d/%s.%s", 
-            homeworkId, studentId, UUID.randomUUID().toString(), extension);
-        
+        String objectKey = String.format("homework/%d/student_%d/%s.%s",
+                homeworkId, studentId, UUID.randomUUID().toString(), extension);
+
         // Generate presigned URL (15 minutes expiry)
         String uploadUrl = fileStorageService.generateUploadUrl(objectKey, contentType, 15);
-        
-        logger.info("Generated upload URL for homework: {}, student: {}", homeworkId, studentId);
-        
+
+        logger.info("Generated upload URL for homework: {} ({}), student: {} ({})",
+                homeworkId, homework.getTitle(), studentId, student.getName());
+
         return PresignedUrlDto.builder()
-            .uploadUrl(uploadUrl)
-            .objectKey(objectKey)
-            .expiryMinutes(15)
-            .instructions("Upload your file to this URL using PUT request with Content-Type header")
-            .build();
+                .uploadUrl(uploadUrl)
+                .objectKey(objectKey)
+                .expiryMinutes(15)
+                .instructions("Upload your file to this URL using PUT request with Content-Type header")
+                .build();
     }
-    
+
     /**
      * Submit homework with file URLs
      */
-    public HomeworkSubmissionDto submitHomework(Long homeworkId, Long studentId, List<String> fileUrls, String remarks) {
+    public HomeworkSubmissionDto submitHomework(Long homeworkId, Long studentId, List<String> fileUrls,
+            String remarks) {
         Homework homework = homeworkRepository.findById(homeworkId)
-            .orElseThrow(() -> new IllegalArgumentException("Homework not found"));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Homework not found"));
+
         Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
         // Check if already submitted
-        Optional<HomeworkSubmission> existingOpt = submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId);
-        
+        Optional<HomeworkSubmission> existingOpt = submissionRepository.findByHomeworkIdAndStudentId(homeworkId,
+                studentId);
+
         HomeworkSubmission submission;
         if (existingOpt.isPresent()) {
             // Resubmission
@@ -100,7 +101,7 @@ public class HomeworkSubmissionService {
             submission.setSubmissionFileUrls(fileUrls);
             submission.setStudentRemarks(remarks);
             submission.setSubmittedAt(Instant.now());
-            
+
             logger.info("Homework resubmitted: homework={}, student={}", homeworkId, studentId);
         } else {
             // New submission
@@ -111,38 +112,38 @@ public class HomeworkSubmissionService {
             submission.setStudentRemarks(remarks);
             submission.setSubmittedAt(Instant.now());
             submission.setStatus(HomeworkSubmission.SubmissionStatus.SUBMITTED);
-            
+
             logger.info("Homework submitted: homework={}, student={}", homeworkId, studentId);
         }
-        
+
         // Check if late
         boolean isLate = checkIfLate(homework.getDueDate(), submission.getSubmittedAt());
         submission.setIsLate(isLate);
-        
+
         submission = submissionRepository.save(submission);
-        
+
         return mapToDto(submission);
     }
-    
+
     /**
      * Get submission by homework and student
      */
     @Transactional(readOnly = true)
     public Optional<HomeworkSubmissionDto> getSubmission(Long homeworkId, Long studentId) {
         return submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId)
-            .map(this::mapToDto);
+                .map(this::mapToDto);
     }
-    
+
     /**
      * Get all submissions for a students
      */
     @Transactional(readOnly = true)
     public List<HomeworkSubmissionDto> getStudentSubmissions(Long studentId) {
         return submissionRepository.findByStudentId(studentId).stream()
-            .map(this::mapToDto)
-            .toList();
+                .map(this::mapToDto)
+                .toList();
     }
-    
+
     /**
      * Validate file type and size
      */
@@ -150,19 +151,18 @@ public class HomeworkSubmissionService {
         // Check content type
         if (!ALLOWED_FILE_TYPES.contains(contentType.toLowerCase())) {
             throw new IllegalArgumentException(
-                String.format("File type not allowed. Allowed types: %s", String.join(", ", ALLOWED_FILE_TYPES))
-            );
+                    String.format("File type not allowed. Allowed types: %s", String.join(", ", ALLOWED_FILE_TYPES)));
         }
-        
+
         // Check file extension
         String extension = getFileExtension(fileName).toLowerCase();
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
             throw new IllegalArgumentException(
-                String.format("File extension not allowed. Allowed extensions: %s", String.join(", ", ALLOWED_EXTENSIONS))
-            );
+                    String.format("File extension not allowed. Allowed extensions: %s",
+                            String.join(", ", ALLOWED_EXTENSIONS)));
         }
     }
-    
+
     /**
      * Get file extension from filename
      */
@@ -173,7 +173,7 @@ public class HomeworkSubmissionService {
         }
         return fileName.substring(lastDot + 1);
     }
-    
+
     /**
      * Check if submission is late
      */
@@ -181,27 +181,27 @@ public class HomeworkSubmissionService {
         LocalDate submittedDate = submittedAt.atZone(ZoneId.systemDefault()).toLocalDate();
         return submittedDate.isAfter(dueDate);
     }
-    
+
     /**
      * Map entity to DTO
      */
     private HomeworkSubmissionDto mapToDto(HomeworkSubmission submission) {
         return HomeworkSubmissionDto.builder()
-            .submissionId(submission.getId())
-            .homeworkId(submission.getHomework().getId())
-            .homeworkTitle(submission.getHomework().getTitle())
-            .studentId(submission.getStudent().getId())
-            .studentName(submission.getStudent().getName())
-            .submittedAt(submission.getSubmittedAt())
-            .isLate(submission.getIsLate())
-            .status(submission.getStatus().name())
-            .fileUrls(submission.getSubmissionFileUrls())
-            .studentRemarks(submission.getStudentRemarks())
-            .teacherFeedback(submission.getTeacherFeedback())
-            .grade(submission.getGrade())
-            .marksObtained(submission.getMarksObtained())
-            .gradedAt(submission.getGradedAt())
-            .gradedByName(submission.getGradedBy() != null ? submission.getGradedBy().getName() : null)
-            .build();
+                .submissionId(submission.getId())
+                .homeworkId(submission.getHomework().getId())
+                .homeworkTitle(submission.getHomework().getTitle())
+                .studentId(submission.getStudent().getId())
+                .studentName(submission.getStudent().getName())
+                .submittedAt(submission.getSubmittedAt())
+                .isLate(submission.getIsLate())
+                .status(submission.getStatus().name())
+                .fileUrls(submission.getSubmissionFileUrls())
+                .studentRemarks(submission.getStudentRemarks())
+                .teacherFeedback(submission.getTeacherFeedback())
+                .grade(submission.getGrade())
+                .marksObtained(submission.getMarksObtained())
+                .gradedAt(submission.getGradedAt())
+                .gradedByName(submission.getGradedBy() != null ? submission.getGradedBy().getName() : null)
+                .build();
     }
 }

@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
+import com.cm.sanchalak.service.StudentImportService;
 
 @RestController
 @RequestMapping("/api/academics/students")
@@ -17,7 +19,7 @@ import org.springframework.data.domain.Page;
 public class StudentController {
 
     private final StudentService studentService;
-    private final com.cm.sanchalak.service.StudentImportService studentImportService;
+    private final StudentImportService studentImportService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -60,7 +62,7 @@ public class StudentController {
     @PostMapping(value = "/bulk-import", consumes = "multipart/form-data")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> bulkImportStudents(
-            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+            @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Please select a file to upload");
         }

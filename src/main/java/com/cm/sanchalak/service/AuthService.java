@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,119 +30,124 @@ import com.cm.sanchalak.platform.school.SchoolUserRepository;
 import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import com.cm.sanchalak.platform.subscription.Feature;
 import com.cm.sanchalak.platform.school.SchoolPermissionRepository;
+import com.cm.sanchalak.platform.school.SchoolRolePermission;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider tokenProvider;
+        private final AuthenticationManager authenticationManager;
+        private final UserRepository userRepository;
+        private final RoleRepository roleRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtTokenProvider tokenProvider;
 
-    private final RefreshTokenService refreshTokenService;
-    private final SchoolUserRepository schoolUserRepository;
-    private final SubscriptionService subscriptionService;
-    private final SchoolPermissionRepository schoolPermissionRepository;
+        private final RefreshTokenService refreshTokenService;
+        private final SchoolUserRepository schoolUserRepository;
+        private final SubscriptionService subscriptionService;
+        private final SchoolPermissionRepository schoolPermissionRepository;
 
-    @org.springframework.beans.factory.annotation.Value("${app.jwt.access-token-expiry-ms:900000}")
-    private Long accessTokenExpiryMs;
+        @Value("${app.jwt.access-token-expiry-ms:900000}")
+        private Long accessTokenExpiryMs;
 
-    public AuthTokenResponseDto authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.email(),
-                        loginRequest.password()));
+        public AuthTokenResponseDto authenticateUser(LoginRequest loginRequest) {
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                loginRequest.email(),
+                                                loginRequest.password()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        User user = userRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new AppException("User not found"));
+                User user = userRepository.findByEmail(loginRequest.email())
+                                .orElseThrow(() -> new AppException("User not found"));
 
-        String jwt = tokenProvider.generateToken(authentication);
-        String refreshToken = refreshTokenService.createRefreshToken(user, "WEB", "BROWSER");
+                String jwt = tokenProvider.generateToken(authentication);
+                String refreshToken = refreshTokenService.createRefreshToken(user, "WEB", "BROWSER");
 
-        String fullName = user.getName();
-        String firstName = fullName;
-        String lastName = "";
+                String fullName = user.getName();
+                String firstName = fullName;
+                String lastName = "";
 
-        if (fullName != null && fullName.contains(" ")) {
-            int lastSpaceIndex = fullName.lastIndexOf(" ");
-            firstName = fullName.substring(0, lastSpaceIndex);
-            lastName = fullName.substring(lastSpaceIndex + 1);
+                if (fullName != null && fullName.contains(" ")) {
+                        int lastSpaceIndex = fullName.lastIndexOf(" ");
+                        firstName = fullName.substring(0, lastSpaceIndex);
+                        lastName = fullName.substring(lastSpaceIndex + 1);
+                }
+
+                // Resolve permissions based on school subscription and role-specific overrides
+                List<String> permissions = schoolUserRepository.findByUserId(user.getId())
+                                .map(schoolUser -> {
+                                        UUID schoolId = schoolUser.getSchoolId();
+                                        var activeSub = subscriptionService.getActiveSubscription(schoolId);
+                                        List<String> planFeatures = (activeSub != null && activeSub.getPlan() != null)
+                                                        ? activeSub.getPlan().getFeatures().stream()
+                                                                        .map(Feature::getCode)
+                                                                        .collect(Collectors.toList())
+                                                        : Collections.<String>emptyList();
+
+                                        // Check for role-specific overrides
+                                        List<String> roleOverrides = schoolPermissionRepository.findBySchoolId(schoolId)
+                                                        .stream()
+                                                        .filter(p -> p.getRoleName() == user.getRoles().iterator()
+                                                                        .next().getName())
+                                                        .map(p -> p.getFeatureCode())
+                                                        .collect(Collectors.toList());
+
+                                        // If overrides exist, return them; otherwise, return all plan features
+                                        return roleOverrides.isEmpty() ? planFeatures : roleOverrides;
+                                })
+                                .orElse(Collections.emptyList());
+
+                UserProfileDto userProfile = UserProfileDto.builder()
+                                .userId(user.getId())
+                                .mobileNumber(user.getMobileNumber())
+                                .email(user.getEmail())
+                                .name(fullName)
+                                .firstName(firstName)
+                                .lastName(lastName)
+                                .role(user.getRoles().iterator().next().getName().name())
+                                .permissions(permissions)
+                                .build();
+
+                return AuthTokenResponseDto.builder()
+                                .accessToken(jwt)
+                                .refreshToken(refreshToken)
+                                .tokenType("Bearer")
+                                .expiresIn(accessTokenExpiryMs / 1000)
+                                .user(userProfile)
+                                .build();
         }
 
-        // Resolve permissions based on school subscription and role-specific overrides
-        List<String> permissions = schoolUserRepository.findByUserId(user.getId())
-                .map(schoolUser -> {
-                    UUID schoolId = schoolUser.getSchoolId();
-                    List<String> planFeatures = subscriptionService.getActiveSubscription(schoolId)
-                            .getPlan().getFeatures().stream()
-                            .map(Feature::getCode)
-                            .collect(Collectors.toList());
+        @Transactional
+        public ApiResult<String> registerUser(SignUpRequest signUpRequest) {
+                if (userRepository.existsByEmail(signUpRequest.email())) {
+                        return ApiResult.error("EMAIL_EXISTS", "Email Address already in use!");
+                }
 
-                    // Check for role-specific overrides
-                    List<String> roleOverrides = schoolPermissionRepository.findBySchoolId(schoolId).stream()
-                            .filter(p -> p.getRoleName() == user.getRoles().iterator().next().getName())
-                            .map(p -> p.getFeatureCode())
-                            .collect(Collectors.toList());
+                User user = User.builder()
+                                .name(signUpRequest.name())
+                                .email(signUpRequest.email())
+                                .password(signUpRequest.password())
+                                .build();
 
-                    // If overrides exist, return them; otherwise, return all plan features
-                    return roleOverrides.isEmpty() ? planFeatures : roleOverrides;
-                })
-                .orElse(Collections.emptyList());
+                user.setPassword(passwordEncoder.encode(signUpRequest.password()));
 
-        UserProfileDto userProfile = UserProfileDto.builder()
-                .userId(user.getId())
-                .mobileNumber(user.getMobileNumber())
-                .email(user.getEmail())
-                .name(fullName)
-                .firstName(firstName)
-                .lastName(lastName)
-                .role(user.getRoles().iterator().next().getName().name())
-                .permissions(permissions)
-                .build();
+                RoleName roleName = RoleName.ROLE_STUDENT;
+                if (signUpRequest.role() != null) {
+                        try {
+                                roleName = RoleName.valueOf(signUpRequest.role());
+                        } catch (IllegalArgumentException e) {
+                                // Ignore
+                        }
+                }
 
-        return AuthTokenResponseDto.builder()
-                .accessToken(jwt)
-                .refreshToken(refreshToken)
-                .tokenType("Bearer")
-                .expiresIn(accessTokenExpiryMs / 1000)
-                .user(userProfile)
-                .build();
-    }
+                Role userRole = roleRepository.findByName(roleName)
+                                .orElseThrow(() -> new AppException("User Role not set."));
 
-    @Transactional
-    public ApiResult<String> registerUser(SignUpRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.email())) {
-            return ApiResult.error("EMAIL_EXISTS", "Email Address already in use!");
+                user.setRoles(Collections.singleton(userRole));
+
+                userRepository.save(user);
+
+                return ApiResult.success("User registered successfully");
         }
-
-        User user = User.builder()
-                .name(signUpRequest.name())
-                .email(signUpRequest.email())
-                .password(signUpRequest.password())
-                .build();
-
-        user.setPassword(passwordEncoder.encode(signUpRequest.password()));
-
-        RoleName roleName = RoleName.ROLE_STUDENT;
-        if (signUpRequest.role() != null) {
-            try {
-                roleName = RoleName.valueOf(signUpRequest.role());
-            } catch (IllegalArgumentException e) {
-                // Ignore
-            }
-        }
-
-        Role userRole = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new AppException("User Role not set."));
-
-        user.setRoles(Collections.singleton(userRole));
-
-        userRepository.save(user);
-
-        return ApiResult.success("User registered successfully");
-    }
 }

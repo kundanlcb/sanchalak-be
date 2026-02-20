@@ -1,8 +1,11 @@
 package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.DashboardDto;
+import com.cm.sanchalak.entity.AttendanceRecord;
+import com.cm.sanchalak.entity.ExamSchedule;
 import com.cm.sanchalak.entity.Student;
-import com.cm.sanchalak.repository.StudentRepository;
+import com.cm.sanchalak.entity.Teacher;
+import com.cm.sanchalak.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.Comparator;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service to aggregate dashboard data from multiple sources
@@ -21,151 +24,221 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class DashboardAggregationService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DashboardAggregationService.class);
-    
+
     private final StudentRepository studentRepository;
-    
-    // TODO: Inject repositories/services for attendance, homework, exams, fees, notices
-    // private AttendanceRepository attendanceRepository;
-    // private HomeworkRepository homeworkRepository;
-    // private ExamRepository examRepository;
-    // private FeeRepository feeRepository;
-    // private NoticeRepository noticeRepository;
-    
+    private final AttendanceRepository attendanceRepository;
+    private final HomeworkRepository homeworkRepository;
+    private final HomeworkSubmissionRepository homeworkSubmissionRepository;
+    private final ExamScheduleRepository examScheduleRepository;
+    private final StudentFeeMapRepository studentFeeMapRepository;
+    private final NoticeRepository noticeRepository;
+    private final NoticeReadStatusRepository noticeReadStatusRepository;
+    private final TeacherRepository teacherRepository;
+
+    @Transactional(readOnly = true)
+    public DashboardDto getDashboardForStudentByUser(UUID userId) {
+        Student student = studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found for user: " + userId));
+        return getDashboardForStudent(student.getId());
+    }
+
     /**
      * Get dashboard data for student
      */
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForStudent(Long studentId) {
         logger.info("Fetching dashboard data for student: {}", studentId);
-        
-        Optional<Student> studentOpt = studentRepository.findById(studentId);
-        if (studentOpt.isEmpty()) {
-            throw new IllegalArgumentException("Student not found");
-        }
-        
-        Student student = studentOpt.get();
-        
-        // Aggregate data from various sources
-        DashboardDto.AttendanceSummary attendance = getAttendanceSummary(studentId);
-        DashboardDto.HomeworkSummary homework = getHomeworkSummary(studentId);
-        DashboardDto.UpcomingExam nextExam = getUpcomingExam(studentId);
-        DashboardDto.FeesSummary fees = getFeesSummary(studentId);
-        var recentNotices = getRecentNotices(student.getStudentClass() != null ? student.getStudentClass().getId() : null);
-        
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+        Long classId = student.getStudentClass() != null ? student.getStudentClass().getId() : null;
+        UUID userId = student.getUserId();
+
         return DashboardDto.builder()
-            .attendanceSummary(attendance)
-            .homeworkSummary(homework)
-            .nextExam(nextExam)
-            .feesSummary(fees)
-            .recentNotices(recentNotices)
-            .build();
+                .attendanceSummary(getAttendanceSummary(studentId))
+                .homeworkSummary(getHomeworkSummary(studentId, classId))
+                .nextExam(getUpcomingExam(classId))
+                .feesSummary(getFeesSummary(studentId))
+                .recentNotices(getRecentNotices(userId, "STUDENT"))
+                .build();
     }
-    
+
+    @Transactional(readOnly = true)
+    public DashboardDto getDashboardForParentByUser(UUID userId) {
+        // In the future, this might involve deeper parent-student relationship logic
+        return getDashboardForParent(userId);
+    }
+
     /**
      * Get dashboard data for parent (aggregates data from all children)
      */
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForParent(UUID parentId) {
         logger.info("Fetching dashboard data for parent: {}", parentId);
-        
-        // TODO: Implement parent dashboard aggregation
-        // For now, return empty dashboard
+
         return DashboardDto.builder()
-            .attendanceSummary(null)
-            .homeworkSummary(null)
-            .nextExam(null)
-            .feesSummary(null)
-            .recentNotices(new ArrayList<>())
-            .build();
+                .recentNotices(getRecentNotices(parentId, "PARENT"))
+                .build();
     }
-    
+
+    /**
+     * Get dashboard data for teacher
+     */
+    @Transactional(readOnly = true)
+    public DashboardDto getDashboardForTeacher(UUID userId) {
+        Teacher teacher = teacherRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
+
+        logger.info("Fetching dashboard data for teacher: {} ({})", userId, teacher.getName());
+
+        return DashboardDto.builder()
+                .recentNotices(getRecentNotices(userId, "TEACHER"))
+                .build();
+    }
+
     /**
      * Get attendance summary for student
      */
     private DashboardDto.AttendanceSummary getAttendanceSummary(Long studentId) {
-        // TODO: Query attendance records for current academic year
-        // For now, return mock data
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfYear(1); // Assume Jan 1st for now
+
+        var records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate, now);
+
+        int total = records.size();
+        int present = (int) records.stream()
+                .filter(r -> r.getStatus() != null && "PRESENT".equalsIgnoreCase(r.getStatus().name()))
+                .count();
+        int absent = (int) records.stream()
+                .filter(r -> r.getStatus() != null && "ABSENT".equalsIgnoreCase(r.getStatus().name()))
+                .count();
+
+        LocalDate lastMarked = records.stream()
+                .map(AttendanceRecord::getDate)
+                .max(LocalDate::compareTo)
+                .orElse(null);
+
         return DashboardDto.AttendanceSummary.builder()
-            .presentDays(45)
-            .absentDays(5)
-            .totalDays(50)
-            .attendancePercentage(90.0)
-            .lastMarkedDate(LocalDate.now().minusDays(1))
-            .build();
+                .presentDays(present)
+                .absentDays(absent)
+                .totalDays(total)
+                .attendancePercentage(total > 0 ? (double) present / total * 100 : 0.0)
+                .lastMarkedDate(lastMarked)
+                .build();
     }
-    
+
     /**
      * Get homework summary for student
      */
-    private DashboardDto.HomeworkSummary getHomeworkSummary(Long studentId) {
-        // TODO: Query homework submissions and pending homework
-        // For now, return mock data
+    private DashboardDto.HomeworkSummary getHomeworkSummary(Long studentId, Long classId) {
+        if (classId == null)
+            return null;
+
+        var allHomework = homeworkRepository.findByStudentClassId(classId);
+
+        int submitted = 0;
+        int pending = 0;
+        int late = 0;
+
+        LocalDate now = LocalDate.now();
+        LocalDate nextDueDate = null;
+        String nextDueSubject = null;
+
+        for (var hw : allHomework) {
+            boolean isSubmitted = homeworkSubmissionRepository.existsByHomeworkIdAndStudentId(hw.getId(), studentId);
+            if (isSubmitted) {
+                submitted++;
+            } else {
+                pending++;
+                if (hw.getDueDate().isBefore(now)) {
+                    late++;
+                }
+                if (nextDueDate == null || hw.getDueDate().isBefore(nextDueDate)) {
+                    if (hw.getDueDate().isAfter(now) || hw.getDueDate().isEqual(now)) {
+                        nextDueDate = hw.getDueDate();
+                        nextDueSubject = hw.getSubject() != null ? hw.getSubject().getName() : "Homework";
+                    }
+                }
+            }
+        }
+
         return DashboardDto.HomeworkSummary.builder()
-            .pendingCount(3)
-            .submittedCount(12)
-            .lateCount(1)
-            .nextDueDate(LocalDate.now().plusDays(2).atStartOfDay())
-            .nextDueSubject("Mathematics")
-            .build();
+                .pendingCount(pending)
+                .submittedCount(submitted)
+                .lateCount(late)
+                .nextDueDate(nextDueDate != null ? nextDueDate.atStartOfDay() : null)
+                .nextDueSubject(nextDueSubject)
+                .build();
     }
-    
+
     /**
      * Get next upcoming exam for student
      */
-    private DashboardDto.UpcomingExam getUpcomingExam(Long studentId) {
-        // TODO: Query exams table for next exam after today
-        // For now, return mock data
-        LocalDate examDate = LocalDate.now().plusDays(7);
-        long daysRemaining = ChronoUnit.DAYS.between(LocalDate.now(), examDate);
-        
-        return DashboardDto.UpcomingExam.builder()
-            .examName("Mid-Term Exam")
-            .subject("Science")
-            .examDate(examDate)
-            .daysRemaining((int) daysRemaining)
-            .syllabus("Chapters 1-5")
-            .build();
+    private DashboardDto.UpcomingExam getUpcomingExam(Long classId) {
+        if (classId == null)
+            return null;
+
+        LocalDate now = LocalDate.now();
+        var upcomingExams = examScheduleRepository.findByStudentClassIdAndExamDateBetween(classId, now,
+                now.plusMonths(1));
+
+        return upcomingExams.stream()
+                .min(Comparator.comparing(ExamSchedule::getExamDate))
+                .map(e -> DashboardDto.UpcomingExam.builder()
+                        .examName(e.getExamTerm() != null ? e.getExamTerm().getName() : "Exam")
+                        .subject(e.getSubject() != null ? e.getSubject().getName() : "N/A")
+                        .examDate(e.getExamDate())
+                        .daysRemaining((int) ChronoUnit.DAYS.between(now, e.getExamDate()))
+                        .build())
+                .orElse(null);
     }
-    
+
     /**
      * Get fees summary for student
      */
     private DashboardDto.FeesSummary getFeesSummary(Long studentId) {
-        // TODO: Query fees records for student
-        // For now, return mock data
+        var feeMaps = studentFeeMapRepository.findByStudentId(studentId);
+
+        double totalDue = 0.0;
+        for (var map : feeMaps) {
+            var structure = map.getFeeStructure();
+            if (structure != null && structure.getItems() != null) {
+                double amount = structure.getItems().stream()
+                        .mapToDouble(i -> i.getAmount() != null ? i.getAmount().doubleValue() : 0.0)
+                        .sum();
+                double discount = map.getDiscountAmount() != null ? map.getDiscountAmount().doubleValue() : 0.0;
+                totalDue += (amount - discount);
+            }
+        }
+
         return DashboardDto.FeesSummary.builder()
-            .totalDue(5000.0)
-            .totalPaid(15000.0)
-            .nextDueDate(LocalDate.now().plusMonths(1))
-            .currency("INR")
-            .build();
+                .totalDue(totalDue)
+                .totalPaid(0.0)
+                .currency("INR")
+                .build();
     }
-    
+
     /**
-     * Get recent notices for class
+     * Get recent notices for user
      */
-    private java.util.List<DashboardDto.RecentNotice> getRecentNotices(Long classId) {
-        // TODO: Query notices for class and general notices
-        // For now, return mock data
-        return java.util.List.of(
-            DashboardDto.RecentNotice.builder()
-                .noticeId(1L)
-                .title("Parent-Teacher Meeting")
-                .description("PTM scheduled for next Saturday at 10 AM")
-                .publishDate(LocalDate.now().minusDays(2))
-                .priority("HIGH")
-                .isRead(false)
-                .build(),
-            DashboardDto.RecentNotice.builder()
-                .noticeId(2L)
-                .title("Annual Sports Day")
-                .description("Sports day on 15th Dec. All students must participate")
-                .publishDate(LocalDate.now().minusDays(5))
-                .priority("MEDIUM")
-                .isRead(true)
-                .build()
-        );
+    private java.util.List<DashboardDto.RecentNotice> getRecentNotices(UUID userId, String role) {
+        LocalDate now = LocalDate.now();
+        var notices = noticeRepository.findRecentByTargetRole(role, now.minusDays(30));
+
+        return notices.stream()
+                .limit(5)
+                .map(n -> DashboardDto.RecentNotice.builder()
+                        .noticeId(n.getId())
+                        .title(n.getTitle())
+                        .description(n.getContent())
+                        .publishDate(n.getPublishDate())
+                        .priority(n.getPriority())
+                        .isRead(userId != null
+                                && noticeReadStatusRepository.existsByUserIdAndNoticeId(userId, n.getId()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

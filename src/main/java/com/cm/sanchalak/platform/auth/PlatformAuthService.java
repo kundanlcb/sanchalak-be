@@ -8,7 +8,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.UUID;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,11 +22,11 @@ public class PlatformAuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final PlatformUserRepository userRepository;
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public PlatformAuthService(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider,
             PlatformUserRepository userRepository,
-            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
@@ -63,7 +66,7 @@ public class PlatformAuthService {
                 .build();
     }
 
-    public java.util.List<PlatformUserDto> getAllUsers() {
+    public List<PlatformUserDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(user -> PlatformUserDto.builder()
                         .id(user.getId().toString())
@@ -95,7 +98,7 @@ public class PlatformAuthService {
                 .build();
     }
 
-    public void deleteUser(java.util.UUID userId) {
+    public void deleteUser(UUID userId) {
         userRepository.deleteById(userId);
     }
 }

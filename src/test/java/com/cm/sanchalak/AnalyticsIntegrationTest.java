@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,23 +34,34 @@ public class AnalyticsIntegrationTest {
 
     private WebTestClient webTestClient;
 
-    @Autowired private StudentRepository studentRepository;
-    @Autowired private ExamTermRepository examTermRepository;
-    @Autowired private ExamScheduleRepository examScheduleRepository;
-    @Autowired private SubjectRepository subjectRepository;
-    @Autowired private SchoolClassRepository classRepository;
-    @Autowired private StudentMarksRepository studentMarksRepository;
-    @Autowired private AttendanceRepository attendanceRepository;
-    
-    @Autowired private PaymentTransactionRepository paymentTransactionRepository;
-    @Autowired private FeeStructureRepository feeStructureRepository;
-    @Autowired private StudentFeeMapRepository studentFeeMapRepository;
-    @Autowired private FeeCategoryRepository feeCategoryRepository;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private ExamTermRepository examTermRepository;
+    @Autowired
+    private ExamScheduleRepository examScheduleRepository;
+    @Autowired
+    private SubjectRepository subjectRepository;
+    @Autowired
+    private SchoolClassRepository classRepository;
+    @Autowired
+    private StudentMarksRepository studentMarksRepository;
+    @Autowired
+    private AttendanceRepository attendanceRepository;
+
+    @Autowired
+    private PaymentTransactionRepository paymentTransactionRepository;
+    @Autowired
+    private FeeStructureRepository feeStructureRepository;
+    @Autowired
+    private StudentFeeMapRepository studentFeeMapRepository;
+    @Autowired
+    private FeeCategoryRepository feeCategoryRepository;
 
     @BeforeEach
     void setUp() {
         this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context).build();
-        
+
         // Clean up
         studentMarksRepository.deleteAll();
         attendanceRepository.deleteAll();
@@ -68,17 +80,25 @@ public class AnalyticsIntegrationTest {
         SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10");
         schoolClass = classRepository.save(schoolClass);
-        
+
         Student student = new Student();
         student.setName("John Doe");
         student.setStudentClass(schoolClass);
         student = studentRepository.save(student);
 
         // Setup Term
-        ExamTerm term = examTermRepository.save(new ExamTerm("Term 1", LocalDate.now().minusMonths(3), LocalDate.now()));
+        ExamTerm term = examTermRepository.save(ExamTerm.builder()
+                .name("Term 1")
+                .startDate(LocalDate.now().minusMonths(3))
+                .endDate(LocalDate.now())
+                .isActive(true)
+                .build());
 
         // Setup Subjects & Schedule
-        Subject math = subjectRepository.save(new Subject("Math", "MATH101"));
+        Subject math = subjectRepository.save(Subject.builder()
+                .name("Math")
+                .code("MATH101")
+                .build());
         ExamSchedule schedule = new ExamSchedule();
         schedule.setExamTerm(term);
         schedule.setSubject(math);
@@ -102,7 +122,7 @@ public class AnalyticsIntegrationTest {
         att.setDate(LocalDate.now().minusDays(10));
         att.setStatus(AttendanceStatus.PRESENT);
         attendanceRepository.save(att);
-        
+
         final Long studentId = student.getId();
 
         // Act
@@ -131,8 +151,12 @@ public class AnalyticsIntegrationTest {
         fs.setName("Annual Fee");
         fs.setAcademicYear("2024-25");
         fs.setFrequency("ANNUAL");
-        
-        FeeCategory tuition = feeCategoryRepository.save(new FeeCategory("Tuition", "T001", true));
+
+        FeeCategory tuition = feeCategoryRepository.save(FeeCategory.builder()
+                .name("Tuition")
+                .isMandatory(true)
+                .schoolId(UUID.randomUUID()) // Required by entity
+                .build());
         FeeStructureItem item = new FeeStructureItem();
         item.setFeeStructure(fs);
         item.setFeeCategory(tuition);
@@ -144,12 +168,12 @@ public class AnalyticsIntegrationTest {
         SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10B");
         schoolClass = classRepository.save(schoolClass);
-        
+
         Student student = new Student();
         student.setName("Jane Doe");
         student.setStudentClass(schoolClass);
         student = studentRepository.save(student);
-        
+
         StudentFeeMap feeMap = new StudentFeeMap();
         feeMap.setStudent(student);
         feeMap.setFeeStructure(fs);
