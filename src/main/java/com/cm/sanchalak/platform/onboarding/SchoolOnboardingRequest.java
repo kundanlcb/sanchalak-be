@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -34,4 +35,7 @@ public class SchoolOnboardingRequest {
     private String academicYearName;
     private LocalDate startDate;
     private LocalDate endDate;
+
+    // Subscription Details
+    private UUID planId;
 }

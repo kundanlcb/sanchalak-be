@@ -7,6 +7,7 @@ import com.cm.sanchalak.platform.onboarding.BootstrapAdminRequest;
 import com.cm.sanchalak.platform.onboarding.BootstrapAdminService;
 import com.cm.sanchalak.platform.subscription.SchoolSubscriptionRepository;
 import com.cm.sanchalak.platform.subscription.SubscriptionStatus;
+import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +22,20 @@ public class SchoolService {
     private final SchoolUserRepository schoolUserRepository;
     private final SchoolSubscriptionRepository subscriptionRepository;
     private final BootstrapAdminService bootstrapAdminService;
+    private final SubscriptionService subscriptionService;
 
     public SchoolService(SchoolRepository schoolRepository,
             AcademicYearRepository academicYearRepository,
             SchoolUserRepository schoolUserRepository,
             SchoolSubscriptionRepository subscriptionRepository,
-            BootstrapAdminService bootstrapAdminService) {
+            BootstrapAdminService bootstrapAdminService,
+            SubscriptionService subscriptionService) {
         this.schoolRepository = schoolRepository;
         this.academicYearRepository = academicYearRepository;
         this.schoolUserRepository = schoolUserRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.bootstrapAdminService = bootstrapAdminService;
+        this.subscriptionService = subscriptionService;
     }
 
     public OnboardingStatus getOnboardingStatus(UUID schoolId) {
@@ -148,6 +152,11 @@ public class SchoolService {
                 .build();
 
         academicYearRepository.save(academicYear);
+
+        // 4. Assign Subscription
+        if (request.getPlanId() != null) {
+            subscriptionService.assignPlan(savedSchool.getId(), request.getPlanId());
+        }
 
         return savedSchool;
     }
