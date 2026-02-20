@@ -6,6 +6,7 @@ import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.cm.sanchalak.platform.subscription.SubscriptionPlanRequest;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,8 +26,8 @@ public class SubscriptionController {
     }
 
     @PostMapping("/plans")
-    public ResponseEntity<SubscriptionPlan> createPlan(@RequestBody SubscriptionPlan plan) {
-        return ResponseEntity.ok(service.createPlan(plan));
+    public ResponseEntity<SubscriptionPlan> createPlan(@RequestBody SubscriptionPlanRequest request) {
+        return ResponseEntity.ok(service.createPlan(request));
     }
 
     @PostMapping("/assign/{schoolId}")

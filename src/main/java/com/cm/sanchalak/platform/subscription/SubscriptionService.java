@@ -12,11 +12,14 @@ public class SubscriptionService {
 
     private final SubscriptionPlanRepository planRepository;
     private final SchoolSubscriptionRepository subscriptionRepository;
+    private final FeatureRepository featureRepository;
 
     public SubscriptionService(SubscriptionPlanRepository planRepository,
-            SchoolSubscriptionRepository subscriptionRepository) {
+            SchoolSubscriptionRepository subscriptionRepository,
+            FeatureRepository featureRepository) {
         this.planRepository = planRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.featureRepository = featureRepository;
     }
 
     public List<SubscriptionPlan> getAllPlans() {
@@ -24,7 +27,18 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public SubscriptionPlan createPlan(SubscriptionPlan plan) {
+    public SubscriptionPlan createPlan(SubscriptionPlanRequest request) {
+        SubscriptionPlan plan = new SubscriptionPlan();
+        plan.setName(request.getName());
+        plan.setPrice(request.getPrice());
+        plan.setDurationMonths(request.getDurationMonths());
+        plan.setMaxStudents(request.getMaxStudents());
+
+        if (request.getFeatureIds() != null && !request.getFeatureIds().isEmpty()) {
+            List<Feature> features = featureRepository.findAllById(request.getFeatureIds());
+            plan.setFeatures(new java.util.HashSet<>(features));
+        }
+
         return planRepository.save(plan);
     }
 

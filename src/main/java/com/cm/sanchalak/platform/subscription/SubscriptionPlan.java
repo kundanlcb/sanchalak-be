@@ -30,8 +30,9 @@ public class SubscriptionPlan extends BaseEntity {
     @Column(name = "max_students")
     private Integer maxStudents; // null means unlimited
 
-    @Column(columnDefinition = "TEXT")
-    private String features; // JSON or comma-separated list of enabled features
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "subscription_plan_features", joinColumns = @JoinColumn(name = "plan_id"), inverseJoinColumns = @JoinColumn(name = "feature_id"))
+    private java.util.Set<Feature> features;
 
     // Getters and Setters
     public UUID getId() {
@@ -74,11 +75,11 @@ public class SubscriptionPlan extends BaseEntity {
         this.maxStudents = maxStudents;
     }
 
-    public String getFeatures() {
+    public java.util.Set<Feature> getFeatures() {
         return features;
     }
 
-    public void setFeatures(String features) {
+    public void setFeatures(java.util.Set<Feature> features) {
         this.features = features;
     }
 }
