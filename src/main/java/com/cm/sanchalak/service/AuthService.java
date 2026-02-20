@@ -9,28 +9,28 @@ import com.cm.sanchalak.entity.Role;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.exception.AppException;
+import com.cm.sanchalak.platform.school.SchoolFeatureEntitlementService;
+import com.cm.sanchalak.platform.school.SchoolPermissionRepository;
+import com.cm.sanchalak.platform.school.SchoolUserRepository;
 import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.UserRepository;
 import com.cm.sanchalak.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import com.cm.sanchalak.platform.school.SchoolUserRepository;
-import com.cm.sanchalak.platform.subscription.SubscriptionService;
-import com.cm.sanchalak.platform.subscription.Feature;
-import com.cm.sanchalak.platform.school.SchoolPermissionRepository;
-import com.cm.sanchalak.platform.school.SchoolRolePermission;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class AuthService {
 
         private final RefreshTokenService refreshTokenService;
         private final SchoolUserRepository schoolUserRepository;
-        private final SubscriptionService subscriptionService;
+        private final SchoolFeatureEntitlementService schoolFeatureEntitlementService;
         private final SchoolPermissionRepository schoolPermissionRepository;
 
         @Value("${app.jwt.access-token-expiry-ms:900000}")
@@ -74,18 +74,13 @@ public class AuthService {
                         lastName = fullName.substring(lastSpaceIndex + 1);
                 }
 
-                // Resolve permissions based on school subscription and role-specific overrides
+                // Resolve permissions from school entitlements and role-specific overrides.
                 List<String> permissions = schoolUserRepository.findByUserId(user.getId())
                                 .map(schoolUser -> {
                                         UUID schoolId = schoolUser.getSchoolId();
-                                        var activeSub = subscriptionService.getActiveSubscription(schoolId);
-                                        List<String> planFeatures = (activeSub != null && activeSub.getPlan() != null)
-                                                        ? activeSub.getPlan().getFeatures().stream()
-                                                                        .map(Feature::getCode)
-                                                                        .collect(Collectors.toList())
-                                                        : Collections.<String>emptyList();
+                                        List<String> enabledFeatures = schoolFeatureEntitlementService
+                                                        .getEnabledFeatureCodes(schoolId);
 
-                                        // Check for role-specific overrides
                                         List<String> roleOverrides = schoolPermissionRepository.findBySchoolId(schoolId)
                                                         .stream()
                                                         .filter(p -> p.getRoleName() == user.getRoles().iterator()
@@ -93,8 +88,15 @@ public class AuthService {
                                                         .map(p -> p.getFeatureCode())
                                                         .collect(Collectors.toList());
 
-                                        // If overrides exist, return them; otherwise, return all plan features
-                                        return roleOverrides.isEmpty() ? planFeatures : roleOverrides;
+                                        if (roleOverrides.isEmpty()) {
+                                                return enabledFeatures;
+                                        }
+
+                                        Set<String> enabledSet = new HashSet<>(enabledFeatures);
+                                        return roleOverrides.stream()
+                                                        .filter(enabledSet::contains)
+                                                        .distinct()
+                                                        .collect(Collectors.toList());
                                 })
                                 .orElse(Collections.emptyList());
 

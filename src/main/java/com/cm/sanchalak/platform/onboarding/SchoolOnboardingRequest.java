@@ -1,6 +1,7 @@
 package com.cm.sanchalak.platform.onboarding;
 
 import com.cm.sanchalak.platform.school.ContactInfo;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,5 +38,6 @@ public class SchoolOnboardingRequest {
     private LocalDate endDate;
 
     // Subscription Details
+    @NotNull(message = "planId is required")
     private UUID planId;
 }

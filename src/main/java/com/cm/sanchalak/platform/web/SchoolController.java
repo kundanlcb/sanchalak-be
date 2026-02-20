@@ -4,9 +4,11 @@ import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.platform.onboarding.BootstrapAdminRequest;
 import com.cm.sanchalak.platform.onboarding.BootstrapAdminService;
 import com.cm.sanchalak.platform.onboarding.OnboardingStatus;
+import com.cm.sanchalak.platform.onboarding.SchoolOnboardingRequest;
 import com.cm.sanchalak.platform.school.School;
 import com.cm.sanchalak.platform.school.SchoolService;
 import com.cm.sanchalak.platform.school.SchoolStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,8 +64,7 @@ public class SchoolController {
     }
 
     @PostMapping("/onboard")
-    public ResponseEntity<School> onboardSchool(
-            @RequestBody com.cm.sanchalak.platform.onboarding.SchoolOnboardingRequest request) {
+    public ResponseEntity<School> onboardSchool(@Valid @RequestBody SchoolOnboardingRequest request) {
         return ResponseEntity.ok(schoolService.onboardSchool(request));
     }
 }

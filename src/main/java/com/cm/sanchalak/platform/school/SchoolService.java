@@ -23,19 +23,22 @@ public class SchoolService {
     private final SchoolSubscriptionRepository subscriptionRepository;
     private final BootstrapAdminService bootstrapAdminService;
     private final SubscriptionService subscriptionService;
+    private final SchoolFeatureEntitlementService schoolFeatureEntitlementService;
 
     public SchoolService(SchoolRepository schoolRepository,
             AcademicYearRepository academicYearRepository,
             SchoolUserRepository schoolUserRepository,
             SchoolSubscriptionRepository subscriptionRepository,
             BootstrapAdminService bootstrapAdminService,
-            SubscriptionService subscriptionService) {
+            SubscriptionService subscriptionService,
+            SchoolFeatureEntitlementService schoolFeatureEntitlementService) {
         this.schoolRepository = schoolRepository;
         this.academicYearRepository = academicYearRepository;
         this.schoolUserRepository = schoolUserRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.bootstrapAdminService = bootstrapAdminService;
         this.subscriptionService = subscriptionService;
+        this.schoolFeatureEntitlementService = schoolFeatureEntitlementService;
     }
 
     public OnboardingStatus getOnboardingStatus(UUID schoolId) {
@@ -120,6 +123,10 @@ public class SchoolService {
             throw new RuntimeException("School code already exists: " + request.getSchoolCode());
         }
 
+        if (request.getPlanId() == null) {
+            throw new IllegalArgumentException("planId is required for onboarding");
+        }
+
         // 1. Create School
         School school = new School();
         school.setName(request.getSchoolName());
@@ -154,9 +161,10 @@ public class SchoolService {
         academicYearRepository.save(academicYear);
 
         // 4. Assign Subscription
-        if (request.getPlanId() != null) {
-            subscriptionService.assignPlan(savedSchool.getId(), request.getPlanId());
-        }
+        subscriptionService.assignPlan(savedSchool.getId(), request.getPlanId());
+
+        // 5. Snapshot plan features into school entitlements
+        schoolFeatureEntitlementService.seedFeaturesFromPlan(savedSchool.getId(), request.getPlanId());
 
         return savedSchool;
     }
