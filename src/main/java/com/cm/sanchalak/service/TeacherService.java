@@ -47,7 +47,7 @@ public class TeacherService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode("Teacher@123")); // Default password
+        user.setPassword(passwordEncoder.encode(request.getEmail())); // Default password is email
 
         Role userRole = roleRepository.findByName(RoleName.ROLE_TEACHER)
                 .orElseThrow(() -> new RuntimeException("User Role not set."));

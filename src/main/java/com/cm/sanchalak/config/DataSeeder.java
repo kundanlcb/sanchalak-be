@@ -23,6 +23,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedRoles() {
+        // Seed School Roles
         Arrays.stream(RoleName.values()).forEach(roleName -> {
             if (roleRepository.findByName(roleName).isEmpty()) {
                 roleRepository.save(new Role(roleName));

@@ -50,7 +50,7 @@ public class BootstrapAdminService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setMobileNumber(request.getMobileNumber());
 
-        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_SCHOOL_ADMIN)
                 .orElseThrow(() -> new RuntimeException("User Role not set."));
 
         user.setRoles(Collections.singleton(adminRole));

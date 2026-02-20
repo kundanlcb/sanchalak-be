@@ -10,6 +10,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.cm.sanchalak.exception.AppException;
+import com.cm.sanchalak.entity.RoleName;
+import com.cm.sanchalak.entity.User;
+import com.cm.sanchalak.repository.UserRepository;
+import com.cm.sanchalak.repository.RoleRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Collections;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +31,9 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final SchoolClassRepository classRepository;
     private final com.cm.sanchalak.platform.master.MasterDataService masterDataService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public StudentResponse createStudent(StudentRequest request) {
         masterDataService.validateValue("GENDER", request.getGender());
@@ -35,6 +45,24 @@ public class StudentService {
         updateStudentFromRequest(student, request);
         student.setStudentClass(studentClass);
         student.setDeleted(false);
+        student.setEmail(request.getEmail());
+
+        // Create User account
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException("Email already in use: " + request.getEmail());
+        }
+
+        User user = new User();
+        user.setName(student.getName());
+        user.setEmail(student.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getEmail())); // Default password is email
+
+        com.cm.sanchalak.entity.Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+                .orElseThrow(() -> new EntityNotFoundException("Student Role not found"));
+        user.setRoles(Collections.singleton(studentRole));
+
+        User savedUser = userRepository.save(user);
+        student.setUserId(savedUser.getId());
 
         Student savedStudent = studentRepository.save(student);
         return mapToResponse(savedStudent);
@@ -118,7 +146,7 @@ public class StudentService {
                 .lastName(student.getLastName())
                 .dateOfBirth("2010-01-01") // Mock for now
                 .gender(student.getGender())
-                .email("student" + student.getId() + "@school.com") // Mock for now
+                .email(student.getEmail())
                 .guardianName(student.getGuardianName())
                 .guardianMobile(student.getGuardianMobile())
                 .classId(student.getStudentClass() != null ? student.getStudentClass().getId() : null)

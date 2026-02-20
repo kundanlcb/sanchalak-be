@@ -21,6 +21,10 @@ public class StudentRequest {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @NotBlank(message = "Email is required")
+    @jakarta.validation.constraints.Email(message = "Invalid email format")
+    private String email;
+
     @NotNull(message = "Roll number is required")
     private Integer rollNo;
 

@@ -60,4 +60,10 @@ public class SchoolController {
     public ResponseEntity<OnboardingStatus> getOnboardingStatus(@PathVariable UUID schoolId) {
         return ResponseEntity.ok(schoolService.getOnboardingStatus(schoolId));
     }
+
+    @PostMapping("/onboard")
+    public ResponseEntity<School> onboardSchool(
+            @RequestBody com.cm.sanchalak.platform.onboarding.SchoolOnboardingRequest request) {
+        return ResponseEntity.ok(schoolService.onboardSchool(request));
+    }
 }

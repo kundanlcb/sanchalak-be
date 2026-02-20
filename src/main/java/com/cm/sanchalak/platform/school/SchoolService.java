@@ -2,6 +2,9 @@ package com.cm.sanchalak.platform.school;
 
 import com.cm.sanchalak.platform.academic.AcademicYearRepository;
 import com.cm.sanchalak.platform.onboarding.OnboardingStatus;
+import com.cm.sanchalak.platform.onboarding.SchoolOnboardingRequest;
+import com.cm.sanchalak.platform.onboarding.BootstrapAdminRequest;
+import com.cm.sanchalak.platform.onboarding.BootstrapAdminService;
 import com.cm.sanchalak.platform.subscription.SchoolSubscriptionRepository;
 import com.cm.sanchalak.platform.subscription.SubscriptionStatus;
 import org.springframework.stereotype.Service;
@@ -17,15 +20,18 @@ public class SchoolService {
     private final AcademicYearRepository academicYearRepository;
     private final SchoolUserRepository schoolUserRepository;
     private final SchoolSubscriptionRepository subscriptionRepository;
+    private final BootstrapAdminService bootstrapAdminService;
 
     public SchoolService(SchoolRepository schoolRepository,
             AcademicYearRepository academicYearRepository,
             SchoolUserRepository schoolUserRepository,
-            SchoolSubscriptionRepository subscriptionRepository) {
+            SchoolSubscriptionRepository subscriptionRepository,
+            BootstrapAdminService bootstrapAdminService) {
         this.schoolRepository = schoolRepository;
         this.academicYearRepository = academicYearRepository;
         this.schoolUserRepository = schoolUserRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.bootstrapAdminService = bootstrapAdminService;
     }
 
     public OnboardingStatus getOnboardingStatus(UUID schoolId) {
@@ -102,5 +108,47 @@ public class SchoolService {
         }
 
         return schoolRepository.save(existingSchool);
+    }
+
+    @Transactional
+    public School onboardSchool(SchoolOnboardingRequest request) {
+        if (schoolRepository.existsBySchoolCode(request.getSchoolCode())) {
+            throw new RuntimeException("School code already exists: " + request.getSchoolCode());
+        }
+
+        // 1. Create School
+        School school = new School();
+        school.setName(request.getSchoolName());
+        school.setSchoolCode(request.getSchoolCode());
+        school.setBoard(request.getBoard());
+        school.setRegistrationNumber(request.getRegistrationNumber());
+        school.setTimezone(request.getTimezone());
+        school.setContactInfo(request.getContactInfo());
+        school.setStatus(SchoolStatus.ACTIVE);
+
+        School savedSchool = schoolRepository.save(school);
+
+        // 2. Bootstrap Admin
+        BootstrapAdminRequest adminRequest = BootstrapAdminRequest.builder()
+                .name(request.getAdminName())
+                .email(request.getAdminEmail())
+                .password(request.getAdminPassword() != null ? request.getAdminPassword() : request.getAdminEmail())
+                .mobileNumber(request.getAdminMobile())
+                .build();
+
+        bootstrapAdminService.bootstrapAdmin(savedSchool.getId(), adminRequest);
+
+        // 3. Create Academic Year
+        com.cm.sanchalak.entity.AcademicYear academicYear = com.cm.sanchalak.entity.AcademicYear.builder()
+                .schoolId(savedSchool.getId())
+                .name(request.getAcademicYearName())
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .isCurrent(true)
+                .build();
+
+        academicYearRepository.save(academicYear);
+
+        return savedSchool;
     }
 }

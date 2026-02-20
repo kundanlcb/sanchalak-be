@@ -185,7 +185,7 @@ public class ProfileController {
             // TODO: Implement teacher dashboard (classes, homework to review, etc.)
             dashboard = DashboardDto.builder().build();
 
-        } else if (hasRole(user, RoleName.ROLE_ADMIN)) {
+        } else if (hasRole(user, RoleName.ROLE_SCHOOL_ADMIN)) {
             // Get admin dashboard
             // TODO: Could redirect to /api/dashboard/stats or return summary
             dashboard = DashboardDto.builder().build();

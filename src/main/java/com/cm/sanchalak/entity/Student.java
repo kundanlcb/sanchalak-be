@@ -1,6 +1,7 @@
 package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -26,6 +27,12 @@ public class Student extends BaseEntity {
 
     @Column(length = 50)
     private String lastName;
+
+    @NotBlank
+    @Email
+    @Size(max = 50)
+    @Column(length = 50, nullable = false, unique = true)
+    private String email;
 
     @Column(name = "roll_no")
     private Integer rollNo;
