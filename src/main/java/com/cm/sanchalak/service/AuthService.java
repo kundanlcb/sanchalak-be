@@ -23,11 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import com.cm.sanchalak.platform.school.SchoolUserRepository;
 import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import com.cm.sanchalak.platform.subscription.Feature;
-import com.cm.sanchalak.platform.subscription.SchoolSubscription;
+import com.cm.sanchalak.platform.school.SchoolPermissionRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final SchoolUserRepository schoolUserRepository;
     private final SubscriptionService subscriptionService;
+    private final SchoolPermissionRepository schoolPermissionRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.jwt.access-token-expiry-ms:900000}")
     private Long accessTokenExpiryMs;
@@ -70,12 +72,24 @@ public class AuthService {
             lastName = fullName.substring(lastSpaceIndex + 1);
         }
 
+        // Resolve permissions based on school subscription and role-specific overrides
         List<String> permissions = schoolUserRepository.findByUserId(user.getId())
-                .map(schoolUser -> subscriptionService.getActiveSubscription(schoolUser.getSchoolId()))
-                .map(SchoolSubscription::getPlan)
-                .map(plan -> plan.getFeatures().stream()
-                        .map(Feature::getCode)
-                        .collect(Collectors.toList()))
+                .map(schoolUser -> {
+                    UUID schoolId = schoolUser.getSchoolId();
+                    List<String> planFeatures = subscriptionService.getActiveSubscription(schoolId)
+                            .getPlan().getFeatures().stream()
+                            .map(Feature::getCode)
+                            .collect(Collectors.toList());
+
+                    // Check for role-specific overrides
+                    List<String> roleOverrides = schoolPermissionRepository.findBySchoolId(schoolId).stream()
+                            .filter(p -> p.getRoleName() == user.getRoles().iterator().next().getName())
+                            .map(p -> p.getFeatureCode())
+                            .collect(Collectors.toList());
+
+                    // If overrides exist, return them; otherwise, return all plan features
+                    return roleOverrides.isEmpty() ? planFeatures : roleOverrides;
+                })
                 .orElse(Collections.emptyList());
 
         UserProfileDto userProfile = UserProfileDto.builder()

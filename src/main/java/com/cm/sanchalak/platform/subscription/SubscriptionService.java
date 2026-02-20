@@ -70,4 +70,14 @@ public class SubscriptionService {
         return subscriptionRepository.findBySchoolIdAndStatus(schoolId, SubscriptionStatus.ACTIVE)
                 .orElse(null);
     }
+
+    public List<String> getActiveSubscriptionFeatures(UUID schoolId) {
+        SchoolSubscription subscription = getActiveSubscription(schoolId);
+        if (subscription == null || subscription.getPlan() == null) {
+            return java.util.Collections.emptyList();
+        }
+        return subscription.getPlan().getFeatures().stream()
+                .map(Feature::getCode)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }
