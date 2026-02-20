@@ -10,13 +10,13 @@
 			"path": "../gurukul"
 		},
 		{
-			"path": "../shubh-milan-fe"
-		},
-		{
 			"path": "../guru"
 		},
 		{
 			"path": "../sanchalan-admin"
+		},
+		{
+			"path": "../sanchalak-e2e"
 		}
 	],
 	"settings": {

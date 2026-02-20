@@ -24,14 +24,15 @@ public class HomeworkService {
     private final TeacherRepository teacherRepository;
 
     public HomeworkService(HomeworkRepository homeworkRepository, SchoolClassRepository classRepository,
-                           SubjectRepository subjectRepository, TeacherRepository teacherRepository) {
+            SubjectRepository subjectRepository, TeacherRepository teacherRepository) {
         this.homeworkRepository = homeworkRepository;
         this.classRepository = classRepository;
         this.subjectRepository = subjectRepository;
         this.teacherRepository = teacherRepository;
     }
 
-    public Homework createHomework(Long classId, Long subjectId, Long teacherId, String title, String description, LocalDate dueDate) {
+    public Homework createHomework(Long classId, Long subjectId, Long teacherId, String title, String description,
+            LocalDate dueDate) {
         SchoolClass clazz = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         Subject subject = subjectRepository.findById(subjectId)
@@ -50,11 +51,12 @@ public class HomeworkService {
         return homeworkRepository.save(homework);
     }
 
-    public List<Homework> getAllHomework() {
-        return homeworkRepository.findAll();
+    public List<Homework> getAllHomework(Long classId, Long subjectId, LocalDate dueDate) {
+        return homeworkRepository.findWithFilters(classId, subjectId, dueDate);
     }
 
-    public Homework updateHomework(Long id, Long classId, Long subjectId, Long teacherId, String title, String description, LocalDate dueDate) {
+    public Homework updateHomework(Long id, Long classId, Long subjectId, Long teacherId, String title,
+            String description, LocalDate dueDate) {
         Homework homework = homeworkRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Homework not found"));
 
@@ -73,7 +75,7 @@ public class HomeworkService {
                     .orElseThrow(() -> new RuntimeException("Teacher not found"));
             homework.setTeacher(teacher);
         }
-        
+
         homework.setTitle(title);
         homework.setDescription(description);
         homework.setDueDate(dueDate);

@@ -6,6 +6,7 @@ import com.cm.sanchalak.service.HomeworkService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -33,8 +34,11 @@ public class HomeworkController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT', 'PARENT')")
-    public ResponseEntity<List<Homework>> getAllHomework() {
-        return ResponseEntity.ok(homeworkService.getAllHomework());
+    public ResponseEntity<List<Homework>> getAllHomework(
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) LocalDate dueDate) {
+        return ResponseEntity.ok(homeworkService.getAllHomework(classId, subjectId, dueDate));
     }
 
     @PutMapping("/{id}")

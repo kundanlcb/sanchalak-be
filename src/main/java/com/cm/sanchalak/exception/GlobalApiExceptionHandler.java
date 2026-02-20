@@ -26,121 +26,175 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalApiExceptionHandler {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(GlobalApiExceptionHandler.class);
-    
+
     /**
      * Validation errors (400 Bad Request)
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResult<Void>> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
-        
+
         List<String> errors = ex.getBindingResult().getFieldErrors()
-            .stream()
-            .map(FieldError::getDefaultMessage)
-            .collect(Collectors.toList());
-        
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+
         ApiError error = ApiError.of("VALIDATION_ERROR", "Invalid request parameters", errors);
         logger.warn("Validation error: {}", errors);
-        
+
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResult.error(error));
     }
-    
+
     /**
      * Constraint violation (400 Bad Request)
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResult<Void>> handleConstraintViolation(
             ConstraintViolationException ex, WebRequest request) {
-        
+
         List<String> errors = ex.getConstraintViolations()
-            .stream()
-            .map(violation -> violation.getMessage())
-            .collect(Collectors.toList());
-        
+                .stream()
+                .map(violation -> violation.getMessage())
+                .collect(Collectors.toList());
+
         ApiError error = ApiError.of("CONSTRAINT_VIOLATION", "Validation failed", errors);
         logger.warn("Constraint violation: {}", errors);
-        
+
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResult.error(error));
     }
-    
+
     /**
      * Authentication errors (401 Unauthorized)
      */
-    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
+    @ExceptionHandler({ AuthenticationException.class, BadCredentialsException.class })
     public ResponseEntity<ApiResult<Void>> handleAuthenticationException(
             Exception ex, WebRequest request) {
-        
+
         ApiError error = ApiError.of("AUTHENTICATION_FAILED", "Invalid credentials or token");
         logger.warn("Authentication failed: {}", ex.getMessage());
-        
+
         return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResult.error(error));
     }
-    
+
     /**
      * Authorization errors (403 Forbidden)
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResult<Void>> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
-        
+
         ApiError error = ApiError.of("ACCESS_DENIED", "You don't have permission to access this resource");
         logger.warn("Access denied: {}", ex.getMessage());
-        
+
         return ResponseEntity
-            .status(HttpStatus.FORBIDDEN)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResult.error(error));
     }
-    
+
     /**
      * Resource not found (404 Not Found)
      */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResult<Void>> handleNotFoundException(
             NoHandlerFoundException ex, WebRequest request) {
-        
+
         ApiError error = ApiError.of("NOT_FOUND", "The requested resource was not found");
         logger.warn("Resource not found: {}", ex.getRequestURL());
-        
+
         return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResult.error(error));
     }
-    
+
     /**
      * Business logic exceptions (custom application exceptions)
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResult<Void>> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
-        
+
         ApiError error = ApiError.of("INVALID_REQUEST", ex.getMessage());
         logger.warn("Invalid argument: {}", ex.getMessage());
-        
+
         return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResult.error(error));
     }
-    
+
+    /**
+     * Data integrity errors (409 Conflict)
+     */
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResult<Void>> handleDataIntegrityException(
+            org.springframework.dao.DataIntegrityViolationException ex, WebRequest request) {
+
+        String msg = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
+        ApiError error = ApiError.of("DATA_CONFLICT", "Conflict with existing data: " + msg);
+        logger.error("Data integrity violation: {}", msg);
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResult.error(error));
+    }
+
+    /**
+     * Application specific exceptions (Custom status or 400)
+     */
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResult<Void>> handleAppException(
+            AppException ex, WebRequest request) {
+
+        ApiError error = ApiError.of("APP_ERROR", ex.getMessage());
+        logger.warn("Application error: {}", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResult.error(error));
+    }
+
+    /**
+     * Runtime exceptions (fallback 500)
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResult<Void>> handleRuntimeException(
+            RuntimeException ex, WebRequest request) {
+
+        // Check for specific messages to map to 404
+        if (ex.getMessage() != null && ex.getMessage().contains("not found")) {
+            ApiError error = ApiError.of("NOT_FOUND", ex.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResult.error(error));
+        }
+
+        ApiError error = ApiError.of("RUNTIME_ERROR", ex.getMessage());
+        logger.error("Runtime error: ", ex);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResult.error(error));
+    }
+
     /**
      * Generic server errors (500 Internal Server Error)
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<Void>> handleGlobalException(
             Exception ex, WebRequest request) {
-        
+
         ApiError error = ApiError.of("INTERNAL_ERROR", "An unexpected error occurred. Please try again later.");
         logger.error("Unexpected error: ", ex);
-        
+
         return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResult.error(error));
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResult.error(error));
     }
 }

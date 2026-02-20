@@ -1,5 +1,7 @@
 package com.cm.sanchalak.service;
 
+import com.cm.sanchalak.exception.AppException;
+
 import com.cm.sanchalak.dto.TeacherRequest;
 import com.cm.sanchalak.dto.TeacherResponse;
 import com.cm.sanchalak.entity.Role;
@@ -111,12 +113,12 @@ public class TeacherService {
 
         // Check dependencies (Assignments)
         if (classSubjectRepository.existsByTeacherId(id)) {
-            throw new RuntimeException("Cannot delete teacher assigned to classes.");
+            throw new AppException("Cannot delete teacher: They are currently assigned to one or more class subjects.");
         }
 
         // Check dependencies (Routine)
         if (classRoutineRepository.existsByTeacherId(id)) {
-            throw new RuntimeException("Cannot delete teacher who is active in the class routine.");
+            throw new AppException("Cannot delete teacher: They have active sessions in the class routine.");
         }
 
         // Soft delete

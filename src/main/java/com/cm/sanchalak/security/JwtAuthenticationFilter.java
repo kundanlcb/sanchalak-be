@@ -41,10 +41,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UUID userId = tokenProvider.getUserIdFromJWT(jwt);
 
                 UserDetails userDetails;
-                if (request.getRequestURI().startsWith("/api/platform/")) {
-                    userDetails = platformUserDetailsService.loadUserById(userId);
-                } else {
-                    userDetails = customUserDetailsService.loadUserById(userId);
+                try {
+                    if (request.getRequestURI().startsWith("/api/platform/")) {
+                        try {
+                            userDetails = platformUserDetailsService.loadUserById(userId);
+                        } catch (Exception e) {
+                            // Fallback to custom user service for platform requests (multi-tenancy/admin
+                            // access)
+                            userDetails = customUserDetailsService.loadUserById(userId);
+                        }
+                    } else {
+                        try {
+                            userDetails = customUserDetailsService.loadUserById(userId);
+                        } catch (Exception e) {
+                            // Fallback to platform user service
+                            userDetails = platformUserDetailsService.loadUserById(userId);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("User not found in either domain for ID: {}", userId);
+                    throw e;
                 }
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

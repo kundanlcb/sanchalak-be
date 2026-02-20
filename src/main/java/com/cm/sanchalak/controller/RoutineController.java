@@ -20,8 +20,16 @@ public class RoutineController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
-    public ResponseEntity<List<RoutineResponse>> getRoutine(@RequestParam Long classId) {
-        return ResponseEntity.ok(routineService.getRoutineByClassId(classId));
+    public ResponseEntity<List<RoutineResponse>> getRoutine(
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) Long teacherId) {
+        if (classId != null) {
+            return ResponseEntity.ok(routineService.getRoutineByClassId(classId));
+        } else if (teacherId != null) {
+            return ResponseEntity.ok(routineService.getRoutineByTeacherId(teacherId));
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping
