@@ -25,6 +25,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     // Keep legacy for existing code that might not care, or update them.
     List<Student> findByStudentClass_Id(Long classId);
+    List<Student> findByStudentClass_SchoolIdAndDeletedFalse(UUID schoolId);
 
     // Find student by user account
     Optional<Student> findByUserId(UUID userId);

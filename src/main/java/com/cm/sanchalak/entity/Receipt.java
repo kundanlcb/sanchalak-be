@@ -2,6 +2,7 @@ package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "receipts")
@@ -19,6 +20,9 @@ public class Receipt extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id", nullable = false, unique = true)
     private PaymentTransaction transaction;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
 
     @Column(name = "receipt_number", nullable = false, unique = true)
     private String receiptNumber;

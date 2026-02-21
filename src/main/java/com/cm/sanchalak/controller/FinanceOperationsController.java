@@ -21,7 +21,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FinanceOperationsController {
 
+    private static final UUID DEFAULT_SCHOOL_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
     private final FinanceService financeService;
+
+    private UUID getSchoolId() {
+        // TODO: Resolve from security context / tenant context
+        return DEFAULT_SCHOOL_ID;
+    }
 
     @GetMapping({ "/students/{id}/ledger", "/ledger/{id}" })
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF', 'STUDENT')")
@@ -44,9 +51,7 @@ public class FinanceOperationsController {
     @GetMapping("/transactions")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<PaymentTransactionDto>> getAllTransactions() {
-        // TODO: Get actual school ID from context
-        UUID schoolId = UUID.randomUUID();
-        return ResponseEntity.ok(financeService.getAllTransactions(schoolId));
+        return ResponseEntity.ok(financeService.getAllTransactions(getSchoolId()));
     }
 
     @GetMapping("/receipts/{receiptNo}")
@@ -62,8 +67,6 @@ public class FinanceOperationsController {
     @GetMapping("/defaulters")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<DefaulterDto>> getDefaulters() {
-        // TODO: Get actual school ID from context
-        UUID schoolId = UUID.randomUUID();
-        return ResponseEntity.ok(financeService.getDefaulters(schoolId));
+        return ResponseEntity.ok(financeService.getDefaulters(getSchoolId()));
     }
 }

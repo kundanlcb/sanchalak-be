@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -26,9 +27,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FinanceService {
 
+    private static final UUID DEFAULT_SCHOOL_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
     private final FeeCategoryRepository feeCategoryRepository;
     private final FeeStructureRepository feeStructureRepository;
     private final StudentRepository studentRepository;
+    private final ClassFeeAssignmentRepository classFeeAssignmentRepository;
     private final StudentFeeMapRepository studentFeeMapRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final FeeStructureItemRepository feeStructureItemRepository;
@@ -82,6 +86,9 @@ public class FinanceService {
                 FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
                         .orElseThrow(
                                 () -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+                if (!schoolId.equals(category.getSchoolId())) {
+                    throw new IllegalArgumentException("Category does not belong to the same school");
+                }
 
                 FeeStructureItem item = new FeeStructureItem();
                 item.setFeeStructure(entity);
@@ -111,18 +118,42 @@ public class FinanceService {
         SchoolClass schoolClass = schoolClassRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
 
-        List<Student> students = studentRepository.findByStudentClass_Id(classId);
+        if (schoolClass.getSchoolId() == null || !schoolClass.getSchoolId().equals(structure.getSchoolId())) {
+            throw new IllegalArgumentException("Class and fee structure must belong to the same school");
+        }
+
+        LocalDate effectiveFrom = LocalDate.now();
+        ClassFeeAssignment assignment = classFeeAssignmentRepository
+                .findBySchoolIdAndStudentClassIdAndFeeStructureIdAndAcademicYearAndEffectiveFrom(
+                        structure.getSchoolId(),
+                        classId,
+                        structureId,
+                        structure.getAcademicYear(),
+                        effectiveFrom)
+                .orElseGet(() -> classFeeAssignmentRepository.save(ClassFeeAssignment.builder()
+                        .schoolId(structure.getSchoolId())
+                        .studentClass(schoolClass)
+                        .feeStructure(structure)
+                        .academicYear(structure.getAcademicYear())
+                        .effectiveFrom(effectiveFrom)
+                        .isActive(true)
+                        .build()));
+
+        List<Student> students = studentRepository.findByStudentClass_IdAndDeletedFalse(classId);
         if (students.isEmpty()) {
             throw new IllegalArgumentException("No students found for class ID: " + classId);
         }
 
         List<StudentFeeMap> newMaps = students.stream()
-                .filter(student -> !studentFeeMapRepository.existsByStudentIdAndFeeStructureId(student.getId(),
-                        structureId))
+                .filter(student -> !studentFeeMapRepository.existsByStudentIdAndClassFeeAssignmentId(
+                        student.getId(),
+                        assignment.getId()))
                 .map(student -> {
                     StudentFeeMap map = new StudentFeeMap();
                     map.setStudent(student);
                     map.setFeeStructure(structure);
+                    map.setSchoolId(structure.getSchoolId());
+                    map.setClassFeeAssignment(assignment);
                     map.setIsActive(true);
                     return map;
                 })
@@ -147,12 +178,20 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     public StudentLedgerDto getStudentLedger(Long studentId) {
-        if (!studentRepository.existsById(studentId)) {
-            throw new IllegalArgumentException("Student not found");
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+        UUID schoolId = resolveStudentSchoolId(student);
+        List<StudentFeeMap> feeMaps = studentFeeMapRepository.findByStudentIdAndSchoolIdAndIsActiveTrue(studentId, schoolId);
+        if (feeMaps.isEmpty()) {
+            feeMaps = studentFeeMapRepository.findByStudentIdAndIsActiveTrue(studentId);
         }
 
-        List<StudentFeeMap> feeMaps = studentFeeMapRepository.findByStudentId(studentId);
-        List<PaymentTransaction> transactions = paymentTransactionRepository.findByStudentId(studentId);
+        List<PaymentTransaction> transactions = paymentTransactionRepository
+                .findByStudentIdAndSchoolIdOrderByPaymentDateDesc(studentId, schoolId);
+        if (transactions.isEmpty()) {
+            transactions = paymentTransactionRepository.findByStudentId(studentId);
+        }
 
         BigDecimal totalDues = BigDecimal.ZERO;
         BigDecimal totalLateFees = BigDecimal.ZERO;
@@ -218,6 +257,7 @@ public class FinanceService {
 
         Student student = studentRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        UUID schoolId = resolveStudentSchoolId(student);
 
         StudentLedgerDto ledger = getStudentLedger(dto.getStudentId());
 
@@ -228,6 +268,9 @@ public class FinanceService {
 
         PaymentTransaction tx = new PaymentTransaction();
         tx.setStudent(student);
+        tx.setSchoolId(schoolId);
+        studentFeeMapRepository.findTopByStudentIdAndIsActiveTrueOrderByCreatedAtAsc(dto.getStudentId())
+                .ifPresent(tx::setStudentFeeMap);
         tx.setAmount(dto.getAmount());
         tx.setPaymentMethod(dto.getPaymentMethod());
         tx.setTransactionReference(dto.getTransactionReference());
@@ -238,6 +281,7 @@ public class FinanceService {
 
         Receipt receipt = new Receipt();
         receipt.setTransaction(saved);
+        receipt.setSchoolId(schoolId);
         // Clean Receipt Number
         receipt.setReceiptNumber("REC-" + saved.getId() + "-" + (System.currentTimeMillis() % 1000));
         receiptRepository.save(receipt);
@@ -324,7 +368,8 @@ public class FinanceService {
         FeeCategory category = feeCategoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        if (!category.getName().equals(dto.getName()) && feeCategoryRepository.existsByName(dto.getName())) {
+        if (!category.getName().equals(dto.getName())
+                && feeCategoryRepository.existsByNameAndSchoolId(dto.getName(), category.getSchoolId())) {
             throw new IllegalArgumentException("Category name already exists");
         }
 
@@ -364,6 +409,9 @@ public class FinanceService {
                 FeeCategory category = feeCategoryRepository.findById(itemDto.getCategoryId())
                         .orElseThrow(
                                 () -> new IllegalArgumentException("Invalid category ID: " + itemDto.getCategoryId()));
+                if (!structure.getSchoolId().equals(category.getSchoolId())) {
+                    throw new IllegalArgumentException("Category does not belong to the same school as structure");
+                }
 
                 FeeStructureItem item = new FeeStructureItem();
                 item.setFeeStructure(structure);
@@ -379,11 +427,10 @@ public class FinanceService {
     }
 
     public void deleteStructure(Long id) {
-        if (!feeStructureRepository.existsById(id)) {
-            throw new IllegalArgumentException("Structure not found");
-        }
+        FeeStructure structure = feeStructureRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Structure not found"));
 
-        if (studentFeeMapRepository.existsByFeeStructureId(id)) {
+        if (studentFeeMapRepository.existsByFeeStructureIdAndSchoolId(id, structure.getSchoolId())) {
             throw new IllegalArgumentException("Cannot delete fee structure assigned to students");
         }
 
@@ -405,26 +452,32 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     public List<PaymentTransactionDto> getAllTransactions(UUID schoolId) {
-        // Validation for schoolId filtering should go here
-        return paymentTransactionRepository.findAll().stream()
-                .sorted((t1, t2) -> t2.getPaymentDate().compareTo(t1.getPaymentDate()))
+        return paymentTransactionRepository.findBySchoolIdOrderByPaymentDateDesc(schoolId).stream()
                 .map(this::mapTransactionToDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<PaymentTransactionDto> getTransactionsByStudentId(Long studentId) {
-        return paymentTransactionRepository.findByStudentId(studentId).stream()
-                .sorted((t1, t2) -> t2.getPaymentDate().compareTo(t1.getPaymentDate()))
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        UUID schoolId = resolveStudentSchoolId(student);
+
+        List<PaymentTransaction> transactions = paymentTransactionRepository
+                .findByStudentIdAndSchoolIdOrderByPaymentDateDesc(studentId, schoolId);
+        if (transactions.isEmpty()) {
+            transactions = paymentTransactionRepository.findByStudentId(studentId);
+            transactions.sort((t1, t2) -> t2.getPaymentDate().compareTo(t1.getPaymentDate()));
+        }
+
+        return transactions.stream()
                 .map(this::mapTransactionToDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<DefaulterDto> getDefaulters(UUID schoolId) {
-        List<Student> students = studentRepository.findAll(); // Should actully filter by schoolId if multi-tenant
-                                                              // properly
-        // For now assuming all students belong to the context school or filtering later
+        List<Student> students = studentRepository.findByStudentClass_SchoolIdAndDeletedFalse(schoolId);
 
         List<DefaulterDto> defaulters = new ArrayList<>();
 
@@ -457,5 +510,12 @@ public class FinanceService {
         }
 
         return defaulters;
+    }
+
+    private UUID resolveStudentSchoolId(Student student) {
+        if (student.getStudentClass() != null && student.getStudentClass().getSchoolId() != null) {
+            return student.getStudentClass().getSchoolId();
+        }
+        return DEFAULT_SCHOOL_ID;
     }
 }

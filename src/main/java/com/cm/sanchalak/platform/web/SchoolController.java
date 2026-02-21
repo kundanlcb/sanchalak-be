@@ -67,4 +67,9 @@ public class SchoolController {
     public ResponseEntity<School> onboardSchool(@Valid @RequestBody SchoolOnboardingRequest request) {
         return ResponseEntity.ok(schoolService.onboardSchool(request));
     }
+
+    @PostMapping("/{schoolId}/complete-onboarding")
+    public ResponseEntity<School> completeOnboarding(@PathVariable UUID schoolId) {
+        return ResponseEntity.ok(schoolService.completeOnboarding(schoolId));
+    }
 }

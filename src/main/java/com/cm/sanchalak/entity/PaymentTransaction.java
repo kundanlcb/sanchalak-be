@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "payment_transactions")
@@ -21,6 +22,13 @@ public class PaymentTransaction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_fee_map_id")
+    private StudentFeeMap studentFeeMap;
 
     @Column(nullable = false)
     private BigDecimal amount;

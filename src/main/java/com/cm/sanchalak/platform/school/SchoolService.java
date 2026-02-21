@@ -12,6 +12,7 @@ import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ public class SchoolService {
     public OnboardingStatus getOnboardingStatus(UUID schoolId) {
         School school = getSchoolById(schoolId);
 
-        boolean profileComplete = school.getStatus() != SchoolStatus.DRAFT;
+        boolean profileComplete = isSchoolProfileComplete(school);
         boolean academicYearCreated = !academicYearRepository.findBySchoolId(schoolId).isEmpty();
         boolean adminUserInvited = schoolUserRepository.existsBySchoolId(schoolId);
         boolean subscriptionActive = subscriptionRepository.findBySchoolIdAndStatus(schoolId, SubscriptionStatus.ACTIVE)
@@ -70,6 +71,16 @@ public class SchoolService {
 
     @Transactional
     public School createSchool(School school) {
+        if (!hasText(school.getSchoolCode())) {
+            throw new IllegalArgumentException("schoolCode is required");
+        }
+        if (!hasText(school.getName())) {
+            throw new IllegalArgumentException("name is required");
+        }
+
+        school.setSchoolCode(school.getSchoolCode().trim().toUpperCase());
+        school.setName(school.getName().trim());
+
         if (schoolRepository.existsBySchoolCode(school.getSchoolCode())) {
             throw new RuntimeException("School code already exists: " + school.getSchoolCode());
         }
@@ -94,25 +105,34 @@ public class SchoolService {
     public School updateSchool(UUID schoolId, School updatedSchool) {
         School existingSchool = getSchoolById(schoolId);
 
+        if (updatedSchool.getSchoolCode() != null) {
+            String schoolCode = updatedSchool.getSchoolCode().trim().toUpperCase();
+            if (!hasText(schoolCode)) {
+                throw new IllegalArgumentException("schoolCode cannot be blank");
+            }
+            if (schoolRepository.existsBySchoolCodeAndIdNot(schoolCode, schoolId)) {
+                throw new RuntimeException("School code already exists: " + schoolCode);
+            }
+            existingSchool.setSchoolCode(schoolCode);
+        }
         if (updatedSchool.getName() != null) {
-            existingSchool.setName(updatedSchool.getName());
+            String name = updatedSchool.getName().trim();
+            if (!hasText(name)) {
+                throw new IllegalArgumentException("name cannot be blank");
+            }
+            existingSchool.setName(name);
         }
         if (updatedSchool.getBoard() != null) {
-            existingSchool.setBoard(updatedSchool.getBoard());
+            existingSchool.setBoard(toNullIfBlank(updatedSchool.getBoard()));
         }
         if (updatedSchool.getContactInfo() != null) {
             existingSchool.setContactInfo(updatedSchool.getContactInfo());
         }
         if (updatedSchool.getRegistrationNumber() != null) {
-            existingSchool.setRegistrationNumber(updatedSchool.getRegistrationNumber());
+            existingSchool.setRegistrationNumber(toNullIfBlank(updatedSchool.getRegistrationNumber()));
         }
         if (updatedSchool.getTimezone() != null) {
-            existingSchool.setTimezone(updatedSchool.getTimezone());
-        }
-
-        // Transition from DRAFT to ACTIVE on profile update
-        if (existingSchool.getStatus() == SchoolStatus.DRAFT) {
-            existingSchool.setStatus(SchoolStatus.ACTIVE);
+            existingSchool.setTimezone(toNullIfBlank(updatedSchool.getTimezone()));
         }
 
         return schoolRepository.save(existingSchool);
@@ -120,18 +140,13 @@ public class SchoolService {
 
     @Transactional
     public School onboardSchool(SchoolOnboardingRequest request) {
-        if (schoolRepository.existsBySchoolCode(request.getSchoolCode())) {
-            throw new RuntimeException("School code already exists: " + request.getSchoolCode());
-        }
-
-        if (request.getPlanId() == null) {
-            throw new IllegalArgumentException("planId is required for onboarding");
-        }
+        validateOnboardingRequest(request);
+        String schoolCode = request.getSchoolCode().trim().toUpperCase();
 
         // 1. Create School
         School school = new School();
         school.setName(request.getSchoolName());
-        school.setSchoolCode(request.getSchoolCode());
+        school.setSchoolCode(schoolCode);
         school.setBoard(request.getBoard());
         school.setRegistrationNumber(request.getRegistrationNumber());
         school.setTimezone(request.getTimezone());
@@ -168,5 +183,83 @@ public class SchoolService {
         schoolFeatureEntitlementService.seedFeaturesFromPlan(savedSchool.getId(), request.getPlanId());
 
         return savedSchool;
+    }
+
+    @Transactional
+    public School completeOnboarding(UUID schoolId) {
+        School school = getSchoolById(schoolId);
+        if (school.getStatus() == SchoolStatus.ACTIVE) {
+            return school;
+        }
+
+        OnboardingStatus onboardingStatus = getOnboardingStatus(schoolId);
+        if (!onboardingStatus.isAllComplete()) {
+            throw new RuntimeException("Cannot complete onboarding. Missing: " + buildMissingSteps(onboardingStatus));
+        }
+
+        school.setStatus(SchoolStatus.ACTIVE);
+        return schoolRepository.save(school);
+    }
+
+    private void validateOnboardingRequest(SchoolOnboardingRequest request) {
+        if (!hasText(request.getSchoolCode())) {
+            throw new IllegalArgumentException("schoolCode is required");
+        }
+        if (!hasText(request.getSchoolName())) {
+            throw new IllegalArgumentException("schoolName is required");
+        }
+        if (!hasText(request.getAdminName()) || !hasText(request.getAdminEmail()) || !hasText(request.getAdminMobile())) {
+            throw new IllegalArgumentException("adminName, adminEmail and adminMobile are required");
+        }
+        if (!hasText(request.getAcademicYearName()) || request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("academicYearName, startDate and endDate are required");
+        }
+        if (request.getPlanId() == null) {
+            throw new IllegalArgumentException("planId is required for onboarding");
+        }
+
+        String schoolCode = request.getSchoolCode().trim().toUpperCase();
+        if (schoolRepository.existsBySchoolCode(schoolCode)) {
+            throw new RuntimeException("School code already exists: " + schoolCode);
+        }
+    }
+
+    private boolean isSchoolProfileComplete(School school) {
+        return hasText(school.getSchoolCode())
+                && hasText(school.getName())
+                && hasText(school.getBoard())
+                && school.getContactInfo() != null
+                && hasText(school.getContactInfo().getContactEmail())
+                && hasText(school.getContactInfo().getContactNumber())
+                && hasText(school.getContactInfo().getAddress());
+    }
+
+    private String buildMissingSteps(OnboardingStatus status) {
+        List<String> missing = new ArrayList<>();
+        if (!status.isProfileComplete()) {
+            missing.add("school profile");
+        }
+        if (!status.isAcademicYearCreated()) {
+            missing.add("academic year");
+        }
+        if (!status.isAdminUserInvited()) {
+            missing.add("admin user");
+        }
+        if (!status.isSubscriptionActive()) {
+            missing.add("subscription");
+        }
+        return String.join(", ", missing);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
+    private String toNullIfBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
