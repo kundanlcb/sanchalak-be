@@ -6,6 +6,7 @@ import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.cm.sanchalak.platform.school.SchoolFeatureEntitlementService;
 import com.cm.sanchalak.platform.subscription.SubscriptionPlanRequest;
 import java.util.List;
 import java.util.UUID;
@@ -15,9 +16,12 @@ import java.util.UUID;
 public class SubscriptionController {
 
     private final SubscriptionService service;
+    private final SchoolFeatureEntitlementService schoolFeatureEntitlementService;
 
-    public SubscriptionController(SubscriptionService service) {
+    public SubscriptionController(SubscriptionService service,
+            SchoolFeatureEntitlementService schoolFeatureEntitlementService) {
         this.service = service;
+        this.schoolFeatureEntitlementService = schoolFeatureEntitlementService;
     }
 
     @GetMapping("/plans")
@@ -32,7 +36,9 @@ public class SubscriptionController {
 
     @PostMapping("/assign/{schoolId}")
     public ResponseEntity<SchoolSubscription> assignPlan(@PathVariable UUID schoolId, @RequestParam UUID planId) {
-        return ResponseEntity.ok(service.assignPlan(schoolId, planId));
+        SchoolSubscription subscription = service.assignPlan(schoolId, planId);
+        schoolFeatureEntitlementService.seedFeaturesFromPlan(schoolId, planId);
+        return ResponseEntity.ok(subscription);
     }
 
     @GetMapping("/active/{schoolId}")
