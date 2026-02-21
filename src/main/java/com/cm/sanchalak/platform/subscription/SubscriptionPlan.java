@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -32,7 +33,7 @@ public class SubscriptionPlan extends BaseEntity {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "subscription_plan_features", joinColumns = @JoinColumn(name = "plan_id"), inverseJoinColumns = @JoinColumn(name = "feature_id"))
-    private java.util.Set<Feature> features;
+    private Set<Feature> features;
 
     // Getters and Setters
     public UUID getId() {
@@ -75,11 +76,11 @@ public class SubscriptionPlan extends BaseEntity {
         this.maxStudents = maxStudents;
     }
 
-    public java.util.Set<Feature> getFeatures() {
+    public Set<Feature> getFeatures() {
         return features;
     }
 
-    public void setFeatures(java.util.Set<Feature> features) {
+    public void setFeatures(Set<Feature> features) {
         this.features = features;
     }
 }

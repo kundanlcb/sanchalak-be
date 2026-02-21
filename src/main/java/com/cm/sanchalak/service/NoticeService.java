@@ -2,6 +2,7 @@ package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.NoticeDetailDto;
 import com.cm.sanchalak.dto.NoticeDto;
+import com.cm.sanchalak.dto.NoticeRequest;
 import com.cm.sanchalak.entity.Notice;
 import com.cm.sanchalak.entity.NoticeReadStatus;
 import com.cm.sanchalak.entity.User;
@@ -162,7 +163,7 @@ public class NoticeService {
      * Create a new notice
      */
     @Transactional
-    public NoticeDto createNotice(com.cm.sanchalak.dto.NoticeRequest request, UUID userId) {
+    public NoticeDto createNotice(NoticeRequest request, UUID userId) {
         log.info("Creating notice for user {}", userId);
         
         User user = userRepository.findById(userId)
@@ -189,7 +190,7 @@ public class NoticeService {
      * Update an existing notice
      */
     @Transactional
-    public NoticeDto updateNotice(Long id, com.cm.sanchalak.dto.NoticeRequest request, UUID userId) {
+    public NoticeDto updateNotice(Long id, NoticeRequest request, UUID userId) {
         log.info("Updating notice {} for user {}", id, userId);
         
         Notice notice = noticeRepository.findById(id)

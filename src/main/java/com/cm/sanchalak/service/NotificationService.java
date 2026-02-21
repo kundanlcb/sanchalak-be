@@ -6,6 +6,7 @@ import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.NotificationLogRepository;
 import com.cm.sanchalak.repository.NotificationTokenRepository;
 import com.cm.sanchalak.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -173,7 +174,7 @@ public class NotificationService {
         // Store data payload as JSON string
         if (data != null && !data.isEmpty()) {
             try {
-                log.setDataPayload(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(data));
+                log.setDataPayload(new ObjectMapper().writeValueAsString(data));
             } catch (Exception e) {
                 this.log.warn("Failed to serialize data payload: {}", e.getMessage());
             }

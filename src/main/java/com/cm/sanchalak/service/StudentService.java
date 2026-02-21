@@ -2,17 +2,15 @@ package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.StudentRequest;
 import com.cm.sanchalak.dto.StudentResponse;
-import com.cm.sanchalak.entity.SchoolClass;
-import com.cm.sanchalak.entity.Student;
+import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.StudentRepository;
+import com.cm.sanchalak.platform.master.MasterDataService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cm.sanchalak.exception.AppException;
-import com.cm.sanchalak.entity.RoleName;
-import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.UserRepository;
 import com.cm.sanchalak.repository.RoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +28,7 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final SchoolClassRepository classRepository;
-    private final com.cm.sanchalak.platform.master.MasterDataService masterDataService;
+    private final MasterDataService masterDataService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -57,7 +55,7 @@ public class StudentService {
         user.setEmail(student.getEmail());
         user.setPassword(passwordEncoder.encode(request.getEmail())); // Default password is email
 
-        com.cm.sanchalak.entity.Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+       Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
                 .orElseThrow(() -> new EntityNotFoundException("Student Role not found"));
         user.setRoles(Collections.singleton(studentRole));
 

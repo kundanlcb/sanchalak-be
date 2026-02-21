@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,7 +90,7 @@ public class DocumentService {
         // getPublicUrl constructs full URL.
         dto.setDescription(doc.getDescription());
         if (doc.getCreatedAt() != null) {
-            dto.setUploadedAt(LocalDateTime.ofInstant(doc.getCreatedAt(), java.time.ZoneId.systemDefault()));
+            dto.setUploadedAt(LocalDateTime.ofInstant(doc.getCreatedAt(), ZoneId.systemDefault()));
         }
         return dto;
     }

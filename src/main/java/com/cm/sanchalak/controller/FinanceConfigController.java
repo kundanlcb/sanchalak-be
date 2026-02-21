@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/finance")
@@ -18,10 +19,10 @@ public class FinanceConfigController {
 
     private final FinanceService financeService;
 
-    private java.util.UUID getSchoolId() {
+    private UUID getSchoolId() {
         // TODO: Implement actual school ID resolution from security context or user
         // profile
-        return java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
+        return UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 
     @PostMapping("/categories")

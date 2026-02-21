@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
@@ -14,8 +15,8 @@ public interface StudentFeeMapRepository extends JpaRepository<StudentFeeMap, Lo
     boolean existsByFeeStructureId(Long structureId);
 
     @Query("SELECT SUM(item.amount) FROM StudentFeeMap sfm JOIN sfm.feeStructure fs JOIN fs.items item")
-    java.math.BigDecimal sumTotalBaseFee();
+    BigDecimal sumTotalBaseFee();
 
     @Query("SELECT SUM(sfm.discountAmount) FROM StudentFeeMap sfm")
-    java.math.BigDecimal sumTotalDiscounts();
+    BigDecimal sumTotalDiscounts();
 }

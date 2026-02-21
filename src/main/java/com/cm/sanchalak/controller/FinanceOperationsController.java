@@ -1,5 +1,6 @@
 package com.cm.sanchalak.controller;
 
+import com.cm.sanchalak.dto.finance.DefaulterDto;
 import com.cm.sanchalak.dto.finance.PaymentRequestDto;
 import com.cm.sanchalak.dto.finance.PaymentTransactionDto;
 import com.cm.sanchalak.dto.finance.StudentLedgerDto;
@@ -11,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/finance")
@@ -33,15 +37,15 @@ public class FinanceOperationsController {
 
     @GetMapping("/transactions/{studentId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF', 'STUDENT')")
-    public ResponseEntity<java.util.List<PaymentTransactionDto>> getStudentTransactions(@PathVariable Long studentId) {
+    public ResponseEntity<List<PaymentTransactionDto>> getStudentTransactions(@PathVariable Long studentId) {
         return ResponseEntity.ok(financeService.getTransactionsByStudentId(studentId));
     }
 
     @GetMapping("/transactions")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
-    public ResponseEntity<java.util.List<PaymentTransactionDto>> getAllTransactions() {
+    public ResponseEntity<List<PaymentTransactionDto>> getAllTransactions() {
         // TODO: Get actual school ID from context
-        java.util.UUID schoolId = java.util.UUID.randomUUID();
+        UUID schoolId = UUID.randomUUID();
         return ResponseEntity.ok(financeService.getAllTransactions(schoolId));
     }
 
@@ -57,9 +61,9 @@ public class FinanceOperationsController {
 
     @GetMapping("/defaulters")
     @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
-    public ResponseEntity<java.util.List<com.cm.sanchalak.dto.finance.DefaulterDto>> getDefaulters() {
+    public ResponseEntity<List<DefaulterDto>> getDefaulters() {
         // TODO: Get actual school ID from context
-        java.util.UUID schoolId = java.util.UUID.randomUUID();
+        UUID schoolId = UUID.randomUUID();
         return ResponseEntity.ok(financeService.getDefaulters(schoolId));
     }
 }

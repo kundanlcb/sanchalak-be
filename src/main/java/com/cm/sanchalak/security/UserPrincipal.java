@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserPrincipal implements UserDetails {
     private UUID id;
@@ -40,11 +41,11 @@ public class UserPrincipal implements UserDetails {
                 .flatMap(role -> {
                     String roleName = role.getName().name();
                     if (roleName.equals("ROLE_SCHOOL_ADMIN")) {
-                        return java.util.stream.Stream.of(
+                        return Stream.of(
                                 new SimpleGrantedAuthority(roleName),
                                 new SimpleGrantedAuthority("ROLE_ADMIN"));
                     }
-                    return java.util.stream.Stream.of(new SimpleGrantedAuthority(roleName));
+                    return Stream.of(new SimpleGrantedAuthority(roleName));
                 })
                 .collect(Collectors.toList());
 

@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class SubscriptionService {
@@ -36,7 +39,7 @@ public class SubscriptionService {
 
         if (request.getFeatureIds() != null && !request.getFeatureIds().isEmpty()) {
             List<Feature> features = featureRepository.findAllById(request.getFeatureIds());
-            plan.setFeatures(new java.util.HashSet<>(features));
+            plan.setFeatures(new HashSet<>(features));
         }
 
         return planRepository.save(plan);
@@ -74,10 +77,10 @@ public class SubscriptionService {
     public List<String> getActiveSubscriptionFeatures(UUID schoolId) {
         SchoolSubscription subscription = getActiveSubscription(schoolId);
         if (subscription == null || subscription.getPlan() == null) {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
         return subscription.getPlan().getFeatures().stream()
                 .map(Feature::getCode)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 }

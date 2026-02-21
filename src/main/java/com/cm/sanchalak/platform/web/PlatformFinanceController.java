@@ -1,5 +1,7 @@
 package com.cm.sanchalak.platform.web;
 
+import com.cm.sanchalak.dto.finance.FeeCategoryDto;
+import com.cm.sanchalak.dto.finance.FeeStructureDto;
 import com.cm.sanchalak.service.FinanceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,26 +21,26 @@ public class PlatformFinanceController {
 
     // Fee Configuration - Categories
     @PostMapping("/categories")
-    public ResponseEntity<com.cm.sanchalak.dto.finance.FeeCategoryDto> createCategory(@PathVariable UUID schoolId,
-            @RequestBody com.cm.sanchalak.dto.finance.FeeCategoryDto dto) {
+    public ResponseEntity<FeeCategoryDto> createCategory(@PathVariable UUID schoolId,
+            @RequestBody FeeCategoryDto dto) {
         return ResponseEntity.ok(financeService.createCategory(schoolId, dto));
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<List<com.cm.sanchalak.dto.finance.FeeCategoryDto>> getCategories(
+    public ResponseEntity<List<FeeCategoryDto>> getCategories(
             @PathVariable UUID schoolId) {
         return ResponseEntity.ok(financeService.getAllCategories(schoolId));
     }
 
     // Fee Configuration - Structures
     @PostMapping("/structures")
-    public ResponseEntity<com.cm.sanchalak.dto.finance.FeeStructureDto> createStructure(@PathVariable UUID schoolId,
-            @RequestBody com.cm.sanchalak.dto.finance.FeeStructureDto dto) {
+    public ResponseEntity<FeeStructureDto> createStructure(@PathVariable UUID schoolId,
+            @RequestBody FeeStructureDto dto) {
         return ResponseEntity.ok(financeService.createStructure(schoolId, dto));
     }
 
     @GetMapping("/structures")
-    public ResponseEntity<List<com.cm.sanchalak.dto.finance.FeeStructureDto>> getStructures(
+    public ResponseEntity<List<FeeStructureDto>> getStructures(
             @PathVariable UUID schoolId) {
         return ResponseEntity.ok(financeService.getAllStructures(schoolId));
     }

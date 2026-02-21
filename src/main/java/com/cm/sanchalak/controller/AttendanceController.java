@@ -35,7 +35,7 @@ public class AttendanceController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<AttendanceRecordDto> updateAttendance(@PathVariable Long id,
-            @RequestBody com.cm.sanchalak.dto.UpdateAttendanceRequest request) {
+            @RequestBody UpdateAttendanceRequest request) {
         // We need the current user name for 'modifiedBy'
         // For now, hardcode "TEACHER" or extract from SecurityContext if available
         // Let's rely on SecurityContext in a real app, but here I'll use a placeholder

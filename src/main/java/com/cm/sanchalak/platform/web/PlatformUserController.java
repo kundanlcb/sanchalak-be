@@ -2,11 +2,13 @@ package com.cm.sanchalak.platform.web;
 
 import com.cm.sanchalak.dto.PlatformUserDto;
 import com.cm.sanchalak.platform.auth.PlatformAuthService;
+import com.cm.sanchalak.platform.auth.PlatformRole;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -46,6 +48,6 @@ public class PlatformUserController {
             String name,
             String email,
             String password,
-            java.util.Set<com.cm.sanchalak.platform.auth.PlatformRole> roles) {
+            Set<PlatformRole> roles) {
     }
 }

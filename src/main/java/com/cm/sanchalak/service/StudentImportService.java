@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,7 +78,7 @@ public class StudentImportService {
                 user.setEmail(email);
                 user.setPassword(passwordEncoder.encode("password")); // Default password
                 user.setMobileNumber(phone);
-                user.setRoles(java.util.Collections.singleton(studentRole));
+                user.setRoles(Collections.singleton(studentRole));
                 
                 user = userRepository.save(user);
 

@@ -3,10 +3,13 @@ package com.cm.sanchalak.repository;
 import com.cm.sanchalak.entity.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
-    java.util.List<Teacher> findByDeletedFalse();
+    List<Teacher> findByDeletedFalse();
     long countByDeletedFalse();
-    java.util.Optional<Teacher> findByUserId(java.util.UUID userId);
+    Optional<Teacher> findByUserId(UUID userId);
 }

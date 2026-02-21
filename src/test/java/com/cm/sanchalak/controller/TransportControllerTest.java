@@ -20,10 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -105,10 +107,10 @@ class TransportControllerTest {
         user.setRoles(Collections.singleton(role));
         
         // Strict stubbing check: make sure the arguments match EXACTLY what the controller receives
-        when(userRepository.findById(eq(userId))).thenReturn(java.util.Optional.of(user));
+        when(userRepository.findById(eq(userId))).thenReturn(Optional.of(user));
         
         // When user is found, controller checks role. If student, calls findByUserId with user.getId() (which is userId)
-        when(studentRepository.findByUserId(eq(userId))).thenReturn(java.util.Optional.of(student));
+        when(studentRepository.findByUserId(eq(userId))).thenReturn(Optional.of(student));
         
         Route route = new Route();
         route.setId(routeId);
@@ -133,7 +135,7 @@ class TransportControllerTest {
         mockMvc.perform(get("/api/transport/my-route")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
-                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.routeId").value(routeId.intValue()))
                 .andExpect(jsonPath("$.data.routeName").value("Route 10"));

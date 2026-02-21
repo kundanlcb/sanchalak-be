@@ -1,5 +1,6 @@
 package com.cm.sanchalak.platform.school;
 
+import com.cm.sanchalak.entity.AcademicYear;
 import com.cm.sanchalak.platform.academic.AcademicYearRepository;
 import com.cm.sanchalak.platform.onboarding.OnboardingStatus;
 import com.cm.sanchalak.platform.onboarding.SchoolOnboardingRequest;
@@ -150,7 +151,7 @@ public class SchoolService {
         bootstrapAdminService.bootstrapAdmin(savedSchool.getId(), adminRequest);
 
         // 3. Create Academic Year
-        com.cm.sanchalak.entity.AcademicYear academicYear = com.cm.sanchalak.entity.AcademicYear.builder()
+        AcademicYear academicYear = AcademicYear.builder()
                 .schoolId(savedSchool.getId())
                 .name(request.getAcademicYearName())
                 .startDate(request.getStartDate())

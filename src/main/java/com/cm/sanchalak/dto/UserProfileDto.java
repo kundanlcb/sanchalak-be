@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -25,7 +26,7 @@ public class UserProfileDto {
     private String firstName;
     private String lastName;
     private String role;
-    private java.util.List<String> permissions;
+    private List<String> permissions;
 
     // Student-specific fields (populated only for ROLE_STUDENT)
     @JsonProperty("studentId")
@@ -45,7 +46,7 @@ public class UserProfileDto {
     @JsonProperty("teacherId")
     private Long teacherId;
     private String qualification;
-    private java.util.List<String> specializations;
+    private List<String> specializations;
 
     // Constructor, Getters, Setters, and Builder are now handled by Lombok @Data,
     // @Builder, @NoArgsConstructor, and @AllArgsConstructor

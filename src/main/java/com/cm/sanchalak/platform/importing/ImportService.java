@@ -1,6 +1,9 @@
 package com.cm.sanchalak.platform.importing;
 
 import com.cm.sanchalak.platform.school.SchoolRepository;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,13 +50,12 @@ public class ImportService {
         importJobRepository.save(job);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
-                org.apache.commons.csv.CSVParser csvParser = new org.apache.commons.csv.CSVParser(reader,
-                        org.apache.commons.csv.CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
+                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
 
             int count = 0;
             int failed = 0;
 
-            for (org.apache.commons.csv.CSVRecord csvRecord : csvParser) {
+            for (CSVRecord csvRecord : csvParser) {
                 try {
                     switch (job.getType()) {
                         case STUDENT:
@@ -85,17 +87,17 @@ public class ImportService {
         importJobRepository.save(job);
     }
 
-    private void processStudentRecord(UUID schoolId, org.apache.commons.csv.CSVRecord record) {
+    private void processStudentRecord(UUID schoolId, CSVRecord record) {
         // Validation and saving logic
         // String name = record.get("Name");
         // ...
     }
 
-    private void processTeacherRecord(UUID schoolId, org.apache.commons.csv.CSVRecord record) {
+    private void processTeacherRecord(UUID schoolId, CSVRecord record) {
         // Validation and saving logic
     }
 
-    private void processParentRecord(UUID schoolId, org.apache.commons.csv.CSVRecord record) {
+    private void processParentRecord(UUID schoolId, CSVRecord record) {
         // Validation and saving logic
     }
 }

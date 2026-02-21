@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,7 +79,7 @@ public class AcademicService {
         return classSubjectRepository.save(classSubject);
     }
 
-    public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, java.time.LocalDate date,
+    public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, LocalDate date,
             Integer maxMarks) {
         ExamTerm term = examTermRepository.findById(termId)
                 .orElseThrow(() -> new RuntimeException("ExamTerm not found"));

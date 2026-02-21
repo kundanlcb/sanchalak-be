@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -224,7 +225,7 @@ public class DashboardAggregationService {
     /**
      * Get recent notices for user
      */
-    private java.util.List<DashboardDto.RecentNotice> getRecentNotices(UUID userId, String role) {
+    private List<DashboardDto.RecentNotice> getRecentNotices(UUID userId, String role) {
         LocalDate now = LocalDate.now();
         var notices = noticeRepository.findRecentByTargetRole(role, now.minusDays(30));
 

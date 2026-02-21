@@ -20,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.annotation.DirtiesContext;
@@ -84,7 +85,7 @@ public class AttendanceIntegrationTest {
         teacher.setEmail(teacherEmail);
         teacher.setPassword(passwordEncoder.encode("password"));
         Role teacherRole = roleRepository.findByName(RoleName.ROLE_TEACHER).orElseThrow();
-        teacher.setRoles(java.util.Set.of(teacherRole));
+        teacher.setRoles(Set.of(teacherRole));
         String mobile = String.valueOf(System.currentTimeMillis()).substring(3);
         teacher.setMobileNumber(mobile);
         userRepository.save(teacher);

@@ -1,5 +1,6 @@
 package com.cm.sanchalak.platform.web;
 
+import com.cm.sanchalak.dto.SchoolPermissionResponse;
 import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.platform.school.SchoolPermissionService;
 import com.cm.sanchalak.platform.school.SchoolRolePermission;
@@ -32,7 +33,7 @@ public class SchoolPermissionController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<com.cm.sanchalak.dto.SchoolPermissionResponse> getSchoolPermissions(
+    public ResponseEntity<SchoolPermissionResponse> getSchoolPermissions(
             @CurrentUser UserPrincipal currentUser) {
         UUID schoolId = schoolUserRepository.findByUserId(currentUser.getId())
                 .orElseThrow(() -> new RuntimeException("School context not found"))
@@ -41,7 +42,7 @@ public class SchoolPermissionController {
         List<String> availableFeatures = subscriptionService.getActiveSubscriptionFeatures(schoolId);
         List<SchoolRolePermission> rolePermissions = service.getPermissionsBySchool(schoolId);
 
-        return ResponseEntity.ok(new com.cm.sanchalak.dto.SchoolPermissionResponse(availableFeatures, rolePermissions));
+        return ResponseEntity.ok(new SchoolPermissionResponse(availableFeatures, rolePermissions));
     }
 
     @PostMapping("/{roleName}")

@@ -11,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +38,7 @@ public class FinanceService {
     private final AuditLogService auditLogService;
 
     @CacheEvict(value = "fee-categories", allEntries = true)
-    public FeeCategoryDto createCategory(java.util.UUID schoolId, FeeCategoryDto dto) {
+    public FeeCategoryDto createCategory(UUID schoolId, FeeCategoryDto dto) {
         if (feeCategoryRepository.existsByNameAndSchoolId(dto.getName(), schoolId)) {
             throw new IllegalArgumentException(
                     "Fee category with name " + dto.getName() + " already exists for this school");
@@ -53,14 +55,14 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     @Cacheable("fee-categories")
-    public List<FeeCategoryDto> getAllCategories(java.util.UUID schoolId) {
+    public List<FeeCategoryDto> getAllCategories(UUID schoolId) {
         return feeCategoryRepository.findBySchoolId(schoolId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
     @CacheEvict(value = "fee-structures", allEntries = true)
-    public FeeStructureDto createStructure(java.util.UUID schoolId, FeeStructureDto dto) {
+    public FeeStructureDto createStructure(UUID schoolId, FeeStructureDto dto) {
         if (feeStructureRepository.existsByNameAndAcademicYearAndSchoolId(dto.getName(), dto.getAcademicYear(),
                 schoolId)) {
             throw new IllegalArgumentException("Fee structure with name " + dto.getName() + " for year "
@@ -96,7 +98,7 @@ public class FinanceService {
 
     @Transactional(readOnly = true)
     @Cacheable("fee-structures")
-    public List<FeeStructureDto> getAllStructures(java.util.UUID schoolId) {
+    public List<FeeStructureDto> getAllStructures(UUID schoolId) {
         return feeStructureRepository.findBySchoolId(schoolId).stream()
                 .map(this::mapStructureToDto)
                 .collect(Collectors.toList());
@@ -230,7 +232,7 @@ public class FinanceService {
         tx.setPaymentMethod(dto.getPaymentMethod());
         tx.setTransactionReference(dto.getTransactionReference());
         tx.setStatus("SUCCESS");
-        tx.setPaymentDate(java.time.LocalDateTime.now());
+        tx.setPaymentDate(LocalDateTime.now());
 
         PaymentTransaction saved = paymentTransactionRepository.save(tx);
 
@@ -388,7 +390,7 @@ public class FinanceService {
         feeStructureRepository.deleteById(id);
     }
 
-    public void generateInvoicesForSchool(java.util.UUID schoolId) {
+    public void generateInvoicesForSchool(UUID schoolId) {
         // Placeholder for invoice generation logic
         auditLogService.logAction(
                 null,
@@ -402,7 +404,7 @@ public class FinanceService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentTransactionDto> getAllTransactions(java.util.UUID schoolId) {
+    public List<PaymentTransactionDto> getAllTransactions(UUID schoolId) {
         // Validation for schoolId filtering should go here
         return paymentTransactionRepository.findAll().stream()
                 .sorted((t1, t2) -> t2.getPaymentDate().compareTo(t1.getPaymentDate()))
@@ -419,7 +421,7 @@ public class FinanceService {
     }
 
     @Transactional(readOnly = true)
-    public List<DefaulterDto> getDefaulters(java.util.UUID schoolId) {
+    public List<DefaulterDto> getDefaulters(UUID schoolId) {
         List<Student> students = studentRepository.findAll(); // Should actully filter by schoolId if multi-tenant
                                                               // properly
         // For now assuming all students belong to the context school or filtering later
