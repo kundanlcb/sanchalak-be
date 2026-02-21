@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import com.cm.sanchalak.dto.academic.ReportCardDto;
+import com.cm.sanchalak.dto.academic.ExamQuestionDto;
+import com.cm.sanchalak.dto.academic.ExamQuestionRequest;
+import com.cm.sanchalak.dto.curriculum.QuestionDto;
 
 @Service
 @Transactional
@@ -28,6 +31,8 @@ public class AcademicService {
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final ClassRoutineRepository classRoutineRepository;
+    private final ExamQuestionRepository examQuestionRepository;
+    private final QuestionRepository questionRepository;
 
     public ExamTerm createExamTerm(ExamTerm examTerm) {
         return examTermRepository.save(examTerm);
@@ -97,7 +102,8 @@ public class AcademicService {
     }
 
     public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, LocalDate date,
-            Integer maxMarks) {
+            Integer maxMarks, Integer passingMarks, java.time.LocalTime startTime,
+            java.time.LocalTime endTime, Integer durationMinutes) {
 
         ExamSchedule schedule = examScheduleRepository
                 .findByExamTerm_IdAndStudentClass_IdAndSubject_Id(termId, classId, subjectId)
@@ -117,8 +123,36 @@ public class AcademicService {
 
         schedule.setExamDate(date);
         schedule.setMaxMarks(maxMarks);
+        schedule.setPassingMarks(passingMarks);
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
+        schedule.setDurationMinutes(durationMinutes);
 
         return examScheduleRepository.save(schedule);
+    }
+
+    public ExamSchedule updateSchedule(Long scheduleId, LocalDate date, Integer maxMarks,
+            Integer passingMarks, java.time.LocalTime startTime, java.time.LocalTime endTime,
+            Integer durationMinutes) {
+        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+        if (date != null)
+            schedule.setExamDate(date);
+        if (maxMarks != null)
+            schedule.setMaxMarks(maxMarks);
+        if (passingMarks != null)
+            schedule.setPassingMarks(passingMarks);
+        if (startTime != null)
+            schedule.setStartTime(startTime);
+        if (endTime != null)
+            schedule.setEndTime(endTime);
+        if (durationMinutes != null)
+            schedule.setDurationMinutes(durationMinutes);
+        return examScheduleRepository.save(schedule);
+    }
+
+    public void deleteSchedule(Long scheduleId) {
+        examScheduleRepository.deleteById(scheduleId);
     }
 
     public List<ExamSchedule> getSchedules(Long termId, Long classId) {
@@ -331,5 +365,84 @@ public class AcademicService {
         }
 
         subjectRepository.deleteById(id);
+    }
+
+    // --- Exam Questions ---
+
+    public ExamQuestionDto addQuestionToExam(Long scheduleId, ExamQuestionRequest request) {
+        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+        Question question = questionRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+
+        ExamQuestion eq = new ExamQuestion();
+        eq.setExamSchedule(schedule);
+        eq.setQuestion(question);
+        eq.setMarks(request.getMarks());
+        eq.setSequenceOrder(request.getSequenceOrder());
+
+        return mapToExamQuestionDto(examQuestionRepository.save(eq));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExamQuestionDto> getExamQuestions(Long scheduleId) {
+        return examQuestionRepository.findByExamSchedule_IdOrderBySequenceOrderAsc(scheduleId)
+                .stream().map(this::mapToExamQuestionDto).collect(Collectors.toList());
+    }
+
+    public void removeQuestionFromExam(Long scheduleId, Long examQuestionId) {
+        examQuestionRepository.deleteById(examQuestionId);
+    }
+
+    public List<ExamQuestionDto> setExamQuestions(Long scheduleId, List<ExamQuestionRequest> requests) {
+        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+
+        examQuestionRepository.deleteByExamSchedule_Id(scheduleId);
+
+        List<ExamQuestion> questions = new ArrayList<>();
+        for (int i = 0; i < requests.size(); i++) {
+            ExamQuestionRequest req = requests.get(i);
+            Question question = questionRepository.findById(req.getQuestionId())
+                    .orElseThrow(() -> new RuntimeException("Question not found: " + req.getQuestionId()));
+            ExamQuestion eq = new ExamQuestion();
+            eq.setExamSchedule(schedule);
+            eq.setQuestion(question);
+            eq.setMarks(req.getMarks());
+            eq.setSequenceOrder(req.getSequenceOrder() != null ? req.getSequenceOrder() : i + 1);
+            questions.add(eq);
+        }
+
+        return examQuestionRepository.saveAll(questions)
+                .stream().map(this::mapToExamQuestionDto).collect(Collectors.toList());
+    }
+
+    private ExamQuestionDto mapToExamQuestionDto(ExamQuestion eq) {
+        Question q = eq.getQuestion();
+        List<QuestionDto.QuestionOptionDto> optionDtos = new ArrayList<>();
+        if (q.getOptions() != null) {
+            optionDtos = q.getOptions().stream().map(o -> QuestionDto.QuestionOptionDto.builder()
+                    .id(o.getId())
+                    .optionText(o.getOptionText())
+                    .isCorrect(o.getIsCorrect())
+                    .build()).collect(Collectors.toList());
+        }
+
+        QuestionDto questionDto = QuestionDto.builder()
+                .id(q.getId())
+                .chapterId(q.getChapter().getId())
+                .questionText(q.getQuestionText())
+                .questionType(q.getQuestionType().name())
+                .marks(q.getMarks())
+                .options(optionDtos)
+                .build();
+
+        return ExamQuestionDto.builder()
+                .id(eq.getId())
+                .examScheduleId(eq.getExamSchedule().getId())
+                .marks(eq.getMarks())
+                .sequenceOrder(eq.getSequenceOrder())
+                .question(questionDto)
+                .build();
     }
 }

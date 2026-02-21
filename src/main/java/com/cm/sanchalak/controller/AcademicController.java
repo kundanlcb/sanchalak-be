@@ -107,7 +107,32 @@ public class AcademicController {
                 request.getClassId(),
                 request.getSubjectId(),
                 request.getExamDate(),
-                request.getMaxMarks()));
+                request.getMaxMarks(),
+                request.getPassingMarks(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getDurationMinutes()));
+    }
+
+    @PutMapping("/schedules/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<ExamSchedule> updateSchedule(
+            @PathVariable Long id,
+            @Valid @RequestBody ExamScheduleRequest request) {
+        return ResponseEntity.ok(academicService.updateSchedule(id,
+                request.getExamDate(),
+                request.getMaxMarks(),
+                request.getPassingMarks(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getDurationMinutes()));
+    }
+
+    @DeleteMapping("/schedules/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
+        academicService.deleteSchedule(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/schedules")
@@ -198,6 +223,38 @@ public class AcademicController {
         academicService.deleteSubject(id);
         return ResponseEntity.noContent().build();
     }
-}
 
-// Class Management
+    // --- Exam Question Paper ---
+
+    @PostMapping("/schedules/{scheduleId}/questions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<com.cm.sanchalak.dto.academic.ExamQuestionDto> addQuestionToExam(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody com.cm.sanchalak.dto.academic.ExamQuestionRequest request) {
+        return ResponseEntity.ok(academicService.addQuestionToExam(scheduleId, request));
+    }
+
+    @GetMapping("/schedules/{scheduleId}/questions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<com.cm.sanchalak.dto.academic.ExamQuestionDto>> getExamQuestions(
+            @PathVariable Long scheduleId) {
+        return ResponseEntity.ok(academicService.getExamQuestions(scheduleId));
+    }
+
+    @PutMapping("/schedules/{scheduleId}/questions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<com.cm.sanchalak.dto.academic.ExamQuestionDto>> setExamQuestions(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody List<com.cm.sanchalak.dto.academic.ExamQuestionRequest> requests) {
+        return ResponseEntity.ok(academicService.setExamQuestions(scheduleId, requests));
+    }
+
+    @DeleteMapping("/schedules/{scheduleId}/questions/{examQuestionId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<Void> removeQuestionFromExam(
+            @PathVariable Long scheduleId,
+            @PathVariable Long examQuestionId) {
+        academicService.removeQuestionFromExam(scheduleId, examQuestionId);
+        return ResponseEntity.noContent().build();
+    }
+}

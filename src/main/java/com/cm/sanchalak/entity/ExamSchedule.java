@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "exam_schedules", uniqueConstraints = {
@@ -34,6 +35,18 @@ public class ExamSchedule extends BaseEntity {
     @Column(name = "max_marks", nullable = false)
     private Integer maxMarks;
 
+    @Column(name = "passing_marks")
+    private Integer passingMarks;
+
     @Column(name = "exam_date")
     private LocalDate examDate;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    @Column(name = "duration_minutes")
+    private Integer durationMinutes;
 }
