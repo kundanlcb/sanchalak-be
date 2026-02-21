@@ -41,14 +41,15 @@ public class StudentImportService {
 
     @Transactional
     public int importStudents(MultipartFile file) {
-        try (BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-             CSVParser csvParser = new CSVParser(fileReader,
-                     CSVFormat.Builder.create(CSVFormat.DEFAULT)
-                             .setHeader()
-                             .setSkipHeaderRecord(true)
-                             .setIgnoreHeaderCase(true)
-                             .setTrim(true)
-                             .build())) {
+        try (BufferedReader fileReader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+                CSVParser csvParser = new CSVParser(fileReader,
+                        CSVFormat.Builder.create(CSVFormat.DEFAULT)
+                                .setHeader()
+                                .setSkipHeaderRecord(true)
+                                .setIgnoreHeaderCase(true)
+                                .setTrim(true)
+                                .build())) {
 
             List<Student> students = new ArrayList<>();
             Iterable<CSVRecord> csvRecords = csvParser.getRecords();
@@ -79,14 +80,15 @@ public class StudentImportService {
                 user.setPassword(passwordEncoder.encode("password")); // Default password
                 user.setMobileNumber(phone);
                 user.setRoles(Collections.singleton(studentRole));
-                
+
                 user = userRepository.save(user);
 
                 // Create Student Profile
                 Student student = new Student();
                 student.setUserId(user.getId());
                 student.setName(fullName); // Keep full name for backward compatibility
-                
+                student.setEmail(email);
+
                 // Split Name for consistency
                 if (fullName != null) {
                     fullName = fullName.trim();
@@ -99,13 +101,15 @@ public class StudentImportService {
                         student.setLastName("");
                     }
                 }
-                
+
                 student.setAdmissionNumber(admissionNo);
-                
+
                 // Set Guardian Info
-                if (parentName != null && !parentName.isEmpty()) student.setGuardianName(parentName);
-                if (parentPhone != null && !parentPhone.isEmpty()) student.setGuardianMobile(parentPhone);
-                
+                if (parentName != null && !parentName.isEmpty())
+                    student.setGuardianName(parentName);
+                if (parentPhone != null && !parentPhone.isEmpty())
+                    student.setGuardianMobile(parentPhone);
+
                 if (className != null && !className.isEmpty()) {
                     Optional<SchoolClass> schoolClass = classRepository.findByName(className);
                     if (schoolClass.isPresent()) {
