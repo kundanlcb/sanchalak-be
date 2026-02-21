@@ -132,6 +132,33 @@ public class AcademicService {
         return buildReportCard(student, marks);
     }
 
+    public List<StudentMarks> getMarks(Long termId, Long classId, Long subjectId, Long studentId) {
+        if (studentId != null) {
+            Student student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
+            if (termId != null) {
+                marks = marks.stream()
+                        .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
+                        .collect(Collectors.toList());
+            }
+            if (subjectId != null) {
+                marks = marks.stream()
+                        .filter(m -> m.getExamSchedule().getSubject().getId().equals(subjectId))
+                        .collect(Collectors.toList());
+            }
+            return marks;
+        }
+
+        if (classId != null && subjectId != null && termId != null) {
+            return studentMarksRepository
+                    .findByExamSchedule_StudentClass_IdAndExamSchedule_Subject_IdAndExamSchedule_ExamTerm_Id(classId,
+                            subjectId, termId);
+        }
+
+        return new ArrayList<>();
+    }
+
     public List<ReportCardDto> getClassTermMarks(Long classId, Long termId) {
         // Use findByStudentClass_Id which exists in repository
         List<Student> students = studentRepository.findByStudentClass_Id(classId);

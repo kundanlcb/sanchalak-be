@@ -109,6 +109,16 @@ public class AcademicController {
                 request.getRemarks()));
     }
 
+    @GetMapping("/marks")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<StudentMarks>> getMarks(
+            @RequestParam(required = false) Long examTermId,
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) Long studentId) {
+        return ResponseEntity.ok(academicService.getMarks(examTermId, classId, subjectId, studentId));
+    }
+
     // Reports
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     @GetMapping("/reports/{studentId}")

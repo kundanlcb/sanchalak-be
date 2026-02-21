@@ -15,6 +15,7 @@ import java.util.List;
 public class ClassAttendanceSheetDto {
     private Long classId;
     private String classID;
+    private String className;
     private LocalDate date;
     private int presentCount;
     private int absentCount;

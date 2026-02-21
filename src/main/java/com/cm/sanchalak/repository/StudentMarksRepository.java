@@ -16,6 +16,9 @@ public interface StudentMarksRepository extends JpaRepository<StudentMarks, Long
 
     List<StudentMarks> findByStudent(Student student);
 
+    List<StudentMarks> findByExamSchedule_StudentClass_IdAndExamSchedule_Subject_IdAndExamSchedule_ExamTerm_Id(
+            Long classId, Long subjectId, Long termId);
+
     // For Analytics
     List<StudentMarks> findByStudent_IdAndExamSchedule_ExamTerm_Id(Long studentId, Long termId);
 

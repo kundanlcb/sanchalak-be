@@ -134,20 +134,59 @@ public class AttendanceService {
     public ClassAttendanceSheetDto getClassAttendanceSheet(Long classId, LocalDate date) {
         log.info("Fetching attendance sheet for class: {} on date: {}", classId, date);
 
-        List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDate(classId, date);
+        SchoolClass clazz = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
-        int absent = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.ABSENT).count();
+        List<Student> allStudents = studentRepository.findByStudentClass_Id(classId);
+        List<AttendanceRecord> existingRecords = attendanceRepository.findBySchoolClass_IdAndDate(classId, date);
 
-        List<AttendanceRecordDto> dtos = records.stream().map(this::mapToDto).collect(Collectors.toList());
+        Map<Long, AttendanceRecord> recordMap = existingRecords.stream()
+                .collect(Collectors.toMap(r -> r.getStudent().getId(), Function.identity()));
+
+        List<AttendanceRecordDto> dtos = new ArrayList<>();
+        int present = 0;
+        int absent = 0;
+
+        for (Student student : allStudents) {
+            AttendanceRecord record = recordMap.get(student.getId());
+            AttendanceRecordDto dto = new AttendanceRecordDto();
+            dto.setStudentId(student.getId());
+            dto.setStudentName(student.getFirstName() + " " + student.getLastName());
+            dto.setRollNumber(student.getRollNo() != null ? String.valueOf(student.getRollNo()) : "");
+            dto.setClassId(classId);
+            dto.setDate(date);
+
+            if (record != null) {
+                dto.setId(record.getId());
+                dto.setStatus(record.getStatus());
+                dto.setRemarks(record.getRemarks());
+                dto.setMarkedBy(record.getMarkedBy());
+                if (record.getCreatedAt() != null) {
+                    dto.setMarkedDate(LocalDateTime.ofInstant(record.getCreatedAt(), ZoneId.systemDefault()));
+                }
+                dto.setModified(record.isModified());
+
+                if (record.getStatus() == AttendanceStatus.PRESENT)
+                    present++;
+                else if (record.getStatus() == AttendanceStatus.ABSENT)
+                    absent++;
+            } else {
+                // Default mapping for a student without an existing record
+                dto.setStatus(AttendanceStatus.PRESENT);
+                present++; // Optimistically count as present
+            }
+            dtos.add(dto);
+        }
 
         return ClassAttendanceSheetDto.builder()
                 .classId(classId)
-                .classID(String.valueOf(classId))
+                .classID("CLS-" + classId)
+                .className(clazz.getName() != null ? clazz.getName()
+                        : "Grade " + clazz.getGrade() + "-" + clazz.getSection())
                 .date(date)
                 .presentCount(present)
                 .absentCount(absent)
-                .totalCount(records.size())
+                .totalCount(allStudents.size())
                 .students(dtos)
                 .build();
     }

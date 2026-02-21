@@ -20,6 +20,9 @@ public class AttendanceRecordDto {
     @JsonProperty("studentId")
     private Long studentId;
 
+    private String studentName;
+    private String rollNumber;
+
     @JsonProperty("classId")
     private Long classId;
 
