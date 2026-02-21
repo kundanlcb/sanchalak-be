@@ -9,6 +9,9 @@ import com.cm.sanchalak.platform.onboarding.BootstrapAdminService;
 import com.cm.sanchalak.platform.subscription.SchoolSubscriptionRepository;
 import com.cm.sanchalak.platform.subscription.SubscriptionStatus;
 import com.cm.sanchalak.platform.subscription.SubscriptionService;
+import com.cm.sanchalak.exception.DuplicateResourceException;
+import com.cm.sanchalak.exception.ResourceNotFoundException;
+import com.cm.sanchalak.exception.AppException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,7 +69,7 @@ public class SchoolService {
 
     public School getSchoolById(UUID schoolId) {
         return schoolRepository.findById(schoolId)
-                .orElseThrow(() -> new RuntimeException("School not found: " + schoolId));
+                .orElseThrow(() -> new ResourceNotFoundException("School", "id", schoolId));
     }
 
     @Transactional
@@ -82,7 +85,7 @@ public class SchoolService {
         school.setName(school.getName().trim());
 
         if (schoolRepository.existsBySchoolCode(school.getSchoolCode())) {
-            throw new RuntimeException("School code already exists: " + school.getSchoolCode());
+            throw new DuplicateResourceException("School", "schoolCode", school.getSchoolCode());
         }
 
         school.setStatus(SchoolStatus.DRAFT);
@@ -111,7 +114,7 @@ public class SchoolService {
                 throw new IllegalArgumentException("schoolCode cannot be blank");
             }
             if (schoolRepository.existsBySchoolCodeAndIdNot(schoolCode, schoolId)) {
-                throw new RuntimeException("School code already exists: " + schoolCode);
+                throw new DuplicateResourceException("School", "schoolCode", schoolCode);
             }
             existingSchool.setSchoolCode(schoolCode);
         }
@@ -194,7 +197,7 @@ public class SchoolService {
 
         OnboardingStatus onboardingStatus = getOnboardingStatus(schoolId);
         if (!onboardingStatus.isAllComplete()) {
-            throw new RuntimeException("Cannot complete onboarding. Missing: " + buildMissingSteps(onboardingStatus));
+            throw new AppException("Cannot complete onboarding. Missing: " + buildMissingSteps(onboardingStatus));
         }
 
         school.setStatus(SchoolStatus.ACTIVE);
@@ -208,7 +211,8 @@ public class SchoolService {
         if (!hasText(request.getSchoolName())) {
             throw new IllegalArgumentException("schoolName is required");
         }
-        if (!hasText(request.getAdminName()) || !hasText(request.getAdminEmail()) || !hasText(request.getAdminMobile())) {
+        if (!hasText(request.getAdminName()) || !hasText(request.getAdminEmail())
+                || !hasText(request.getAdminMobile())) {
             throw new IllegalArgumentException("adminName, adminEmail and adminMobile are required");
         }
         if (!hasText(request.getAcademicYearName()) || request.getStartDate() == null || request.getEndDate() == null) {
@@ -220,7 +224,7 @@ public class SchoolService {
 
         String schoolCode = request.getSchoolCode().trim().toUpperCase();
         if (schoolRepository.existsBySchoolCode(schoolCode)) {
-            throw new RuntimeException("School code already exists: " + schoolCode);
+            throw new DuplicateResourceException("School", "schoolCode", schoolCode);
         }
     }
 
