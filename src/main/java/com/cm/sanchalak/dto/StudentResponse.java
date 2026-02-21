@@ -32,6 +32,7 @@ public class StudentResponse {
     private Integer rollNo; // For StudentList compatibility
     private Integer rollNumber; // For StudentDetail compatibility
     private String admissionNumber;
+    private String admissionDate;
     private String mobileNumber;
     private String status;
     private boolean deleted;

@@ -55,7 +55,7 @@ public class StudentService {
         user.setEmail(student.getEmail());
         user.setPassword(passwordEncoder.encode(request.getEmail())); // Default password is email
 
-       Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
+        Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
                 .orElseThrow(() -> new EntityNotFoundException("Student Role not found"));
         user.setRoles(Collections.singleton(studentRole));
 
@@ -116,21 +116,66 @@ public class StudentService {
         return mapToResponse(student);
     }
 
-    // Helper methods
     private void updateStudentFromRequest(Student student, StudentRequest request) {
-        student.setFirstName(request.getFirstName());
-        student.setLastName(request.getLastName());
+        // Handle name splitting if name is provided but first/last are missing
+        if (request.getName() != null && !request.getName().isBlank()) {
+            if (request.getFirstName() == null || request.getFirstName().isBlank()) {
+                String[] parts = request.getName().trim().split("\\s+");
+                student.setFirstName(parts[0]);
+                if (parts.length > 1) {
+                    student.setLastName(parts[parts.length - 1]);
+                }
+            } else {
+                student.setFirstName(request.getFirstName());
+                student.setLastName(request.getLastName());
+            }
+        } else {
+            student.setFirstName(request.getFirstName());
+            student.setLastName(request.getLastName());
+        }
 
         // Handle dual-field rollNumber/rollNo
         Integer rollNumber = request.getRollNumber() != null ? request.getRollNumber() : request.getRollNo();
         student.setRollNo(rollNumber);
 
         student.setGender(request.getGender());
-        student.setGuardianName(request.getGuardianName());
 
-        // Handle dual-field mobileNumber/guardianMobile
-        String mobile = request.getMobileNumber() != null ? request.getMobileNumber() : request.getGuardianMobile();
-        student.setGuardianMobile(mobile);
+        // Admission Details
+        student.setAdmissionNumber(request.getAdmissionNumber());
+        if (request.getAdmissionDate() != null) {
+            student.setAdmissionDate(java.time.LocalDate.parse(request.getAdmissionDate()));
+        }
+        student.setSection(request.getSection());
+        student.setAcademicYear(request.getAcademicYear());
+        if (request.getDateOfBirth() != null) {
+            student.setDateOfBirth(java.time.LocalDate.parse(request.getDateOfBirth()));
+        }
+        student.setBloodGroup(request.getBloodGroup());
+
+        // Address Mapping
+        if (request.getAddress() != null) {
+            student.setAddressStreet(request.getAddress().getStreet());
+            student.setAddressCity(request.getAddress().getCity());
+            student.setAddressState(request.getAddress().getState());
+            student.setAddressPincode(request.getAddress().getPincode());
+            student.setAddressCountry(request.getAddress().getCountry());
+        }
+
+        // Parent Mapping
+        if (request.getPrimaryParent() != null) {
+            student.setGuardianName(request.getPrimaryParent().getName());
+            student.setGuardianMobile(request.getPrimaryParent().getMobileNumber());
+            student.setParentRelationship(request.getPrimaryParent().getRelationship());
+            student.setParentEmail(request.getPrimaryParent().getEmail());
+            student.setParentOccupation(request.getPrimaryParent().getOccupation());
+        } else {
+            // Fallback for legacy fields
+            if (request.getGuardianName() != null)
+                student.setGuardianName(request.getGuardianName());
+            String mobile = request.getMobileNumber() != null ? request.getMobileNumber() : request.getGuardianMobile();
+            if (mobile != null)
+                student.setGuardianMobile(mobile);
+        }
     }
 
     private StudentResponse mapToResponse(Student student) {
@@ -142,7 +187,7 @@ public class StudentService {
                 .name(student.getName())
                 .firstName(student.getFirstName())
                 .lastName(student.getLastName())
-                .dateOfBirth("2010-01-01") // Mock for now
+                .dateOfBirth(student.getDateOfBirth() != null ? student.getDateOfBirth().toString() : null)
                 .gender(student.getGender())
                 .email(student.getEmail())
                 .guardianName(student.getGuardianName())
@@ -154,24 +199,27 @@ public class StudentService {
                         .id(student.getStudentClass().getId())
                         .name(student.getStudentClass().getName())
                         .build() : null)
-                .section("A")
+                .section(student.getSection())
                 .rollNo(student.getRollNo())
                 .rollNumber(student.getRollNo())
                 .admissionNumber(student.getAdmissionNumber())
+                .admissionDate(student.getAdmissionDate() != null ? student.getAdmissionDate().toString() : null)
                 .mobileNumber(student.getGuardianMobile())
                 .status(student.isDeleted() ? "Inactive" : "Active")
                 .deleted(student.isDeleted())
                 .address(StudentResponse.AddressResponse.builder()
-                        .street("Main Street")
-                        .city("City")
-                        .state("State")
-                        .pincode("123456")
-                        .country("Country")
+                        .street(student.getAddressStreet())
+                        .city(student.getAddressCity())
+                        .state(student.getAddressState())
+                        .pincode(student.getAddressPincode())
+                        .country(student.getAddressCountry())
                         .build())
                 .primaryParent(StudentResponse.ParentResponse.builder()
                         .name(student.getGuardianName())
-                        .relationship("Guardian")
+                        .relationship(student.getParentRelationship())
                         .mobileNumber(student.getGuardianMobile())
+                        .email(student.getParentEmail())
+                        .occupation(student.getParentOccupation())
                         .build())
                 .build();
     }

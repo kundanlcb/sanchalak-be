@@ -16,30 +16,68 @@ public class StudentRequest {
 
     private Long id; // Optional for update
 
-    @NotBlank(message = "First name is required")
+    private String name;
+
     private String firstName;
 
-    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotNull(message = "Roll number is required")
     private Integer rollNo;
 
-    private Integer rollNumber; // Alias for rollNo
+    private Integer rollNumber;
 
-    @NotBlank(message = "Gender is required")
     private String gender; // MALE, FEMALE, OTHER
 
     private String guardianName;
 
     private String guardianMobile;
 
-    private String mobileNumber; // Alias for guardianMobile
+    private String mobileNumber;
+
+    private String admissionNumber;
+
+    private String admissionDate;
 
     @NotNull(message = "Class ID is required")
     private Long classId;
+
+    private String section;
+
+    private String academicYear;
+
+    private String dateOfBirth;
+
+    private String bloodGroup;
+
+    private AddressRequest address;
+
+    private ParentRequest primaryParent;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AddressRequest {
+        private String street;
+        private String city;
+        private String state;
+        private String pincode;
+        private String country;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ParentRequest {
+        private String name;
+        private String relationship;
+        private String mobileNumber;
+        private String email;
+        private String occupation;
+        private Boolean isPrimaryContact;
+    }
 }

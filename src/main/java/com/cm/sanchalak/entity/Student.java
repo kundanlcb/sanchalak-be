@@ -54,6 +54,45 @@ public class Student extends BaseEntity {
     @Column(name = "admission_number", length = 50)
     private String admissionNumber;
 
+    @Column(name = "admission_date")
+    private java.time.LocalDate admissionDate;
+
+    @Column(length = 20)
+    private String section;
+
+    @Column(name = "academic_year", length = 20)
+    private String academicYear;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(name = "blood_group", length = 10)
+    private String bloodGroup;
+
+    @Column(name = "address_street")
+    private String addressStreet;
+
+    @Column(name = "address_city")
+    private String addressCity;
+
+    @Column(name = "address_state")
+    private String addressState;
+
+    @Column(name = "address_pincode")
+    private String addressPincode;
+
+    @Column(name = "address_country")
+    private String addressCountry;
+
+    @Column(name = "parent_relationship")
+    private String parentRelationship;
+
+    @Column(name = "parent_email")
+    private String parentEmail;
+
+    @Column(name = "parent_occupation")
+    private String parentOccupation;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean deleted = false;
