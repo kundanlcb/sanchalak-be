@@ -304,7 +304,8 @@ public class GlobalApiExceptionHandler {
                                         .body(ApiResult.error(error));
                 }
 
-                ApiError error = ApiError.of("INTERNAL_SERVER_ERROR", "An unexpected server error occurred.");
+                ApiError error = ApiError.of("INTERNAL_SERVER_ERROR",
+                                "An unexpected server error occurred: " + ex.getMessage());
                 logger.error("Runtime error: ", ex); // Logs full stack trace internally
 
                 return ResponseEntity
@@ -317,7 +318,7 @@ public class GlobalApiExceptionHandler {
                         Exception ex, WebRequest request) {
 
                 ApiError error = ApiError.of("INTERNAL_SERVER_ERROR",
-                                "An unexpected error occurred. Please try again later.");
+                                "An unexpected error occurred: " + ex.getMessage());
                 logger.error("Unexpected error: ", ex); // Logs full stack trace internally
 
                 return ResponseEntity
