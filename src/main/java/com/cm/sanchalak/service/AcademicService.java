@@ -98,21 +98,34 @@ public class AcademicService {
 
     public ExamSchedule scheduleExam(Long termId, Long classId, Long subjectId, LocalDate date,
             Integer maxMarks) {
-        ExamTerm term = examTermRepository.findById(termId)
-                .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
-        SchoolClass studentClass = classRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-        Subject subject = subjectRepository.findById(subjectId)
-                .orElseThrow(() -> new RuntimeException("Subject not found"));
 
-        ExamSchedule schedule = new ExamSchedule();
-        schedule.setExamTerm(term);
-        schedule.setStudentClass(studentClass);
-        schedule.setSubject(subject);
+        ExamSchedule schedule = examScheduleRepository
+                .findByExamTerm_IdAndStudentClass_IdAndSubject_Id(termId, classId, subjectId)
+                .orElseGet(() -> {
+                    ExamSchedule newSchedule = new ExamSchedule();
+                    ExamTerm term = examTermRepository.findById(termId)
+                            .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
+                    SchoolClass studentClass = classRepository.findById(classId)
+                            .orElseThrow(() -> new RuntimeException("Class not found"));
+                    Subject subject = subjectRepository.findById(subjectId)
+                            .orElseThrow(() -> new RuntimeException("Subject not found"));
+                    newSchedule.setExamTerm(term);
+                    newSchedule.setStudentClass(studentClass);
+                    newSchedule.setSubject(subject);
+                    return newSchedule;
+                });
+
         schedule.setExamDate(date);
         schedule.setMaxMarks(maxMarks);
 
         return examScheduleRepository.save(schedule);
+    }
+
+    public List<ExamSchedule> getSchedules(Long termId, Long classId) {
+        if (termId != null && classId != null) {
+            return examScheduleRepository.findByExamTerm_IdAndStudentClass_Id(termId, classId);
+        }
+        return examScheduleRepository.findAll();
     }
 
     public StudentMarks saveStudentMarks(Long scheduleId, Long studentId, Double marksObtained, String remarks) {

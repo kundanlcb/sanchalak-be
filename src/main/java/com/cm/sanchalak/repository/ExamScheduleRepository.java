@@ -20,4 +20,9 @@ public interface ExamScheduleRepository extends JpaRepository<ExamSchedule, Long
      */
     java.util.Optional<ExamSchedule> findByExamTerm_IdAndStudentClass_IdAndSubject_Id(Long termId, Long classId,
             Long subjectId);
+
+    /**
+     * Find exam schedules by term and class
+     */
+    List<ExamSchedule> findByExamTerm_IdAndStudentClass_Id(Long termId, Long classId);
 }

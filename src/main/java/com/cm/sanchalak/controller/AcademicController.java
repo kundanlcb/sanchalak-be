@@ -110,6 +110,14 @@ public class AcademicController {
                 request.getMaxMarks()));
     }
 
+    @GetMapping("/schedules")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    public ResponseEntity<List<ExamSchedule>> getSchedules(
+            @RequestParam(required = false) Long examTermId,
+            @RequestParam(required = false) Long classId) {
+        return ResponseEntity.ok(academicService.getSchedules(examTermId, classId));
+    }
+
     // Marks
     @PostMapping("/marks")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
