@@ -60,6 +60,18 @@ public class AcademicController {
         return ResponseEntity.ok(academicService.getAllTerms());
     }
 
+    @PutMapping("/terms/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ExamTerm> updateTerm(
+            @PathVariable Long id,
+            @Valid @RequestBody ExamTermRequest request) {
+        ExamTerm termDetails = new ExamTerm();
+        termDetails.setName(request.getName());
+        termDetails.setStartDate(request.getStartDate());
+        termDetails.setEndDate(request.getEndDate());
+        return ResponseEntity.ok(academicService.updateExamTerm(id, termDetails));
+    }
+
     // Subjects
     @PostMapping("/subjects")
     @PreAuthorize("hasRole('ADMIN')")
@@ -107,6 +119,17 @@ public class AcademicController {
                 request.getStudentId(),
                 request.getMarksObtained(),
                 request.getRemarks()));
+    }
+
+    @PostMapping("/marks/bulk")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<StudentMarks>> saveBulkStudentMarks(
+            @Valid @RequestBody com.cm.sanchalak.dto.academic.BulkMarkEntryRequest request) {
+        return ResponseEntity.ok(academicService.saveBulkStudentMarks(
+                request.getExamTermId(),
+                request.getClassId(),
+                request.getSubjectId(),
+                request.getMarks()));
     }
 
     @GetMapping("/marks")

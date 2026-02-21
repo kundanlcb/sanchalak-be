@@ -9,9 +9,15 @@ import java.util.List;
 
 @Repository
 public interface ExamScheduleRepository extends JpaRepository<ExamSchedule, Long> {
-    
+
     /**
      * Find exam schedules for a class within a date range
      */
     List<ExamSchedule> findByStudentClassIdAndExamDateBetween(Long classId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Find specific exam schedule by term, class, and subject
+     */
+    java.util.Optional<ExamSchedule> findByExamTerm_IdAndStudentClass_IdAndSubject_Id(Long termId, Long classId,
+            Long subjectId);
 }

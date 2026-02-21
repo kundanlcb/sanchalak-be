@@ -37,6 +37,23 @@ public class AcademicService {
         return examTermRepository.findAll();
     }
 
+    public ExamTerm updateExamTerm(Long id, ExamTerm termDetails) {
+        ExamTerm term = examTermRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
+
+        if (termDetails.getName() != null) {
+            term.setName(termDetails.getName());
+        }
+        if (termDetails.getStartDate() != null) {
+            term.setStartDate(termDetails.getStartDate());
+        }
+        if (termDetails.getEndDate() != null) {
+            term.setEndDate(termDetails.getEndDate());
+        }
+
+        return examTermRepository.save(term);
+    }
+
     public Subject createSubject(Subject subject) {
         return subjectRepository.save(subject);
     }
@@ -122,6 +139,40 @@ public class AcademicService {
         marks.setRemarks(remarks);
 
         return studentMarksRepository.save(marks);
+    }
+
+    public List<StudentMarks> saveBulkStudentMarks(Long termId, Long classId, Long subjectId,
+            List<com.cm.sanchalak.dto.academic.StudentMarkEntryDto> marksList) {
+        ExamSchedule schedule = examScheduleRepository
+                .findByExamTerm_IdAndStudentClass_IdAndSubject_Id(termId, classId, subjectId)
+                .orElseThrow(() -> new RuntimeException("Exam Schedule not found for given term, class, and subject"));
+
+        List<StudentMarks> savedMarks = new ArrayList<>();
+
+        for (com.cm.sanchalak.dto.academic.StudentMarkEntryDto entry : marksList) {
+            if (entry.getMarksObtained() > schedule.getMaxMarks()) {
+                throw new IllegalArgumentException(
+                        "Marks obtained cannot exceed max marks (" + schedule.getMaxMarks() + ")");
+            }
+
+            Student student = studentRepository.findById(entry.getStudentId())
+                    .orElseThrow(() -> new RuntimeException("Student not found for ID: " + entry.getStudentId()));
+
+            StudentMarks marks = studentMarksRepository.findByExamScheduleAndStudent(schedule, student)
+                    .orElse(new StudentMarks());
+
+            if (marks.getId() == null) {
+                marks.setExamSchedule(schedule);
+                marks.setStudent(student);
+            }
+
+            marks.setMarksObtained(entry.getMarksObtained());
+            marks.setRemarks(entry.getRemarks());
+
+            savedMarks.add(studentMarksRepository.save(marks));
+        }
+
+        return savedMarks;
     }
 
     public ReportCardDto generateReportCard(Long studentId) {

@@ -11,56 +11,97 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cm.sanchalak.entity.PayrollRecord;
+import com.cm.sanchalak.entity.Teacher;
+import com.cm.sanchalak.repository.PayrollRecordRepository;
+import com.cm.sanchalak.repository.TeacherRepository;
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PayrollServiceImpl implements PayrollService {
+
+    private final PayrollRecordRepository payrollRepository;
+    private final TeacherRepository teacherRepository;
 
     @Override
     public List<PayrollRecordDto> getPayrollHistory() {
+        List<PayrollRecord> records = payrollRepository.findAllByOrderByPaidAtDesc();
         List<PayrollRecordDto> history = new ArrayList<>();
 
-        history.add(PayrollRecordDto.builder()
-                .id("PRL-001")
-                .staffId("TCH-001")
-                .staffName("John Doe")
-                .month("January 2024")
-                .basicPay(new BigDecimal("50000"))
-                .allowance(new BigDecimal("5000"))
-                .deduction(new BigDecimal("2000"))
-                .netSalary(new BigDecimal("53000"))
-                .status("Paid")
-                .paidAt("2024-02-01T10:00:00Z")
-                .build());
-
-        history.add(PayrollRecordDto.builder()
-                .id("PRL-002")
-                .staffId("TCH-002")
-                .staffName("Jane Smith")
-                .month("January 2024")
-                .basicPay(new BigDecimal("45000"))
-                .allowance(new BigDecimal("4500"))
-                .deduction(new BigDecimal("1500"))
-                .netSalary(new BigDecimal("48000"))
-                .status("Paid")
-                .paidAt("2024-02-01T11:00:00Z")
-                .build());
+        for (PayrollRecord pr : records) {
+            history.add(PayrollRecordDto.builder()
+                    .id("PRL-" + String.format("%03d", pr.getId()))
+                    .staffId("TCH-" + String.format("%03d", pr.getTeacher().getId()))
+                    .staffName(pr.getTeacher().getName())
+                    .month(pr.getMonth())
+                    .basicPay(BigDecimal.valueOf(pr.getBasicPay()))
+                    .allowance(BigDecimal.valueOf(pr.getAllowances()))
+                    .deduction(BigDecimal.valueOf(pr.getDeductions()))
+                    .netSalary(BigDecimal.valueOf(pr.getNetSalary()))
+                    .status(pr.getStatus())
+                    .paidAt(pr.getPaidAt() != null ? pr.getPaidAt().format(DateTimeFormatter.ISO_DATE_TIME) : null)
+                    .build());
+        }
 
         return history;
     }
 
     @Override
     public PayrollSummaryDto getPayrollSummary() {
+        List<PayrollRecord> allRecords = payrollRepository.findAll();
+
+        BigDecimal totalPayout = BigDecimal.ZERO;
+        int paidStaff = 0;
+        int pendingStaff = 0;
+
+        for (PayrollRecord pr : allRecords) {
+            if ("PAID".equalsIgnoreCase(pr.getStatus())) {
+                totalPayout = totalPayout.add(BigDecimal.valueOf(pr.getNetSalary()));
+                paidStaff++;
+            } else {
+                pendingStaff++;
+            }
+        }
+
+        long totalStaffCount = teacherRepository.count();
+
         return PayrollSummaryDto.builder()
-                .totalPayout(new BigDecimal("101000"))
-                .totalStaff(10)
-                .paidStaff(8)
-                .pendingStaff(2)
+                .totalPayout(totalPayout)
+                .totalStaff((int) totalStaffCount)
+                .paidStaff(paidStaff)
+                .pendingStaff(pendingStaff)
                 .lastGenerated(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
                 .build();
     }
 
     @Override
     public void generatePayroll(String month) {
-        // In a real implementation, this would iterate over active staff
-        // and create records in the database.
+        List<Teacher> activeTeachers = teacherRepository.findAll();
+
+        for (Teacher teacher : activeTeachers) {
+            // Check if already generated
+            boolean exists = payrollRepository.findByTeacherIdAndMonth(teacher.getId(), month).isPresent();
+            if (!exists) {
+                PayrollRecord record = new PayrollRecord();
+                record.setTeacher(teacher);
+                record.setMonth(month);
+
+                // Real logic would calculate these based on the teacher's profile/attendance.
+                // Using generic defaults for the assignment:
+                Double basicPay = 50000.0;
+                Double allowances = 5000.0;
+                Double deductions = 2000.0;
+                Double netSalary = (basicPay + allowances) - deductions;
+
+                record.setBasicPay(basicPay);
+                record.setAllowances(allowances);
+                record.setDeductions(deductions);
+                record.setNetSalary(netSalary);
+                record.setStatus("GENERATED");
+
+                payrollRepository.save(record);
+            }
+        }
     }
 }
