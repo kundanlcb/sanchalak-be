@@ -9,4 +9,6 @@ import java.util.UUID;
 @Repository
 public interface FeatureRepository extends JpaRepository<Feature, UUID> {
     Optional<Feature> findByCode(String code);
+
+    boolean existsByCode(String code);
 }
