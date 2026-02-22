@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "exam_schedules", uniqueConstraints = {
@@ -19,6 +20,9 @@ public class ExamSchedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "exam_term_id", nullable = false)

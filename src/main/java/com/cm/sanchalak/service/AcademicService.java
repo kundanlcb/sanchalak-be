@@ -1,21 +1,24 @@
 package com.cm.sanchalak.service;
 
-import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
+import com.cm.sanchalak.repository.spec.*;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
+import com.cm.sanchalak.exception.AppException;
 import com.cm.sanchalak.dto.academic.ReportCardDto;
 import com.cm.sanchalak.dto.academic.ExamQuestionDto;
 import com.cm.sanchalak.dto.academic.ExamQuestionRequest;
-import com.cm.sanchalak.dto.curriculum.QuestionDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -33,17 +36,19 @@ public class AcademicService {
     private final ClassRoutineRepository classRoutineRepository;
     private final ExamQuestionRepository examQuestionRepository;
     private final QuestionRepository questionRepository;
+    private final OwnershipValidator ownership;
 
     public ExamTerm createExamTerm(ExamTerm examTerm) {
+        examTerm.setSchoolId(SchoolContext.getSchoolId());
         return examTermRepository.save(examTerm);
     }
 
     public List<ExamTerm> getAllTerms() {
-        return examTermRepository.findAll();
+        return examTermRepository.findAll(ExamTermSpecification.activeScoped());
     }
 
     public ExamTerm updateExamTerm(Long id, ExamTerm termDetails) {
-        ExamTerm term = examTermRepository.findById(id)
+        ExamTerm term = examTermRepository.findOne(ExamTermSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
 
         if (termDetails.getName() != null) {
@@ -59,12 +64,34 @@ public class AcademicService {
         return examTermRepository.save(term);
     }
 
+    public void deleteExamTerm(Long id) {
+        ExamTerm term = examTermRepository.findOne(ExamTermSpecification.activeById(id))
+                .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
+
+        // Check if there are any schedules associated with this term to prevent
+        // orphaned records or data loss
+        if (examScheduleRepository.count(ExamScheduleSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("examTerm").get("id"), id))) > 0) {
+            throw new RuntimeException(
+                    "Cannot delete an Exam Term that has associated schedules. Please remove the schedules first.");
+        }
+
+        examTermRepository.delete(term);
+    }
+
     public Subject createSubject(Subject subject) {
+        subject.setSchoolId(SchoolContext.getSchoolId());
+        // Prevent duplicate subject code per school+class
+        if (subjectRepository.existsByCodeAndSchoolIdAndClassId(
+                subject.getCode(), subject.getSchoolId(), subject.getClassId())) {
+            throw new RuntimeException("A subject with code '" + subject.getCode()
+                    + "' already exists for this class");
+        }
         return subjectRepository.save(subject);
     }
 
     public List<Subject> getAllSubjects() {
-        return subjectRepository.findAll();
+        return subjectRepository.findAll(SubjectSpecification.activeScoped());
     }
 
     public SchoolClass createClass(SchoolClass schoolClass) {
@@ -74,22 +101,23 @@ public class AcademicService {
         if (schoolClass.getName() == null || schoolClass.getName().isEmpty()) {
             schoolClass.setName("Class " + schoolClass.getGrade() + "-" + schoolClass.getSection());
         }
+        schoolClass.setSchoolId(SchoolContext.getSchoolId());
         return classRepository.save(schoolClass);
     }
 
     public List<SchoolClass> getAllClasses() {
-        return classRepository.findAll();
+        return classRepository.findAll(SchoolClassSpecification.activeScoped());
     }
 
     public ClassSubject assignSubjectToClass(Long classId, Long subjectId, Long teacherId) {
-        SchoolClass studentClass = classRepository.findById(classId)
+        SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(classId))
                 .orElseThrow(() -> new RuntimeException("Class not found"));
-        Subject subject = subjectRepository.findById(subjectId)
+        Subject subject = subjectRepository.findOne(SubjectSpecification.activeById(subjectId))
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
 
         Teacher teacher = null;
         if (teacherId != null) {
-            teacher = teacherRepository.findById(teacherId)
+            teacher = teacherRepository.findOne(TeacherSpecification.activeById(teacherId))
                     .orElseThrow(() -> new RuntimeException("Teacher not found"));
         }
 
@@ -105,16 +133,17 @@ public class AcademicService {
             Integer maxMarks, Integer passingMarks, java.time.LocalTime startTime,
             java.time.LocalTime endTime, Integer durationMinutes) {
 
-        ExamSchedule schedule = examScheduleRepository
-                .findByExamTerm_IdAndStudentClass_IdAndSubject_Id(termId, classId, subjectId)
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.byTermAndClass(termId, classId)
+                .and((root, query, cb) -> cb.equal(root.get("subject").get("id"), subjectId)))
                 .orElseGet(() -> {
                     ExamSchedule newSchedule = new ExamSchedule();
-                    ExamTerm term = examTermRepository.findById(termId)
+                    ExamTerm term = examTermRepository.findOne(ExamTermSpecification.activeById(termId))
                             .orElseThrow(() -> new RuntimeException("ExamTerm not found"));
-                    SchoolClass studentClass = classRepository.findById(classId)
+                    SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(classId))
                             .orElseThrow(() -> new RuntimeException("Class not found"));
-                    Subject subject = subjectRepository.findById(subjectId)
+                    Subject subject = subjectRepository.findOne(SubjectSpecification.activeById(subjectId))
                             .orElseThrow(() -> new RuntimeException("Subject not found"));
+
                     newSchedule.setExamTerm(term);
                     newSchedule.setStudentClass(studentClass);
                     newSchedule.setSubject(subject);
@@ -134,10 +163,8 @@ public class AcademicService {
     public ExamSchedule updateSchedule(Long scheduleId, LocalDate date, Integer maxMarks,
             Integer passingMarks, java.time.LocalTime startTime, java.time.LocalTime endTime,
             Integer durationMinutes) {
-        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.activeById(scheduleId))
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
-        if (date != null)
-            schedule.setExamDate(date);
         if (maxMarks != null)
             schedule.setMaxMarks(maxMarks);
         if (passingMarks != null)
@@ -152,18 +179,21 @@ public class AcademicService {
     }
 
     public void deleteSchedule(Long scheduleId) {
-        examScheduleRepository.deleteById(scheduleId);
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.activeById(scheduleId))
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+
+        examScheduleRepository.delete(schedule);
     }
 
     public List<ExamSchedule> getSchedules(Long termId, Long classId) {
         if (termId != null && classId != null) {
-            return examScheduleRepository.findByExamTerm_IdAndStudentClass_Id(termId, classId);
+            return examScheduleRepository.findAll(ExamScheduleSpecification.byTermAndClass(termId, classId));
         }
-        return examScheduleRepository.findAll();
+        return examScheduleRepository.findAll(ExamScheduleSpecification.activeScoped());
     }
 
     public StudentMarks saveStudentMarks(Long scheduleId, Long studentId, Double marksObtained, String remarks) {
-        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.activeById(scheduleId))
                 .orElseThrow(() -> new RuntimeException("Exam Schedule not found"));
 
         if (marksObtained > schedule.getMaxMarks()) {
@@ -171,10 +201,12 @@ public class AcademicService {
                     "Marks obtained cannot exceed max marks (" + schedule.getMaxMarks() + ")");
         }
 
-        Student student = studentRepository.findById(studentId)
+        Student student = studentRepository.findOne(StudentSpecification.activeById(studentId))
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        StudentMarks marks = studentMarksRepository.findByExamScheduleAndStudent(schedule, student)
+        StudentMarks marks = studentMarksRepository.findOne(StudentMarksSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("id"), scheduleId))
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId)))
                 .orElse(new StudentMarks());
 
         if (marks.getId() == null) {
@@ -190,8 +222,8 @@ public class AcademicService {
 
     public List<StudentMarks> saveBulkStudentMarks(Long termId, Long classId, Long subjectId,
             List<com.cm.sanchalak.dto.academic.StudentMarkEntryDto> marksList) {
-        ExamSchedule schedule = examScheduleRepository
-                .findByExamTerm_IdAndStudentClass_IdAndSubject_Id(termId, classId, subjectId)
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.byTermAndClass(termId, classId)
+                .and((root, query, cb) -> cb.equal(root.get("subject").get("id"), subjectId)))
                 .orElseThrow(() -> new RuntimeException("Exam Schedule not found for given term, class, and subject"));
 
         List<StudentMarks> savedMarks = new ArrayList<>();
@@ -202,10 +234,12 @@ public class AcademicService {
                         "Marks obtained cannot exceed max marks (" + schedule.getMaxMarks() + ")");
             }
 
-            Student student = studentRepository.findById(entry.getStudentId())
+            Student student = studentRepository.findOne(StudentSpecification.activeById(entry.getStudentId()))
                     .orElseThrow(() -> new RuntimeException("Student not found for ID: " + entry.getStudentId()));
 
-            StudentMarks marks = studentMarksRepository.findByExamScheduleAndStudent(schedule, student)
+            StudentMarks marks = studentMarksRepository.findOne(StudentMarksSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("id"), schedule.getId()))
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), student.getId())))
                     .orElse(new StudentMarks());
 
             if (marks.getId() == null) {
@@ -223,62 +257,59 @@ public class AcademicService {
     }
 
     public ReportCardDto generateReportCard(Long studentId) {
-        Student student = studentRepository.findById(studentId)
+        Student student = studentRepository.findOne(StudentSpecification.activeById(studentId))
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
+        List<StudentMarks> marks = studentMarksRepository.findAll(StudentMarksSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId)));
+
         return buildReportCard(student, marks);
     }
 
     public List<StudentMarks> getMarks(Long termId, Long classId, Long subjectId, Long studentId) {
         if (studentId != null) {
-            Student student = studentRepository.findById(studentId)
+            studentRepository.findOne(StudentSpecification.activeById(studentId))
                     .orElseThrow(() -> new RuntimeException("Student not found"));
-            List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
-            if (termId != null) {
-                marks = marks.stream()
-                        .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
-                        .collect(Collectors.toList());
-            }
-            if (subjectId != null) {
-                marks = marks.stream()
-                        .filter(m -> m.getExamSchedule().getSubject().getId().equals(subjectId))
-                        .collect(Collectors.toList());
-            }
-            return marks;
+
+            return studentMarksRepository.findAll(StudentMarksSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                    .and(termId != null
+                            ? (root, query, cb) -> cb.equal(root.get("examSchedule").get("examTerm").get("id"), termId)
+                            : null)
+                    .and(subjectId != null
+                            ? (root, query, cb) -> cb.equal(root.get("examSchedule").get("subject").get("id"),
+                                    subjectId)
+                            : null));
         }
 
         if (classId != null && subjectId != null && termId != null) {
-            return studentMarksRepository
-                    .findByExamSchedule_StudentClass_IdAndExamSchedule_Subject_IdAndExamSchedule_ExamTerm_Id(classId,
-                            subjectId, termId);
+            return studentMarksRepository.findAll(StudentMarksSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("studentClass").get("id"), classId))
+                    .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("subject").get("id"), subjectId))
+                    .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("examTerm").get("id"), termId)));
         }
 
         return new ArrayList<>();
     }
 
     public List<ReportCardDto> getClassTermMarks(Long classId, Long termId) {
-        // Use findByStudentClass_Id which exists in repository
-        List<Student> students = studentRepository.findByStudentClass_Id(classId);
+        classRepository.findOne(SchoolClassSpecification.activeById(classId))
+                .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        ExamTerm term = examTermRepository.findById(termId)
+        examTermRepository.findOne(ExamTermSpecification.activeById(termId))
                 .orElseThrow(() -> new RuntimeException("Term not found"));
+
+        List<Student> students = studentRepository.findAll(StudentSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId)));
 
         List<ReportCardDto> classReports = new ArrayList<>();
 
         for (Student student : students) {
-            List<StudentMarks> marks = studentMarksRepository.findByStudent(student);
-            // Filter by term
-            List<StudentMarks> termMarks = marks.stream()
-                    .filter(m -> m.getExamSchedule().getExamTerm().getId().equals(termId))
-                    .collect(Collectors.toList());
+            List<StudentMarks> termMarks = studentMarksRepository.findAll(StudentMarksSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), student.getId()))
+                    .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("examTerm").get("id"), termId)));
 
-            if (!termMarks.isEmpty()) {
-                classReports.add(buildReportCard(student, termMarks));
-            } else {
-                // Include student even if no marks? Yes, empty report.
-                classReports.add(buildReportCard(student, new ArrayList<>()));
-            }
+            classReports.add(buildReportCard(student, termMarks));
         }
 
         return classReports;
@@ -292,6 +323,7 @@ public class AcademicService {
         }
 
         Map<String, List<StudentMarks>> marksByTerm = marks.stream()
+                .filter(m -> m.getExamSchedule() != null && m.getExamSchedule().getExamTerm() != null)
                 .collect(Collectors.groupingBy(m -> m.getExamSchedule().getExamTerm().getName()));
 
         List<ReportCardDto.TermReport> termReports = new ArrayList<>();
@@ -316,133 +348,97 @@ public class AcademicService {
         return report;
     }
 
-    // Class Management
-
     public SchoolClass updateClass(Long id, String name) {
-        SchoolClass studentClass = classRepository.findById(id)
+        SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         studentClass.setName(name);
+
         return classRepository.save(studentClass);
     }
 
     public void deleteClass(Long id) {
-        if (!classRepository.existsById(id)) {
-            throw new IllegalArgumentException("Class not found");
-        }
-        // Check dependencies
-        if (studentRepository.countByStudentClassId(id) > 0) {
+        SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(id))
+                .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+
+        if (studentRepository.count(StudentSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), id))) > 0) {
             throw new IllegalArgumentException("Cannot delete class with enrolled students.");
         }
-        // In a real implementation we would also check for class routines, subjects
-        // etc.
-        // For now, blocking if students exist is the primary safety check.
 
-        classRepository.deleteById(id);
+        classRepository.delete(studentClass);
     }
 
-    // Subject Management
-
     public Subject updateSubject(Long id, String name, String code) {
-        Subject subject = subjectRepository.findById(id)
+        Subject subject = subjectRepository.findOne(SubjectSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Subject not found"));
+
         subject.setName(name);
         subject.setCode(code);
         return subjectRepository.save(subject);
     }
 
     public void deleteSubject(Long id) {
-        if (!subjectRepository.existsById(id)) {
-            throw new RuntimeException("Subject not found");
-        }
-        // Check if subject is associated with any class
+        Subject subject = subjectRepository.findOne(SubjectSpecification.activeById(id))
+                .orElseThrow(() -> new RuntimeException("Subject not found"));
+
         if (classSubjectRepository.existsBySubjectId(id)) {
             throw new RuntimeException("Cannot delete subject assigned to classes.");
         }
 
-        // Check if subject is active in routine
         if (classRoutineRepository.existsBySubjectId(id)) {
             throw new RuntimeException("Cannot delete subject that is active in the class routine.");
         }
 
-        subjectRepository.deleteById(id);
+        subjectRepository.delete(subject);
     }
-
-    // --- Exam Questions ---
 
     public ExamQuestionDto addQuestionToExam(Long scheduleId, ExamQuestionRequest request) {
-        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
+        ExamSchedule schedule = examScheduleRepository.findOne(ExamScheduleSpecification.activeById(scheduleId))
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
-        Question question = questionRepository.findById(request.getQuestionId())
+        Question question = questionRepository.findOne(QuestionSpecification.activeById(request.getQuestionId()))
                 .orElseThrow(() -> new RuntimeException("Question not found"));
 
-        ExamQuestion eq = new ExamQuestion();
-        eq.setExamSchedule(schedule);
-        eq.setQuestion(question);
-        eq.setMarks(request.getMarks());
-        eq.setSequenceOrder(request.getSequenceOrder());
+        ExamQuestion examQuestion = new ExamQuestion();
+        examQuestion.setExamSchedule(schedule);
+        examQuestion.setQuestion(question);
+        examQuestion.setMarks(request.getMarks());
+        examQuestion.setSequenceOrder(request.getSequenceOrder());
 
-        return mapToExamQuestionDto(examQuestionRepository.save(eq));
+        examQuestion = examQuestionRepository.save(examQuestion);
+        return mapToDto(examQuestion);
     }
 
-    @Transactional(readOnly = true)
+    private ExamQuestionDto mapToDto(ExamQuestion eq) {
+        ExamQuestionDto dto = new ExamQuestionDto();
+        dto.setId(eq.getId());
+        dto.setMarks(eq.getMarks());
+        dto.setSequenceOrder(eq.getSequenceOrder());
+
+        if (eq.getQuestion() != null) {
+            com.cm.sanchalak.dto.curriculum.QuestionDto qDto = com.cm.sanchalak.dto.curriculum.QuestionDto.builder()
+                    .id(eq.getQuestion().getId())
+                    .questionText(eq.getQuestion().getQuestionText())
+                    .questionType(eq.getQuestion().getQuestionType().name())
+                    .marks(eq.getQuestion().getMarks())
+                    .build();
+            dto.setQuestion(qDto);
+        }
+
+        return dto;
+    }
+
     public List<ExamQuestionDto> getExamQuestions(Long scheduleId) {
-        return examQuestionRepository.findByExamSchedule_IdOrderBySequenceOrderAsc(scheduleId)
-                .stream().map(this::mapToExamQuestionDto).collect(Collectors.toList());
+        return examQuestionRepository.findAll(ExamQuestionSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("examSchedule").get("id"), scheduleId)))
+                .stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<ExamQuestionDto> setExamQuestions(Long scheduleId, List<ExamQuestionRequest> requests) {
+        return requests.stream().map(r -> addQuestionToExam(scheduleId, r)).collect(Collectors.toList());
     }
 
     public void removeQuestionFromExam(Long scheduleId, Long examQuestionId) {
         examQuestionRepository.deleteById(examQuestionId);
-    }
-
-    public List<ExamQuestionDto> setExamQuestions(Long scheduleId, List<ExamQuestionRequest> requests) {
-        ExamSchedule schedule = examScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
-
-        examQuestionRepository.deleteByExamSchedule_Id(scheduleId);
-
-        List<ExamQuestion> questions = new ArrayList<>();
-        for (int i = 0; i < requests.size(); i++) {
-            ExamQuestionRequest req = requests.get(i);
-            Question question = questionRepository.findById(req.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Question not found: " + req.getQuestionId()));
-            ExamQuestion eq = new ExamQuestion();
-            eq.setExamSchedule(schedule);
-            eq.setQuestion(question);
-            eq.setMarks(req.getMarks());
-            eq.setSequenceOrder(req.getSequenceOrder() != null ? req.getSequenceOrder() : i + 1);
-            questions.add(eq);
-        }
-
-        return examQuestionRepository.saveAll(questions)
-                .stream().map(this::mapToExamQuestionDto).collect(Collectors.toList());
-    }
-
-    private ExamQuestionDto mapToExamQuestionDto(ExamQuestion eq) {
-        Question q = eq.getQuestion();
-        List<QuestionDto.QuestionOptionDto> optionDtos = new ArrayList<>();
-        if (q.getOptions() != null) {
-            optionDtos = q.getOptions().stream().map(o -> QuestionDto.QuestionOptionDto.builder()
-                    .id(o.getId())
-                    .optionText(o.getOptionText())
-                    .isCorrect(o.getIsCorrect())
-                    .build()).collect(Collectors.toList());
-        }
-
-        QuestionDto questionDto = QuestionDto.builder()
-                .id(q.getId())
-                .chapterId(q.getChapter().getId())
-                .questionText(q.getQuestionText())
-                .questionType(q.getQuestionType().name())
-                .marks(q.getMarks())
-                .options(optionDtos)
-                .build();
-
-        return ExamQuestionDto.builder()
-                .id(eq.getId())
-                .examScheduleId(eq.getExamSchedule().getId())
-                .marks(eq.getMarks())
-                .sequenceOrder(eq.getSequenceOrder())
-                .question(questionDto)
-                .build();
     }
 }

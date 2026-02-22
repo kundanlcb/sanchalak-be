@@ -63,7 +63,6 @@ public class TransportController {
     @ApiResponse(responseCode = "403", description = "Forbidden (Linkage validation failed)", content = @Content)
     @ApiResponse(responseCode = "404", description = "No active transport assignment", content = @Content)
     @GetMapping("/my-route")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ApiResult<RouteDetailsDto> getMyRoute(
             @CurrentUser UserPrincipal currentUser,
             @Parameter(description = "ID of the student (Required for PARENT role)") @RequestParam(required = false) Long studentId) {
@@ -117,7 +116,6 @@ public class TransportController {
     @ApiResponse(responseCode = "403", description = "User/Student not assigned to this route", content = @Content)
     @ApiResponse(responseCode = "404", description = "Vehicle/Route/Ping not found", content = @Content)
     @GetMapping("/live")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ApiResult<LiveLocationDto> getLiveLocation(
             @CurrentUser UserPrincipal currentUser,
             @Parameter(description = "Route ID to track") @RequestParam Long routeId,
@@ -189,7 +187,6 @@ public class TransportController {
     @Operation(summary = "Get Stops with ETA", description = "Returns ordered list of stops with estimated arrival times based on current bus location.")
     @ApiResponse(responseCode = "200", description = "Stops with ETA returned")
     @GetMapping("/stops")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ApiResult<StopEtaDto.StopsWithEtaResponse> getStopsWithEta(
             @CurrentUser UserPrincipal currentUser,
             @Parameter(description = "Route ID to track") @RequestParam Long routeId,
@@ -299,7 +296,6 @@ public class TransportController {
     @Operation(summary = "Get Pickup/Drop Events", description = "Returns history of boarding/alighting events for the student.")
     @ApiResponse(responseCode = "200", description = "Events list returned")
     @GetMapping("/events")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ApiResult<List<TransportEventDto>> getTransportEvents(
             @CurrentUser UserPrincipal currentUser,
             @Parameter(description = "ID of the student (Required for PARENT role)") @RequestParam(required = false) Long studentId,

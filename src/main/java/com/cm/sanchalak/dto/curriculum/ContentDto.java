@@ -8,8 +8,12 @@ import lombok.Data;
 public class ContentDto {
     private Long id;
     private Long chapterId;
+    private Long classId;
+    private Long subjectId;
     private String title;
-    private String contentType;
-    private String contentData;
+    private String textContent;
+    private String videoUrl;
+    private String pdfUrl;
+    private String linkUrl;
     private Integer sequenceOrder;
 }

@@ -6,9 +6,11 @@ import com.cm.sanchalak.entity.ParentStudentLink;
 import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.ParentRepository;
 import com.cm.sanchalak.repository.ParentStudentLinkRepository;
+import com.cm.sanchalak.repository.spec.ParentSpecification;
+import com.cm.sanchalak.repository.spec.ParentStudentLinkSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,19 +24,20 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ParentService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ParentService.class);
 
     private final ParentRepository parentRepository;
     private final ParentStudentLinkRepository linkRepository;
+    private final OwnershipValidator ownership;
 
     /**
      * Get parent by user ID
      */
     @Transactional(readOnly = true)
     public Optional<Parent> getParentByUserId(UUID userId) {
-        return parentRepository.findByUserId(userId);
+        return parentRepository.findOne(ParentSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("userId"), userId)));
     }
 
     /**
@@ -42,7 +45,7 @@ public class ParentService {
      */
     @Transactional(readOnly = true)
     public Optional<Parent> getParentByUser(User user) {
-        return parentRepository.findByUser(user);
+        return getParentByUserId(user.getId());
     }
 
     /**
@@ -50,15 +53,14 @@ public class ParentService {
      */
     @Transactional(readOnly = true)
     public List<LinkedStudentDto> getLinkedStudents(Long parentId) {
-        logger.info("Fetching linked students for parent: {}", parentId);
+        log.info("Fetching linked students for parent: {}", parentId);
 
-        Optional<Parent> parentOpt = parentRepository.findById(parentId);
-        if (parentOpt.isEmpty()) {
-            throw new IllegalArgumentException("Parent not found");
-        }
+        Parent parent = parentRepository.findOne(ParentSpecification.activeById(parentId))
+                .orElseThrow(() -> new IllegalArgumentException("Parent not found or unauthorized"));
 
-        Parent parent = parentOpt.get();
-        List<ParentStudentLink> links = linkRepository.findByParentAndIsActiveTrue(parent);
+        List<ParentStudentLink> links = linkRepository.findAll(ParentStudentLinkSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("parent").get("id"), parentId))
+                .and((root, query, cb) -> cb.equal(root.get("isActive"), true)));
 
         return links.stream()
                 .map(this::mapToLinkedStudentDto)
@@ -70,12 +72,10 @@ public class ParentService {
      */
     @Transactional(readOnly = true)
     public List<LinkedStudentDto> getLinkedStudentsByUserId(UUID userId) {
-        Optional<Parent> parentOpt = parentRepository.findByUserId(userId);
-        if (parentOpt.isEmpty()) {
-            throw new IllegalArgumentException("Parent not found for user");
-        }
+        Parent parent = getParentByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Parent not found for user"));
 
-        return getLinkedStudents(parentOpt.get().getId());
+        return getLinkedStudents(parent.getId());
     }
 
     /**
@@ -103,6 +103,6 @@ public class ParentService {
      */
     @Transactional(readOnly = true)
     public boolean existsByUser(User user) {
-        return parentRepository.existsByUser(user);
+        return getParentByUserId(user.getId()).isPresent();
     }
 }

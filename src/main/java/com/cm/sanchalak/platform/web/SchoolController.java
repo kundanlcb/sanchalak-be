@@ -63,6 +63,11 @@ public class SchoolController {
         return ResponseEntity.ok(schoolService.getOnboardingStatus(schoolId));
     }
 
+    @GetMapping("/{schoolId}/users")
+    public ResponseEntity<List<com.cm.sanchalak.dto.UserProfileDto>> getSchoolAdmins(@PathVariable UUID schoolId) {
+        return ResponseEntity.ok(schoolService.getSchoolAdmins(schoolId));
+    }
+
     @PostMapping("/onboard")
     public ResponseEntity<School> onboardSchool(@Valid @RequestBody SchoolOnboardingRequest request) {
         return ResponseEntity.ok(schoolService.onboardSchool(request));

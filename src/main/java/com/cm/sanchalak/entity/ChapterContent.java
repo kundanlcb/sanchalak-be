@@ -20,27 +20,31 @@ public class ChapterContent extends BaseEntity {
     @Column(name = "school_id")
     private UUID schoolId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "chapter_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "chapter_id", nullable = true)
     private SubjectChapter chapter;
+
+    @Column(name = "class_id")
+    private Long classId;
+
+    @Column(name = "subject_id")
+    private Long subjectId;
 
     @Column(nullable = false)
     private String title;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "content_type", nullable = false)
-    private ContentType contentType;
+    @Column(name = "text_content", columnDefinition = "TEXT")
+    private String textContent;
 
-    @Column(name = "content_data", columnDefinition = "TEXT", nullable = false)
-    private String contentData;
+    @Column(name = "video_url")
+    private String videoUrl;
 
-    @Column(name = "sequence_order", nullable = false)
+    @Column(name = "pdf_url")
+    private String pdfUrl;
+
+    @Column(name = "link_url")
+    private String linkUrl;
+
+    @Column(name = "sequence_order")
     private Integer sequenceOrder;
-
-    public enum ContentType {
-        TEXT,
-        VIDEO,
-        PDF,
-        LINK
-    }
 }

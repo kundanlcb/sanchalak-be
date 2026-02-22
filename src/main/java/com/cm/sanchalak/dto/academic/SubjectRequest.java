@@ -1,6 +1,7 @@
 package com.cm.sanchalak.dto.academic;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class SubjectRequest {
     @NotBlank
@@ -8,6 +9,9 @@ public class SubjectRequest {
 
     @NotBlank
     private String code;
+
+    @NotNull
+    private Long classId;
 
     public String getName() {
         return name;
@@ -23,5 +27,13 @@ public class SubjectRequest {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 }

@@ -29,6 +29,9 @@ public class Teacher extends BaseEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
+    @Column(name = "school_id")
+    private java.util.UUID schoolId;
+
     @NotBlank
     @Email
     @Column(length = 50, unique = true)

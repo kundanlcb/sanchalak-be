@@ -20,6 +20,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.cm.sanchalak.security.UserPrincipal;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,15 +78,17 @@ public class AnalyticsIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     void shouldReturnReportCardData() {
         // Setup Class & Student
         SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10");
+        schoolClass.setSchoolId(UUID.randomUUID());
         schoolClass = classRepository.save(schoolClass);
 
         Student student = new Student();
         student.setName("John Doe");
+        student.setEmail("john.doe@test.com");
+        student.setSchoolId(schoolClass.getSchoolId());
         student.setStudentClass(schoolClass);
         student = studentRepository.save(student);
 
@@ -98,6 +104,7 @@ public class AnalyticsIntegrationTest {
         Subject math = subjectRepository.save(Subject.builder()
                 .name("Math")
                 .code("MATH101")
+                .schoolId(schoolClass.getSchoolId())
                 .build());
         ExamSchedule schedule = new ExamSchedule();
         schedule.setExamTerm(term);
@@ -125,6 +132,17 @@ public class AnalyticsIntegrationTest {
 
         final Long studentId = student.getId();
 
+        UserPrincipal principal = new UserPrincipal(
+                UUID.randomUUID(),
+                "Test Admin",
+                "testadmin",
+                "admin@test.com",
+                "pwd",
+                schoolClass.getSchoolId(),
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+
         // Act
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -133,24 +151,22 @@ public class AnalyticsIntegrationTest {
                         .build(studentId))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(ReportCardDataDto.class)
-                .value(dto -> {
-                    assertThat(dto.getStudent().getName()).contains("John");
-                    assertThat(dto.getAcademics()).hasSize(1);
-                    assertThat(dto.getAcademics().get(0).getSubject()).isEqualTo("Math");
-                    assertThat(dto.getAcademics().get(0).getScore()).isEqualTo(85.0);
-                    assertThat(dto.getAttendance().getPresentDays()).isEqualTo(1);
-                });
+                .expectBody()
+                .jsonPath("$.student.name").value(org.hamcrest.Matchers.containsString("John"))
+                .jsonPath("$.academics.length()").isEqualTo(1)
+                .jsonPath("$.academics[0].subject").isEqualTo("Math")
+                .jsonPath("$.academics[0].score").isEqualTo(85.0)
+                .jsonPath("$.attendance.presentDays").isEqualTo(1);
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     void shouldReturnFinancialSummary() {
         // Setup Fee Structure
         FeeStructure fs = new FeeStructure();
         fs.setName("Annual Fee");
         fs.setAcademicYear("2024-25");
         fs.setFrequency("ANNUAL");
+        fs.setSchoolId(UUID.randomUUID());
 
         FeeCategory tuition = feeCategoryRepository.save(FeeCategory.builder()
                 .name("Tuition")
@@ -167,37 +183,51 @@ public class AnalyticsIntegrationTest {
         // Assign to Student
         SchoolClass schoolClass = new SchoolClass();
         schoolClass.setName("Class 10B");
+        schoolClass.setSchoolId(fs.getSchoolId());
         schoolClass = classRepository.save(schoolClass);
 
         Student student = new Student();
         student.setName("Jane Doe");
+        student.setEmail("jane.doe@test.com");
+        student.setSchoolId(schoolClass.getSchoolId());
         student.setStudentClass(schoolClass);
         student = studentRepository.save(student);
 
         StudentFeeMap feeMap = new StudentFeeMap();
         feeMap.setStudent(student);
         feeMap.setFeeStructure(fs);
+        feeMap.setSchoolId(fs.getSchoolId());
         feeMap.setDiscountAmount(new BigDecimal("1000")); // 10000 - 1000 = 9000 expected
         studentFeeMapRepository.save(feeMap);
 
         // Make Partial Payment
         PaymentTransaction tx = new PaymentTransaction();
         tx.setStudent(student);
+        tx.setSchoolId(fs.getSchoolId());
         tx.setAmount(new BigDecimal("4000"));
         tx.setPaymentMethod("CASH");
         tx.setStatus("SUCCESS");
         tx.setPaymentDate(LocalDateTime.now());
         paymentTransactionRepository.save(tx);
 
+        UserPrincipal principal = new UserPrincipal(
+                UUID.randomUUID(),
+                "Test Admin",
+                "testadmin",
+                "admin@test.com",
+                "pwd",
+                fs.getSchoolId(),
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+
         // Act
         webTestClient.get().uri("/api/analytics/finance/summary")
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(FinancialSummaryDto.class)
-                .value(dto -> {
-                    assertThat(dto.getTotalExpectedRevenue()).isEqualTo(9000.0);
-                    assertThat(dto.getTotalCollected()).isEqualTo(4000.0);
-                    assertThat(dto.getTotalOutstanding()).isEqualTo(5000.0);
-                });
+                .expectBody()
+                .jsonPath("$.totalExpectedRevenue").isEqualTo(9000.0)
+                .jsonPath("$.totalCollected").isEqualTo(4000.0)
+                .jsonPath("$.totalOutstanding").isEqualTo(5000.0);
     }
 }

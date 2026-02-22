@@ -12,6 +12,8 @@ import com.cm.sanchalak.platform.subscription.SubscriptionService;
 import com.cm.sanchalak.exception.DuplicateResourceException;
 import com.cm.sanchalak.exception.ResourceNotFoundException;
 import com.cm.sanchalak.exception.AppException;
+import com.cm.sanchalak.dto.UserProfileDto;
+import com.cm.sanchalak.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,7 @@ public class SchoolService {
     private final BootstrapAdminService bootstrapAdminService;
     private final SubscriptionService subscriptionService;
     private final SchoolFeatureEntitlementService schoolFeatureEntitlementService;
+    private final UserRepository userRepository;
 
     public SchoolService(SchoolRepository schoolRepository,
             AcademicYearRepository academicYearRepository,
@@ -36,7 +39,8 @@ public class SchoolService {
             SchoolSubscriptionRepository subscriptionRepository,
             BootstrapAdminService bootstrapAdminService,
             SubscriptionService subscriptionService,
-            SchoolFeatureEntitlementService schoolFeatureEntitlementService) {
+            SchoolFeatureEntitlementService schoolFeatureEntitlementService,
+            UserRepository userRepository) {
         this.schoolRepository = schoolRepository;
         this.academicYearRepository = academicYearRepository;
         this.schoolUserRepository = schoolUserRepository;
@@ -44,6 +48,7 @@ public class SchoolService {
         this.bootstrapAdminService = bootstrapAdminService;
         this.subscriptionService = subscriptionService;
         this.schoolFeatureEntitlementService = schoolFeatureEntitlementService;
+        this.userRepository = userRepository;
     }
 
     public OnboardingStatus getOnboardingStatus(UUID schoolId) {
@@ -61,6 +66,20 @@ public class SchoolService {
                 .adminUserInvited(adminUserInvited)
                 .subscriptionActive(subscriptionActive)
                 .build();
+    }
+
+    public List<UserProfileDto> getSchoolAdmins(UUID schoolId) {
+        List<SchoolUser> schoolUsers = schoolUserRepository.findBySchoolId(schoolId);
+        List<UUID> userIds = schoolUsers.stream().map(SchoolUser::getUserId).toList();
+        return userRepository.findAllById(userIds).stream()
+                .map(u -> UserProfileDto.builder()
+                        .userId(u.getId())
+                        .name(u.getName())
+                        .email(u.getEmail())
+                        .mobileNumber(u.getMobileNumber())
+                        .role(u.getRoles().isEmpty() ? "ADMIN" : u.getRoles().iterator().next().getName().name())
+                        .build())
+                .toList();
     }
 
     public List<School> getAllSchools() {

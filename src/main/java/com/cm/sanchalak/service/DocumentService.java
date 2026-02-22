@@ -7,6 +7,9 @@ import com.cm.sanchalak.entity.Student;
 import com.cm.sanchalak.entity.StudentDocument;
 import com.cm.sanchalak.repository.StudentDocumentRepository;
 import com.cm.sanchalak.repository.StudentRepository;
+import com.cm.sanchalak.repository.spec.DocumentSpecification;
+import com.cm.sanchalak.repository.spec.StudentSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
 import com.cm.sanchalak.service.storage.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +30,7 @@ public class DocumentService {
     private final StudentDocumentRepository documentRepository;
     private final StudentRepository studentRepository;
     private final FileStorageService fileStorageService;
+    private final OwnershipValidator ownership;
 
     public PresignedUrlDto generateUploadUrl(String fileName, String mimeType) {
         String objectKey = "documents/" + UUID.randomUUID() + "/" + fileName;
@@ -41,7 +45,7 @@ public class DocumentService {
 
     @Transactional
     public StudentDocumentDto createDocument(CreateDocumentRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
+        Student student = studentRepository.findOne(StudentSpecification.activeById(request.getStudentId()))
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         StudentDocument doc = new StudentDocument();
@@ -52,30 +56,34 @@ public class DocumentService {
         doc.setMimeType(request.getMimeType());
         doc.setFileSize(request.getFileSize());
         doc.setDescription(request.getDescription());
-        
+
         doc = documentRepository.save(doc);
-        
+
         return mapToDto(doc);
     }
 
+    @Transactional(readOnly = true)
     public List<StudentDocumentDto> getDocuments(Long studentId) {
-        List<StudentDocument> docs = documentRepository.findByStudentId(studentId);
+        studentRepository.findOne(StudentSpecification.activeById(studentId))
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        List<StudentDocument> docs = documentRepository.findAll(DocumentSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId)));
+
         return docs.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
     @Transactional
     public void deleteDocument(Long id) {
-        StudentDocument doc = documentRepository.findById(id)
+        StudentDocument doc = documentRepository.findOne(DocumentSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Document not found"));
-        
-        // Delete from S3/Storage
+
         try {
             fileStorageService.deleteFile(doc.getFileUrl());
         } catch (Exception e) {
             log.error("Failed to delete file from storage: " + doc.getFileUrl(), e);
-            // Continue to delete record anyway
         }
-        
+
         documentRepository.delete(doc);
     }
 
@@ -85,9 +93,7 @@ public class DocumentService {
         dto.setStudentId(doc.getStudent().getId());
         dto.setDocumentType(doc.getDocumentType());
         dto.setFileName(doc.getFileName());
-        dto.setFileUrl(fileStorageService.getPublicUrl(doc.getFileUrl())); // Convert key to URL if needed, or return key
-        // Note: Presigned URL generator might return full URL for upload, but stored key is relative. 
-        // getPublicUrl constructs full URL.
+        dto.setFileUrl(fileStorageService.getPublicUrl(doc.getFileUrl()));
         dto.setDescription(doc.getDescription());
         if (doc.getCreatedAt() != null) {
             dto.setUploadedAt(LocalDateTime.ofInstant(doc.getCreatedAt(), ZoneId.systemDefault()));

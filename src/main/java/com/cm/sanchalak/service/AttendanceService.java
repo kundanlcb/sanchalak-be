@@ -4,6 +4,12 @@ import com.cm.sanchalak.dto.*;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.entity.SchoolClass;
 import com.cm.sanchalak.repository.*;
+import com.cm.sanchalak.repository.spec.AttendanceSpecification;
+import com.cm.sanchalak.repository.spec.SchoolClassSpecification;
+import com.cm.sanchalak.repository.spec.StudentSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
+import com.cm.sanchalak.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +21,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,19 +33,21 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
     private final SchoolClassRepository classRepository;
+    private final OwnershipValidator ownership;
 
     @Transactional
     public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkAttendanceRequest request, String markedBy) {
         log.info("Bulk marking attendance for class: {} on date: {}", request.getClassId(), request.getDate());
 
         Long classId = request.getClassId();
-        SchoolClass clazz = classRepository.findById(classId)
+        SchoolClass clazz = classRepository.findOne(SchoolClassSpecification.activeById(classId))
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        List<Student> students = studentRepository.findByStudentClass_Id(classId);
+        List<Student> students = studentRepository.findAll(StudentSpecification.activeScoped())
+                .stream().filter(s -> s.getStudentClass().getId().equals(classId)).toList();
 
-        List<AttendanceRecord> existingRecords = attendanceRepository.findBySchoolClass_IdAndDate(classId,
-                request.getDate());
+        List<AttendanceRecord> existingRecords = attendanceRepository
+                .findAll(AttendanceSpecification.byClassAndDate(classId, request.getDate()));
         Map<Long, AttendanceRecord> existingMap = existingRecords.stream()
                 .collect(Collectors.toMap(r -> r.getStudent().getId(), Function.identity()));
 
@@ -66,7 +75,6 @@ public class AttendanceService {
                 record.setModified(true);
             }
 
-            // Derive studentId for lookup
             Long sid = student.getId();
             BulkMarkAttendanceRequest.StudentAttendanceStatus input = inputMap.get(sid);
 
@@ -90,7 +98,6 @@ public class AttendanceService {
         log.info("Marking attendance for student: {} in class: {} on date: {}", request.getStudentId(),
                 request.getClassId(), request.getDate());
 
-        // Use Long directly
         Long studentId = request.getStudentId();
         Long classId = request.getClassId();
 
@@ -98,17 +105,18 @@ public class AttendanceService {
             throw new IllegalArgumentException("Cannot mark attendance for future dates");
         }
 
-        AttendanceRecord record = attendanceRepository.findByStudentIdAndDate(studentId, request.getDate())
+        AttendanceRecord record = attendanceRepository
+                .findOne(AttendanceSpecification.byStudentAndDate(studentId, request.getDate()))
                 .orElse(new AttendanceRecord());
 
         if (record.getId() == null) {
-            Student student = studentRepository.findById(studentId)
+            Student student = studentRepository.findOne(StudentSpecification.activeById(studentId))
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             SchoolClass clazz = student.getStudentClass();
             if (clazz == null) {
                 if (classId != null) {
-                    clazz = classRepository.findById(classId)
+                    clazz = classRepository.findOne(SchoolClassSpecification.activeById(classId))
                             .orElseThrow(() -> new RuntimeException("Class not found"));
                 } else {
                     throw new RuntimeException("Student has no class assigned and classId not provided");
@@ -134,11 +142,14 @@ public class AttendanceService {
     public ClassAttendanceSheetDto getClassAttendanceSheet(Long classId, LocalDate date) {
         log.info("Fetching attendance sheet for class: {} on date: {}", classId, date);
 
-        SchoolClass clazz = classRepository.findById(classId)
+        SchoolClass clazz = classRepository.findOne(SchoolClassSpecification.activeById(classId))
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        List<Student> allStudents = studentRepository.findByStudentClass_Id(classId);
-        List<AttendanceRecord> existingRecords = attendanceRepository.findBySchoolClass_IdAndDate(classId, date);
+        List<Student> allStudents = studentRepository.findAll(StudentSpecification.activeScoped())
+                .stream().filter(s -> s.getStudentClass().getId().equals(classId)).toList();
+
+        List<AttendanceRecord> existingRecords = attendanceRepository
+                .findAll(AttendanceSpecification.byClassAndDate(classId, date));
 
         Map<Long, AttendanceRecord> recordMap = existingRecords.stream()
                 .collect(Collectors.toMap(r -> r.getStudent().getId(), Function.identity()));
@@ -171,9 +182,8 @@ public class AttendanceService {
                 else if (record.getStatus() == AttendanceStatus.ABSENT)
                     absent++;
             } else {
-                // Default mapping for a student without an existing record
                 dto.setStatus(AttendanceStatus.PRESENT);
-                present++; // Optimistically count as present
+                present++;
             }
             dtos.add(dto);
         }
@@ -196,11 +206,17 @@ public class AttendanceService {
             LocalDate endDate) {
         log.info("Fetching attendance history for student: {} from {} to {}", studentId, startDate, endDate);
 
+        studentRepository.findOne(StudentSpecification.activeById(studentId))
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
         List<AttendanceRecord> records;
         if (startDate != null && endDate != null) {
-            records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate, endDate);
+            records = attendanceRepository.findAll(AttendanceSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                    .and((root, query, cb) -> cb.between(root.get("date"), startDate, endDate)));
         } else {
-            records = attendanceRepository.findByStudentId(studentId);
+            records = attendanceRepository.findAll(AttendanceSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId)));
         }
         return records.stream()
                 .map(this::mapToDto)
@@ -211,8 +227,13 @@ public class AttendanceService {
     public AttendanceSummaryDto getStudentAttendanceSummary(Long studentId, LocalDate startDate, LocalDate endDate) {
         log.info("Fetching attendance summary for student: {} from {} to {}", studentId, startDate, endDate);
 
-        List<AttendanceRecord> records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate,
-                endDate);
+        studentRepository.findOne(StudentSpecification.activeById(studentId))
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        List<AttendanceRecord> records = attendanceRepository.findAll(AttendanceSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                .and((root, query, cb) -> cb.between(root.get("date"), startDate, endDate)));
+
         int total = records.size();
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
@@ -227,8 +248,13 @@ public class AttendanceService {
 
     public ClassAttendanceStatistics getClassAttendanceStatistics(Long classId, LocalDate startDate,
             LocalDate endDate) {
-        List<AttendanceRecord> records = attendanceRepository.findBySchoolClass_IdAndDateBetween(classId, startDate,
-                endDate);
+        classRepository.findOne(SchoolClassSpecification.activeById(classId))
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        List<AttendanceRecord> records = attendanceRepository.findAll(AttendanceSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("schoolClass").get("id"), classId))
+                .and((root, query, cb) -> cb.between(root.get("date"), startDate, endDate)));
+
         int total = records.size();
         int present = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.PRESENT).count();
         double pct = total > 0 ? ((double) present / total) * 100 : 0.0;
@@ -246,7 +272,7 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceRecordDto updateAttendance(Long id, UpdateAttendanceRequest request, String modifiedBy) {
-        AttendanceRecord record = attendanceRepository.findById(id)
+        AttendanceRecord record = attendanceRepository.findOne(AttendanceSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Attendance record not found"));
 
         if (request.getStatus() != null) {

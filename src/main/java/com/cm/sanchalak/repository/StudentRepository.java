@@ -2,6 +2,7 @@ package com.cm.sanchalak.repository;
 
 import com.cm.sanchalak.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,10 +13,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 @Repository
-public interface StudentRepository extends JpaRepository<Student, Long> {
+public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student> {
     Page<Student> findByDeletedFalse(Pageable pageable);
 
+    Page<Student> findBySchoolIdAndDeletedFalse(UUID schoolId, Pageable pageable);
+
     List<Student> findByDeletedFalse();
+
+    List<Student> findBySchoolIdAndDeletedFalse(UUID schoolId);
 
     List<Student> findByDeletedTrue();
 
@@ -25,6 +30,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     // Keep legacy for existing code that might not care, or update them.
     List<Student> findByStudentClass_Id(Long classId);
+
     List<Student> findByStudentClass_SchoolIdAndDeletedFalse(UUID schoolId);
 
     // Find student by user account
@@ -35,5 +41,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     long countByGender(String gender);
 
     long countByDeletedFalse();
+
+    long countBySchoolIdAndDeletedFalse(UUID schoolId);
 
 }

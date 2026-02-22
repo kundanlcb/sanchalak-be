@@ -2,6 +2,7 @@ package com.cm.sanchalak.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.UUID;
 
 /**
  * Entity representing a transport route
@@ -22,6 +23,9 @@ public class Route extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
 
     @Column(name = "route_name", nullable = false, length = 100)
     private String routeName;

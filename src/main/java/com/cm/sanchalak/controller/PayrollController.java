@@ -19,19 +19,16 @@ public class PayrollController {
     private final PayrollService payrollService;
 
     @GetMapping("/history")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PayrollRecordDto>> getPayrollHistory() {
         return ResponseEntity.ok(payrollService.getPayrollHistory());
     }
 
     @GetMapping("/summary")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL')")
     public ResponseEntity<PayrollSummaryDto> getPayrollSummary() {
         return ResponseEntity.ok(payrollService.getPayrollSummary());
     }
 
     @PostMapping("/generate")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> generatePayroll(@RequestBody Map<String, String> request) {
         String month = request.get("month");
         payrollService.generatePayroll(month);

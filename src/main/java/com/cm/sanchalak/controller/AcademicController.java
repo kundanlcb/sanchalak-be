@@ -32,20 +32,17 @@ public class AcademicController {
 
     // Classes
     @PostMapping("/classes")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SchoolClass> createClass(@Valid @RequestBody SchoolClass schoolClass) {
         return ResponseEntity.ok(academicService.createClass(schoolClass));
     }
 
     @GetMapping("/classes")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<SchoolClass>> getAllClasses() {
         return ResponseEntity.ok(academicService.getAllClasses());
     }
 
     // Terms
     @PostMapping("/terms")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ExamTerm> createTerm(@Valid @RequestBody ExamTermRequest request) {
         ExamTerm term = new ExamTerm();
         term.setName(request.getName());
@@ -55,13 +52,11 @@ public class AcademicController {
     }
 
     @GetMapping("/terms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ExamTerm>> getAllTerms() {
         return ResponseEntity.ok(academicService.getAllTerms());
     }
 
     @PutMapping("/terms/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ExamTerm> updateTerm(
             @PathVariable Long id,
             @Valid @RequestBody ExamTermRequest request) {
@@ -72,25 +67,29 @@ public class AcademicController {
         return ResponseEntity.ok(academicService.updateExamTerm(id, termDetails));
     }
 
+    @DeleteMapping("/terms/{id}")
+    public ResponseEntity<Void> deleteTerm(@PathVariable Long id) {
+        academicService.deleteExamTerm(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // Subjects
     @PostMapping("/subjects")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Subject> createSubject(@Valid @RequestBody SubjectRequest request) {
         Subject subject = new Subject();
         subject.setName(request.getName());
         subject.setCode(request.getCode());
+        subject.setClassId(request.getClassId());
         return ResponseEntity.ok(academicService.createSubject(subject));
     }
 
     @GetMapping("/subjects")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<Subject>> getAllSubjects() {
         return ResponseEntity.ok(academicService.getAllSubjects());
     }
 
     // Class Subjects
     @PostMapping("/class-subjects")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ClassSubject> assignSubjectToClass(@Valid @RequestBody ClassSubjectRequest request) {
         return ResponseEntity.ok(academicService.assignSubjectToClass(
                 request.getClassId(),
@@ -100,7 +99,6 @@ public class AcademicController {
 
     // Schedules
     @PostMapping("/schedules")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ExamSchedule> scheduleExam(@Valid @RequestBody ExamScheduleRequest request) {
         return ResponseEntity.ok(academicService.scheduleExam(
                 request.getExamTermId(),
@@ -115,7 +113,6 @@ public class AcademicController {
     }
 
     @PutMapping("/schedules/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ExamSchedule> updateSchedule(
             @PathVariable Long id,
             @Valid @RequestBody ExamScheduleRequest request) {
@@ -129,14 +126,12 @@ public class AcademicController {
     }
 
     @DeleteMapping("/schedules/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteSchedule(@PathVariable Long id) {
         academicService.deleteSchedule(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/schedules")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ExamSchedule>> getSchedules(
             @RequestParam(required = false) Long examTermId,
             @RequestParam(required = false) Long classId) {
@@ -145,7 +140,6 @@ public class AcademicController {
 
     // Marks
     @PostMapping("/marks")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<StudentMarks> saveStudentMarks(@Valid @RequestBody MarkEntryRequest request) {
         return ResponseEntity.ok(academicService.saveStudentMarks(
                 request.getExamScheduleId(),
@@ -155,7 +149,6 @@ public class AcademicController {
     }
 
     @PostMapping("/marks/bulk")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<StudentMarks>> saveBulkStudentMarks(
             @Valid @RequestBody com.cm.sanchalak.dto.academic.BulkMarkEntryRequest request) {
         return ResponseEntity.ok(academicService.saveBulkStudentMarks(
@@ -166,7 +159,6 @@ public class AcademicController {
     }
 
     @GetMapping("/marks")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<StudentMarks>> getMarks(
             @RequestParam(required = false) Long examTermId,
             @RequestParam(required = false) Long classId,
@@ -176,14 +168,12 @@ public class AcademicController {
     }
 
     // Reports
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     @GetMapping("/reports/{studentId}")
     public ResponseEntity<ReportCardDto> getReportCard(@PathVariable Long studentId) {
         return ResponseEntity.ok(academicService.generateReportCard(studentId));
     }
 
     @GetMapping("/marks/class/{classId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<ReportCardDto>> getMarksForClass(
             @PathVariable Long classId,
             @RequestParam Long termId) {
@@ -193,7 +183,6 @@ public class AcademicController {
     // Class Management
 
     @PutMapping("/classes/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SchoolClass> updateClass(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String name = body.get("name");
         if (name == null || name.isEmpty()) {
@@ -203,7 +192,6 @@ public class AcademicController {
     }
 
     @DeleteMapping("/classes/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteClass(@PathVariable Long id) {
         academicService.deleteClass(id);
         return ResponseEntity.noContent().build();
@@ -212,13 +200,11 @@ public class AcademicController {
     // Subject Management
 
     @PutMapping("/subjects/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectRequest request) {
         return ResponseEntity.ok(academicService.updateSubject(id, request.getName(), request.getCode()));
     }
 
     @DeleteMapping("/subjects/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
         academicService.deleteSubject(id);
         return ResponseEntity.noContent().build();
@@ -227,7 +213,6 @@ public class AcademicController {
     // --- Exam Question Paper ---
 
     @PostMapping("/schedules/{scheduleId}/questions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<com.cm.sanchalak.dto.academic.ExamQuestionDto> addQuestionToExam(
             @PathVariable Long scheduleId,
             @Valid @RequestBody com.cm.sanchalak.dto.academic.ExamQuestionRequest request) {
@@ -235,14 +220,12 @@ public class AcademicController {
     }
 
     @GetMapping("/schedules/{scheduleId}/questions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<com.cm.sanchalak.dto.academic.ExamQuestionDto>> getExamQuestions(
             @PathVariable Long scheduleId) {
         return ResponseEntity.ok(academicService.getExamQuestions(scheduleId));
     }
 
     @PutMapping("/schedules/{scheduleId}/questions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<com.cm.sanchalak.dto.academic.ExamQuestionDto>> setExamQuestions(
             @PathVariable Long scheduleId,
             @Valid @RequestBody List<com.cm.sanchalak.dto.academic.ExamQuestionRequest> requests) {
@@ -250,7 +233,6 @@ public class AcademicController {
     }
 
     @DeleteMapping("/schedules/{scheduleId}/questions/{examQuestionId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Void> removeQuestionFromExam(
             @PathVariable Long scheduleId,
             @PathVariable Long examQuestionId) {

@@ -20,9 +20,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cm.sanchalak.repository.spec.TeacherSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +41,7 @@ public class TeacherService {
     private final SubjectRepository subjectRepository;
     private final ClassSubjectRepository classSubjectRepository;
     private final ClassRoutineRepository classRoutineRepository;
+    private final OwnershipValidator ownership;
 
     public TeacherResponse createTeacher(TeacherRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -52,12 +57,15 @@ public class TeacherService {
         Role userRole = roleRepository.findByName(RoleName.ROLE_TEACHER)
                 .orElseThrow(() -> new RuntimeException("User Role not set."));
         user.setRoles(Collections.singleton(userRole));
+        UUID schoolId = SchoolContext.getSchoolId();
+        user.setSchoolId(schoolId);
 
         user = userRepository.save(user);
 
         // Create Teacher
         Teacher teacher = new Teacher();
         teacher.setUser(user);
+        teacher.setSchoolId(schoolId);
         teacher.setName(request.getName());
         teacher.setEmail(request.getEmail());
         teacher.setMobileNumber(request.getMobileNumber());
@@ -76,7 +84,7 @@ public class TeacherService {
     }
 
     public TeacherResponse updateTeacher(Long id, TeacherRequest request) {
-        Teacher teacher = teacherRepository.findById(id)
+        Teacher teacher = teacherRepository.findOne(TeacherSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         if (!teacher.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
@@ -108,7 +116,7 @@ public class TeacherService {
     }
 
     public void deleteTeacher(Long id) {
-        Teacher teacher = teacherRepository.findById(id)
+        Teacher teacher = teacherRepository.findOne(TeacherSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         // Check dependencies (Assignments)
@@ -137,15 +145,17 @@ public class TeacherService {
     }
 
     public List<TeacherResponse> getAllTeachers() {
-        return teacherRepository.findByDeletedFalse().stream()
+        List<Teacher> teachers = teacherRepository.findAll(TeacherSpecification.activeScoped());
+
+        return teachers.stream()
                 .map(TeacherResponse::from)
                 .collect(Collectors.toList());
     }
 
     public TeacherResponse getTeacherById(Long id) {
-        Teacher teacher = teacherRepository.findById(id)
-                .filter(t -> !t.isDeleted())
+        Teacher teacher = teacherRepository.findOne(TeacherSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
         return TeacherResponse.from(teacher);
     }
 }

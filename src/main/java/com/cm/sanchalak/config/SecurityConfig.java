@@ -73,7 +73,9 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(authorize -> authorize
-                                                .requestMatchers("/api/platform/v1/auth/**", "/error").permitAll()
+                                                .requestMatchers("/api/platform/v1/auth/**",
+                                                                "/api/platform/v1/locations/**", "/error")
+                                                .permitAll()
                                                 .anyRequest().authenticated())
                                 .userDetailsService(platformUserDetailsService);
 
@@ -84,7 +86,9 @@ public class SecurityConfig {
 
         @Bean
         @Order(2)
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain filterChain(HttpSecurity http,
+                        com.cm.sanchalak.security.dynamic.DynamicEndpointAuthorizationManager dynamicAuthManager)
+                        throws Exception {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(csrf -> csrf.disable())
@@ -111,8 +115,7 @@ public class SecurityConfig {
                                                                 "/ping",
                                                                 "/error")
                                                 .permitAll()
-                                                .anyRequest()
-                                                .authenticated())
+                                                .anyRequest().access(dynamicAuthManager))
                                 .userDetailsService(customUserDetailsService);
 
                 http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

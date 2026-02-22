@@ -44,7 +44,7 @@ import org.springframework.test.annotation.DirtiesContext;
 public class OtpAuthenticationFlowTest {
 
     private MockMvc mockMvc;
-    
+
     @Autowired
     private WebApplicationContext context;
 
@@ -60,9 +60,9 @@ public class OtpAuthenticationFlowTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+
     @Autowired
     private DatabaseCleanup databaseCleanup;
 
@@ -72,7 +72,7 @@ public class OtpAuthenticationFlowTest {
     void setUp() {
         // Full database cleanup to avoid FK constraints and rate limits
         databaseCleanup.cleanAllTables();
-        
+
         mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
@@ -89,7 +89,7 @@ public class OtpAuthenticationFlowTest {
         user.setPassword(passwordEncoder.encode("password"));
         user.setRoles(new HashSet<>(Collections.singletonList(studentRole)));
         // user.setIsActive(true);
-        
+
         userRepository.save(user);
     }
 
@@ -97,61 +97,67 @@ public class OtpAuthenticationFlowTest {
     void testOtpAuthenticationFlow() throws Exception {
         // 1. Request OTP
         OtpRequestDto requestDto = new OtpRequestDto(testMobile);
-        
+
         MvcResult requestResult = mockMvc.perform(post("/api/auth/otp/request")
+                .header("X-Forwarded-For", java.util.UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
-                .andDo(result -> System.out.println("OTP Request Response: " + result.getResponse().getContentAsString()))
+                .andDo(result -> System.out
+                        .println("OTP Request Response: " + result.getResponse().getContentAsString()))
                 // .andExpect(status().isOk()) // Don't check status yet to debug
                 // .andExpect(jsonPath("$.success").value(true))
                 .andReturn();
-                
+
         String responseBody = requestResult.getResponse().getContentAsString();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
-        
+
         if (!jsonNode.path("success").asBoolean()) {
-             throw new AssertionError("OTP Request failed: " + responseBody);
+            throw new AssertionError("OTP Request failed: " + responseBody);
         }
-        
+
         String message = jsonNode.get("data").asText();
-        
-        // Extract OTP from "OTP sent successfully. Valid for 5 minutes. [DEV: OTP=123456]"
+
+        // Extract OTP from "OTP sent successfully. Valid for 5 minutes. [DEV:
+        // OTP=123456]"
         String otp = extractOtpFromMessage(message);
-        
+
         // 2. Verify OTP
         OtpVerifyDto verifyDto = new OtpVerifyDto(testMobile, otp, "device-1", "ANDROID");
-        
+
         MvcResult verifyResult = mockMvc.perform(post("/api/auth/otp/verify")
+                .header("X-Forwarded-For", java.util.UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(verifyDto)))
-                .andDo(result -> System.out.println("OTP Verify Response: " + result.getResponse().getContentAsString()))
+                .andDo(result -> System.out
+                        .println("OTP Verify Response: " + result.getResponse().getContentAsString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").exists())
                 .andExpect(jsonPath("$.data.refreshToken").exists())
                 .andReturn();
-                
+
         String verifyBody = verifyResult.getResponse().getContentAsString();
         JsonNode verifyNode = objectMapper.readTree(verifyBody);
         String accessToken = verifyNode.get("data").get("accessToken").asText();
-        
+
         // Verify tokens are non-empty
         assertNotNull(accessToken);
         assertFalse(accessToken.isEmpty());
-        
+
         String refreshToken = verifyNode.get("data").get("refreshToken").asText();
         assertNotNull(refreshToken);
         assertFalse(refreshToken.isEmpty());
     }
-    
+
     private String extractOtpFromMessage(String message) {
         // The service now returns just the OTP string in data
         // "OTP sent successfully. Valid for 5 minutes." (message)
         // "123456" (data)
         // In the test flow:
         // String message = jsonNode.get("data").asText();
-        // Since my current test is failing on this, let's just use the data field directly if it looks like an OTP
-        
+        // Since my current test is failing on this, let's just use the data field
+        // directly if it looks like an OTP
+
         if (message != null && message.matches("\\d{6}")) {
             return message;
         }
@@ -161,7 +167,7 @@ public class OtpAuthenticationFlowTest {
             String part = message.split("OTP=")[1];
             return part.substring(0, 6); // Take first 6 chars
         }
-        
+
         throw new RuntimeException("OTP not found in response message or data: " + message);
     }
 }

@@ -26,6 +26,7 @@ public class UserProfileDto {
     private String firstName;
     private String lastName;
     private String role;
+    private UUID schoolId;
     private List<String> permissions;
 
     // Student-specific fields (populated only for ROLE_STUDENT)

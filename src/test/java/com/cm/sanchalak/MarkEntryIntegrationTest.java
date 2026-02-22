@@ -21,6 +21,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import java.time.LocalDate;
 import org.springframework.test.annotation.DirtiesContext;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collections;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -29,16 +33,25 @@ public class MarkEntryIntegrationTest {
 
     @Autowired
     private WebApplicationContext context;
-    
-    @Autowired private ExamTermRepository termRepo;
-    @Autowired private SchoolClassRepository classRepo;
-    @Autowired private SubjectRepository subjectRepo;
-    @Autowired private StudentRepository studentRepo;
-    @Autowired private ExamScheduleRepository scheduleRepo;
-    @Autowired private StudentMarksRepository marksRepo;
-    @Autowired private ClassSubjectRepository classSubjectRepo;
-    @Autowired private AttendanceRepository attendanceRepo;
-    @Autowired private TeacherRepository teacherRepo; // Add TeacherRepo
+
+    @Autowired
+    private ExamTermRepository termRepo;
+    @Autowired
+    private SchoolClassRepository classRepo;
+    @Autowired
+    private SubjectRepository subjectRepo;
+    @Autowired
+    private StudentRepository studentRepo;
+    @Autowired
+    private ExamScheduleRepository scheduleRepo;
+    @Autowired
+    private StudentMarksRepository marksRepo;
+    @Autowired
+    private ClassSubjectRepository classSubjectRepo;
+    @Autowired
+    private AttendanceRepository attendanceRepo;
+    @Autowired
+    private TeacherRepository teacherRepo; // Add TeacherRepo
 
     private WebTestClient webTestClient;
 
@@ -51,10 +64,10 @@ public class MarkEntryIntegrationTest {
         attendanceRepo.deleteAll();
         marksRepo.deleteAll();
         scheduleRepo.deleteAll();
-        
+
         // Clean dependent entities
-        teacherRepo.deleteAll(); 
-        
+        teacherRepo.deleteAll();
+
         classSubjectRepo.deleteAll();
         subjectRepo.deleteAll();
         termRepo.deleteAll();
@@ -63,26 +76,39 @@ public class MarkEntryIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "teacher", roles = {"TEACHER"})
+    @WithMockUser(username = "teacher", roles = { "TEACHER" })
     void testMarkEntryValidation() {
         // Setup Entities
+        java.util.UUID schoolId = java.util.UUID.randomUUID();
+
+        com.cm.sanchalak.security.UserPrincipal principal = new com.cm.sanchalak.security.UserPrincipal(
+                java.util.UUID.randomUUID(), "Teacher", "teacher", "teacher@test.com", "password",
+                schoolId, Collections.singletonList(new SimpleGrantedAuthority("ROLE_TEACHER")));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+
         ExamTerm term = new ExamTerm();
         term.setName("Test Term");
         term.setStartDate(LocalDate.now());
         term.setEndDate(LocalDate.now().plusDays(10));
+        term.setSchoolId(schoolId);
         term = termRepo.save(term);
 
         SchoolClass clazz = new SchoolClass();
         clazz.setName("Test Class");
+        clazz.setSchoolId(schoolId);
         clazz = classRepo.save(clazz);
 
         Subject subject = new Subject();
         subject.setName("Math");
         subject.setCode("MATH101");
+        subject.setSchoolId(schoolId);
         subject = subjectRepo.save(subject);
 
         Student student = new Student();
         student.setName("John Doe");
+        student.setEmail("john.doe@test.com");
+        student.setSchoolId(schoolId);
         student = studentRepo.save(student);
 
         ExamSchedule schedule = new ExamSchedule();
@@ -91,6 +117,7 @@ public class MarkEntryIntegrationTest {
         schedule.setSubject(subject);
         schedule.setExamDate(LocalDate.now());
         schedule.setMaxMarks(100);
+        schedule.setSchoolId(schoolId);
         schedule = scheduleRepo.save(schedule);
 
         // 1. Valid Mark
@@ -101,9 +128,9 @@ public class MarkEntryIntegrationTest {
         req1.setRemarks("Good");
 
         webTestClient.post().uri("/api/academic/marks")
-            .bodyValue(req1)
-            .exchange()
-            .expectStatus().isOk();
+                .bodyValue(req1)
+                .exchange()
+                .expectStatus().isOk();
 
         // 2. Invalid Mark (Obtained > Max)
         MarkEntryRequest req2 = new MarkEntryRequest();
@@ -112,8 +139,8 @@ public class MarkEntryIntegrationTest {
         req2.setMarksObtained(150.0);
 
         webTestClient.post().uri("/api/academic/marks")
-            .bodyValue(req2)
-            .exchange()
-            .expectStatus().isBadRequest();
+                .bodyValue(req2)
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 }

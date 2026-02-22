@@ -3,7 +3,9 @@ package com.cm.sanchalak.repository;
 import com.cm.sanchalak.dto.analytics.CollectionTrendDto;
 import com.cm.sanchalak.entity.PaymentTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -12,25 +14,25 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> {
-    List<PaymentTransaction> findByStudentId(Long studentId);
-    List<PaymentTransaction> findByStudentIdAndSchoolIdOrderByPaymentDateDesc(Long studentId, UUID schoolId);
-    List<PaymentTransaction> findBySchoolIdOrderByPaymentDateDesc(UUID schoolId);
-    boolean existsByTransactionReference(String transactionReference);
+public interface PaymentTransactionRepository
+                extends JpaRepository<PaymentTransaction, Long>, JpaSpecificationExecutor<PaymentTransaction> {
+        List<PaymentTransaction> findByStudentIdAndSchoolIdOrderByPaymentDateDesc(Long studentId, UUID schoolId);
 
-    @Query("SELECT SUM(p.amount) FROM PaymentTransaction p WHERE p.status = 'SUCCESS'")
-    BigDecimal sumTotalCollected();
+        List<PaymentTransaction> findByStudentId(Long studentId);
 
-    @Query("SELECT SUM(p.amount) FROM PaymentTransaction p WHERE p.status = 'SUCCESS' AND p.schoolId = :schoolId")
-    BigDecimal sumTotalCollectedBySchoolId(UUID schoolId);
+        boolean existsByTransactionReference(String reference);
 
-    @Query("SELECT new com.cm.sanchalak.dto.analytics.CollectionTrendDto(cast(p.paymentDate as LocalDate), SUM(p.amount), COUNT(p)) " +
-            "FROM PaymentTransaction p WHERE p.status = 'SUCCESS' AND p.paymentDate BETWEEN :start AND :end " +
-            "GROUP BY cast(p.paymentDate as LocalDate) ORDER BY cast(p.paymentDate as LocalDate)")
-    List<CollectionTrendDto> findCollectionTrend(LocalDateTime start, LocalDateTime end);
+        @Query("SELECT SUM(pt.amount) FROM PaymentTransaction pt WHERE pt.schoolId = :schoolId AND pt.status = 'SUCCESS'")
+        BigDecimal sumTotalCollected(@Param("schoolId") UUID schoolId);
 
-    @Query("SELECT new com.cm.sanchalak.dto.analytics.CollectionTrendDto(cast(p.paymentDate as LocalDate), SUM(p.amount), COUNT(p)) " +
-            "FROM PaymentTransaction p WHERE p.status = 'SUCCESS' AND p.schoolId = :schoolId AND p.paymentDate BETWEEN :start AND :end " +
-            "GROUP BY cast(p.paymentDate as LocalDate) ORDER BY cast(p.paymentDate as LocalDate)")
-    List<CollectionTrendDto> findCollectionTrendBySchoolId(UUID schoolId, LocalDateTime start, LocalDateTime end);
+        @Query("SELECT new com.cm.sanchalak.dto.analytics.CollectionTrendDto(CAST(pt.paymentDate AS LocalDate), SUM(pt.amount), COUNT(pt)) "
+                        +
+                        "FROM PaymentTransaction pt " +
+                        "WHERE pt.schoolId = :schoolId AND pt.status = 'SUCCESS' " +
+                        "AND pt.paymentDate BETWEEN :start AND :end " +
+                        "GROUP BY CAST(pt.paymentDate AS LocalDate) " +
+                        "ORDER BY CAST(pt.paymentDate AS LocalDate) ASC")
+        List<CollectionTrendDto> findCollectionTrend(@Param("start") LocalDateTime start,
+                        @Param("end") LocalDateTime end,
+                        @Param("schoolId") UUID schoolId);
 }

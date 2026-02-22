@@ -52,8 +52,10 @@ class HomeworkSubmissionServiceTest {
         String fileName = "assignment.pdf";
         String contentType = "application/pdf";
 
-        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(new Homework()));
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
+        when(homeworkRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(new Homework()));
+        when(studentRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(new Student()));
         when(fileStorageService.generateUploadUrl(anyString(), anyString(), anyInt()))
                 .thenReturn("https://s3.aws.com/upload-url");
 
@@ -73,9 +75,12 @@ class HomeworkSubmissionServiceTest {
         Homework homework = new Homework();
         homework.setDueDate(LocalDate.now().minusDays(1)); // Due yesterday
 
-        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
-        when(submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId)).thenReturn(Optional.empty());
+        when(homeworkRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(homework));
+        when(studentRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(new Student()));
+        when(submissionRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.empty());
         when(submissionRepository.save(any(HomeworkSubmission.class))).thenAnswer(i -> i.getArguments()[0]);
 
         HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId,
@@ -94,9 +99,12 @@ class HomeworkSubmissionServiceTest {
         Homework homework = new Homework();
         homework.setDueDate(LocalDate.now().plusDays(1)); // Due tomorrow
 
-        when(homeworkRepository.findById(homeworkId)).thenReturn(Optional.of(homework));
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(new Student()));
-        when(submissionRepository.findByHomeworkIdAndStudentId(homeworkId, studentId)).thenReturn(Optional.empty());
+        when(homeworkRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(homework));
+        when(studentRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.of(new Student()));
+        when(submissionRepository.findOne(any(org.springframework.data.jpa.domain.Specification.class)))
+                .thenReturn(Optional.empty());
         when(submissionRepository.save(any(HomeworkSubmission.class))).thenAnswer(i -> i.getArguments()[0]);
 
         HomeworkSubmissionDto result = submissionService.submitHomework(homeworkId, studentId,

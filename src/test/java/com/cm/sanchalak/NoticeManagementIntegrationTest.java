@@ -32,8 +32,8 @@ public class NoticeManagementIntegrationTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @Autowired
     private NoticeRepository noticeRepository;

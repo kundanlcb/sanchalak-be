@@ -100,6 +100,10 @@ public class AuthService {
                                 })
                                 .orElse(Collections.emptyList());
 
+                UUID resolvedSchoolId = schoolUserRepository.findByUserId(user.getId())
+                                .map(schoolUser -> schoolUser.getSchoolId())
+                                .orElse(null);
+
                 UserProfileDto userProfile = UserProfileDto.builder()
                                 .userId(user.getId())
                                 .mobileNumber(user.getMobileNumber())
@@ -108,6 +112,7 @@ public class AuthService {
                                 .firstName(firstName)
                                 .lastName(lastName)
                                 .role(user.getRoles().iterator().next().getName().name())
+                                .schoolId(resolvedSchoolId)
                                 .permissions(permissions)
                                 .build();
 

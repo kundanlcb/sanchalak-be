@@ -22,14 +22,12 @@ public class StudentController {
     private final StudentImportService studentImportService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StudentResponse> createStudent(@Valid @RequestBody StudentRequest request) {
         StudentResponse student = studentService.createStudent(request);
         return ResponseEntity.ok(student);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StudentResponse> updateStudent(@PathVariable Long id,
             @Valid @RequestBody StudentRequest request) {
         StudentResponse student = studentService.updateStudent(id, request);
@@ -37,30 +35,27 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<StudentResponse>> getAllStudents(
+            @RequestParam(required = false) Long classId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "rollNo") String sortBy,
             @RequestParam(defaultValue = "asc") String sortOrder) {
-        return ResponseEntity.ok(studentService.getAllStudents(page, limit, sortBy, sortOrder));
+        return ResponseEntity.ok(studentService.getAllStudents(classId, page, limit, sortBy, sortOrder));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<StudentResponse> getStudentById(@PathVariable Long id) {
         return ResponseEntity.ok(studentService.getStudentById(id));
     }
 
     @PostMapping(value = "/bulk-import", consumes = "multipart/form-data")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> bulkImportStudents(
             @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {

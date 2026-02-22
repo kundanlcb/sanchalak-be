@@ -1,14 +1,13 @@
 package com.cm.sanchalak.service;
 
 import com.cm.sanchalak.dto.DashboardDto;
-import com.cm.sanchalak.entity.AttendanceRecord;
-import com.cm.sanchalak.entity.ExamSchedule;
-import com.cm.sanchalak.entity.Student;
-import com.cm.sanchalak.entity.Teacher;
+import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.*;
+import com.cm.sanchalak.repository.spec.*;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +23,8 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DashboardAggregationService {
-
-    private static final Logger logger = LoggerFactory.getLogger(DashboardAggregationService.class);
 
     private final StudentRepository studentRepository;
     private final AttendanceRepository attendanceRepository;
@@ -37,11 +35,15 @@ public class DashboardAggregationService {
     private final NoticeRepository noticeRepository;
     private final NoticeReadStatusRepository noticeReadStatusRepository;
     private final TeacherRepository teacherRepository;
+    private final OwnershipValidator ownership;
 
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForStudentByUser(UUID userId) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found for user: " + userId));
+
+        // Ownership validation is done implicitly by StudentSpecification and
+        // Repository findById checks if we use findOne(spec)
         return getDashboardForStudent(student.getId());
     }
 
@@ -50,10 +52,10 @@ public class DashboardAggregationService {
      */
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForStudent(Long studentId) {
-        logger.info("Fetching dashboard data for student: {}", studentId);
+        log.info("Fetching dashboard data for student: {}", studentId);
 
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        Student student = studentRepository.findOne(StudentSpecification.activeById(studentId))
+                .orElseThrow(() -> new IllegalArgumentException("Student not found or unauthorized"));
 
         Long classId = student.getStudentClass() != null ? student.getStudentClass().getId() : null;
         UUID userId = student.getUserId();
@@ -69,7 +71,6 @@ public class DashboardAggregationService {
 
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForParentByUser(UUID userId) {
-        // In the future, this might involve deeper parent-student relationship logic
         return getDashboardForParent(userId);
     }
 
@@ -78,7 +79,7 @@ public class DashboardAggregationService {
      */
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForParent(UUID parentId) {
-        logger.info("Fetching dashboard data for parent: {}", parentId);
+        log.info("Fetching dashboard data for parent: {}", parentId);
 
         return DashboardDto.builder()
                 .recentNotices(getRecentNotices(parentId, "PARENT"))
@@ -90,10 +91,11 @@ public class DashboardAggregationService {
      */
     @Transactional(readOnly = true)
     public DashboardDto getDashboardForTeacher(UUID userId) {
-        Teacher teacher = teacherRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
+        Teacher teacher = teacherRepository.findOne(TeacherSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("userId"), userId)))
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found or unauthorized"));
 
-        logger.info("Fetching dashboard data for teacher: {} ({})", userId, teacher.getName());
+        log.info("Fetching dashboard data for teacher: {} ({})", userId, teacher.getName());
 
         return DashboardDto.builder()
                 .recentNotices(getRecentNotices(userId, "TEACHER"))
@@ -105,16 +107,18 @@ public class DashboardAggregationService {
      */
     private DashboardDto.AttendanceSummary getAttendanceSummary(Long studentId) {
         LocalDate now = LocalDate.now();
-        LocalDate startDate = now.withDayOfYear(1); // Assume Jan 1st for now
+        LocalDate startDate = now.withDayOfYear(1);
 
-        var records = attendanceRepository.findByStudentIdAndDateBetween(studentId, startDate, now);
+        List<AttendanceRecord> records = attendanceRepository.findAll(AttendanceSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                .and((root, query, cb) -> cb.between(root.get("date"), startDate, now)));
 
         int total = records.size();
         int present = (int) records.stream()
-                .filter(r -> r.getStatus() != null && "PRESENT".equalsIgnoreCase(r.getStatus().name()))
+                .filter(r -> r.getStatus() != null && AttendanceStatus.PRESENT == r.getStatus())
                 .count();
         int absent = (int) records.stream()
-                .filter(r -> r.getStatus() != null && "ABSENT".equalsIgnoreCase(r.getStatus().name()))
+                .filter(r -> r.getStatus() != null && AttendanceStatus.ABSENT == r.getStatus())
                 .count();
 
         LocalDate lastMarked = records.stream()
@@ -138,7 +142,8 @@ public class DashboardAggregationService {
         if (classId == null)
             return null;
 
-        var allHomework = homeworkRepository.findByStudentClassId(classId);
+        List<Homework> allHomework = homeworkRepository.findAll(HomeworkSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId)));
 
         int submitted = 0;
         int pending = 0;
@@ -149,7 +154,10 @@ public class DashboardAggregationService {
         String nextDueSubject = null;
 
         for (var hw : allHomework) {
-            boolean isSubmitted = homeworkSubmissionRepository.existsByHomeworkIdAndStudentId(hw.getId(), studentId);
+            boolean isSubmitted = homeworkSubmissionRepository.exists(HomeworkSubmissionSpecification.activeScoped()
+                    .and((root, query, cb) -> cb.equal(root.get("homework").get("id"), hw.getId()))
+                    .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId)));
+
             if (isSubmitted) {
                 submitted++;
             } else {
@@ -183,8 +191,9 @@ public class DashboardAggregationService {
             return null;
 
         LocalDate now = LocalDate.now();
-        var upcomingExams = examScheduleRepository.findByStudentClassIdAndExamDateBetween(classId, now,
-                now.plusMonths(1));
+        List<ExamSchedule> upcomingExams = examScheduleRepository.findAll(ExamScheduleSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId))
+                .and((root, query, cb) -> cb.between(root.get("examDate"), now, now.plusMonths(1))));
 
         return upcomingExams.stream()
                 .min(Comparator.comparing(ExamSchedule::getExamDate))
@@ -201,7 +210,9 @@ public class DashboardAggregationService {
      * Get fees summary for student
      */
     private DashboardDto.FeesSummary getFeesSummary(Long studentId) {
-        var feeMaps = studentFeeMapRepository.findByStudentId(studentId);
+        List<StudentFeeMap> feeMaps = studentFeeMapRepository.findAll(BaseSpecification.<StudentFeeMap>scoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                .and((root, query, cb) -> cb.equal(root.get("isActive"), true)));
 
         double totalDue = 0.0;
         for (var map : feeMaps) {
@@ -227,7 +238,9 @@ public class DashboardAggregationService {
      */
     private List<DashboardDto.RecentNotice> getRecentNotices(UUID userId, String role) {
         LocalDate now = LocalDate.now();
-        var notices = noticeRepository.findRecentByTargetRole(role, now.minusDays(30));
+        UUID schoolId = SchoolContext.getSchoolId();
+
+        List<Notice> notices = noticeRepository.findRecentByTargetRole(role, now.minusDays(30), schoolId);
 
         return notices.stream()
                 .limit(5)

@@ -24,6 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.springframework.test.annotation.DirtiesContext;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collections;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -72,18 +76,26 @@ public class DashboardIntegrationTest {
         }
 
         @Test
-        @WithMockUser(roles = { "SCHOOL_ADMIN" })
         void shouldReturnDashboardStats() {
+                java.util.UUID schoolId = UUID.randomUUID();
+
+                com.cm.sanchalak.security.UserPrincipal principal = new com.cm.sanchalak.security.UserPrincipal(
+                                java.util.UUID.randomUUID(), "Admin", "admin", "admin@school.com", "password",
+                                schoolId, Collections.singletonList(new SimpleGrantedAuthority("ROLE_SCHOOL_ADMIN")));
+                SecurityContextHolder.getContext().setAuthentication(
+                                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
+
                 // Seed Data
                 SchoolClass cls = classRepository.save(SchoolClass.builder()
                                 .name("Class 10 A")
                                 .classID("C10A")
-                                .schoolId(UUID.randomUUID())
+                                .schoolId(schoolId)
                                 .build());
 
                 studentRepository.save(Student.builder()
                                 .name("Student 1")
                                 .email("student1@school.com")
+                                .schoolId(schoolId)
                                 .studentClass(cls)
                                 .build());
 
@@ -92,6 +104,7 @@ public class DashboardIntegrationTest {
                                 .email("t1@school.com")
                                 .mobileNumber("1234567890")
                                 .teacherID("T101")
+                                .schoolId(schoolId)
                                 .build());
 
                 // Call Dashboard endpoint

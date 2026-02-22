@@ -32,7 +32,7 @@ public class SchoolPermissionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SCHOOL_ADMIN')")
     public ResponseEntity<SchoolPermissionResponse> getSchoolPermissions(
             @CurrentUser UserPrincipal currentUser) {
         UUID schoolId = schoolUserRepository.findByUserId(currentUser.getId())
@@ -46,7 +46,7 @@ public class SchoolPermissionController {
     }
 
     @PostMapping("/{roleName}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SCHOOL_ADMIN')")
     public ResponseEntity<Void> updateRolePermissions(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable RoleName roleName,

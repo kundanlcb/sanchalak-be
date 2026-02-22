@@ -43,8 +43,13 @@ public class FinanceServiceTest {
     @Test
     void testGetStudentLedger() {
         Long studentId = 1L;
-        
-        when(studentRepository.existsById(studentId)).thenReturn(true);
+        // Transaction
+        Student student = new Student();
+        student.setId(studentId);
+
+        when(studentRepository.findOne(
+                org.mockito.ArgumentMatchers.<org.springframework.data.jpa.domain.Specification<Student>>any()))
+                .thenReturn(java.util.Optional.of(student));
 
         // Fee Structure
         FeeStructure structure = new FeeStructure();
@@ -61,21 +66,24 @@ public class FinanceServiceTest {
         StudentFeeMap map = new StudentFeeMap();
         map.setId(10L);
         map.setFeeStructure(structure);
+        map.setStudent(student);
+        map.setIsActive(true);
         map.setCreatedAt(Instant.now().minus(40, ChronoUnit.DAYS)); // Late fee applies
         // Assuming discount 0
-        
-        when(studentFeeMapRepository.findByStudentId(studentId)).thenReturn(Arrays.asList(map));
 
-        // Transaction
-        Student student = new Student();
-        student.setId(studentId);
+        when(studentFeeMapRepository.findAll(
+                org.mockito.ArgumentMatchers.<org.springframework.data.jpa.domain.Specification<StudentFeeMap>>any()))
+                .thenReturn(Arrays.asList(map));
 
         PaymentTransaction tx = new PaymentTransaction();
         tx.setStudent(student);
         tx.setAmount(new BigDecimal("500"));
         tx.setStatus("SUCCESS");
-        
-        when(paymentTransactionRepository.findByStudentId(studentId)).thenReturn(Arrays.asList(tx));
+        tx.setPaymentDate(java.time.LocalDateTime.now());
+
+        when(paymentTransactionRepository.findAll(
+                org.mockito.ArgumentMatchers.<org.springframework.data.jpa.domain.Specification<PaymentTransaction>>any()))
+                .thenReturn(Arrays.asList(tx));
 
         StudentLedgerDto ledger = financeService.getStudentLedger(studentId);
 

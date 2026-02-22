@@ -20,20 +20,17 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
 
     @PostMapping("/bulk")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<BulkMarkAttendanceResponse> markBulkAttendance(
             @RequestBody BulkMarkAttendanceRequest request) {
         return ResponseEntity.ok(attendanceService.markBulkAttendance(request, "TEACHER/ADMIN"));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<AttendanceRecord> markAttendance(@RequestBody MarkAttendanceRequest request) {
         return ResponseEntity.ok(attendanceService.markAttendance(request, "TEACHER/ADMIN"));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<AttendanceRecordDto> updateAttendance(@PathVariable Long id,
             @RequestBody UpdateAttendanceRequest request) {
         // We need the current user name for 'modifiedBy'
@@ -48,7 +45,6 @@ public class AttendanceController {
     }
 
     @GetMapping("/sheet/{classId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ClassAttendanceSheetDto> getClassAttendanceSheet(
             @PathVariable Long classId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -58,7 +54,6 @@ public class AttendanceController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'PARENT', 'STUDENT')")
     public ResponseEntity<List<AttendanceRecordDto>> getStudentAttendanceHistory(
             @RequestParam Long studentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -73,7 +68,6 @@ public class AttendanceController {
     }
 
     @GetMapping("/summary")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'PARENT', 'STUDENT')")
     public ResponseEntity<AttendanceSummaryDto> getStudentAttendanceSummary(
             @RequestParam Long studentId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -88,7 +82,6 @@ public class AttendanceController {
     }
 
     @GetMapping("/class/{classId}/statistics")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<ClassAttendanceStatistics> getClassAttendanceStatistics(
             @PathVariable Long classId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

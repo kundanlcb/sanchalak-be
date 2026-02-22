@@ -38,7 +38,6 @@ public class CalendarController {
      * For PARENT role: returns events for all linked children
      */
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<List<CalendarEventDto>> getCalendarEvents(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -96,7 +95,6 @@ public class CalendarController {
      * Get calendar events for a specific student (for parent viewing child's calendar)
      */
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasRole('PARENT')")
     public ApiResult<List<CalendarEventDto>> getCalendarEventsForStudent(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long studentId,

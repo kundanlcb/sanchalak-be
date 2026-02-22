@@ -19,6 +19,8 @@ public interface CurriculumService {
     // Content
     ContentDto addContentToChapter(Long chapterId, ContentRequest request);
 
+    ContentDto createContent(ContentRequest request);
+
     void deleteContent(Long contentId);
 
     List<ContentDto> getChapterContents(Long chapterId);

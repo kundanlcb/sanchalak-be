@@ -40,7 +40,7 @@ public class AuthIntegrationTest {
     void setUp() {
         this.webTestClient = MockMvcWebTestClient.bindToApplicationContext(this.context).build();
         userRepository.deleteAll();
-        
+
         if (roleRepository.count() == 0) {
             for (RoleName roleName : RoleName.values()) {
                 roleRepository.save(new Role(roleName));
@@ -51,44 +51,42 @@ public class AuthIntegrationTest {
     @Test
     void shouldRegisterUserSuccessfully() throws Exception {
         SignUpRequest signUpRequest = new SignUpRequest(
-            "Test User",
-            "test@example.com",
-            "password",
-            "STUDENT"
-        );
+                "Test User",
+                "test@example.com",
+                "password",
+                "STUDENT");
 
         webTestClient.post().uri("/api/auth/signup")
-            .bodyValue(signUpRequest)
-            .exchange()
-            .expectStatus().isCreated()
-            .expectBody()
-            .jsonPath("$.success").isEqualTo(true)
-            .jsonPath("$.data").isEqualTo("User registered successfully");
+                .bodyValue(signUpRequest)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.success").isEqualTo(true)
+                .jsonPath("$.data").isEqualTo("User registered successfully");
     }
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
         // First register
         SignUpRequest signUpRequest = new SignUpRequest(
-            "Login User",
-            "login@example.com",
-            "password",
-            "STUDENT"
-        );
+                "Login User",
+                "login@example.com",
+                "password",
+                "STUDENT");
 
         webTestClient.post().uri("/api/auth/signup")
-            .bodyValue(signUpRequest)
-            .exchange()
-            .expectStatus().isCreated();
+                .bodyValue(signUpRequest)
+                .exchange()
+                .expectStatus().isCreated();
 
         // Then login
         LoginRequest loginRequest = new LoginRequest("login@example.com", "password");
 
         webTestClient.post().uri("/api/auth/signin")
-            .bodyValue(loginRequest)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.tokenType").isEqualTo("Bearer");
+                .bodyValue(loginRequest)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.data.tokenType").isEqualTo("Bearer");
     }
 }

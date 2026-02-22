@@ -8,6 +8,10 @@ import com.cm.sanchalak.repository.ExamScheduleRepository;
 import com.cm.sanchalak.repository.NoticeRepository;
 import com.cm.sanchalak.repository.ParentStudentLinkRepository;
 import com.cm.sanchalak.repository.StudentRepository;
+import com.cm.sanchalak.repository.spec.ExamScheduleSpecification;
+import com.cm.sanchalak.repository.spec.ParentStudentLinkSpecification;
+import com.cm.sanchalak.repository.spec.StudentSpecification;
+import com.cm.sanchalak.security.SchoolContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,142 +28,132 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CalendarAggregationService {
-    
+
     private final ExamScheduleRepository examScheduleRepository;
     private final NoticeRepository noticeRepository;
     private final StudentRepository studentRepository;
     private final ParentStudentLinkRepository parentStudentLinkRepository;
-    
+
     /**
      * Get aggregated calendar events for a student
      */
     @Transactional(readOnly = true)
     public List<CalendarEventDto> getCalendarEventsForStudent(Long studentId, LocalDate startDate, LocalDate endDate) {
         log.info("Fetching calendar events for student {} from {} to {}", studentId, startDate, endDate);
-        
+
         List<CalendarEventDto> events = new ArrayList<>();
-        
-        // Get student class
-        Student student = studentRepository.findById(studentId)
-            .orElseThrow(() -> new RuntimeException("Student not found"));
-        
+
+        Student student = studentRepository.findOne(StudentSpecification.activeById(studentId))
+                .orElseThrow(() -> new RuntimeException("Student not found or unauthorized"));
+
         if (student.getStudentClass() != null) {
-            // Add exam events
             events.addAll(getExamEvents(student.getStudentClass().getId(), startDate, endDate));
         }
-        
-        // Add notice events
+
         events.addAll(getNoticeEvents("STUDENT", startDate, endDate));
-        
-        // Sort by date
+
         events.sort(Comparator.comparing(CalendarEventDto::getEventDate));
-        
+
         return events;
     }
-    
+
     /**
      * Get aggregated calendar events for a parent (includes all linked children)
      */
     @Transactional(readOnly = true)
     public List<CalendarEventDto> getCalendarEventsForParent(Long parentId, LocalDate startDate, LocalDate endDate) {
         log.info("Fetching calendar events for parent {} from {} to {}", parentId, startDate, endDate);
-        
+
         List<CalendarEventDto> events = new ArrayList<>();
         Set<Long> studentClassIds = new HashSet<>();
-        
-        // Get all linked students
-        var links = parentStudentLinkRepository.findByParentIdAndIsActiveTrue(parentId);
-        
+
+        // Assuming parentId here refers to the Parent entity ID
+        var links = parentStudentLinkRepository.findAll(ParentStudentLinkSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("parent").get("id"), parentId))
+                .and((root, query, cb) -> cb.equal(root.get("isActive"), true)));
+
         for (var link : links) {
             Student student = link.getStudent();
             if (student != null && student.getStudentClass() != null) {
                 studentClassIds.add(student.getStudentClass().getId());
             }
         }
-        
-        // Add exam events for all children's classes
+
         for (Long classId : studentClassIds) {
             events.addAll(getExamEvents(classId, startDate, endDate));
         }
-        
-        // Add notice events for parents
+
         events.addAll(getNoticeEvents("PARENT", startDate, endDate));
-        
-        // Remove duplicates (same exam in multiple children's classes)
-        events = events.stream()
-            .distinct()
-            .sorted(Comparator.comparing(CalendarEventDto::getEventDate))
-            .collect(Collectors.toList());
-        
-        return events;
+
+        // Remove duplicates and sort
+        return events.stream()
+                .distinct()
+                .sorted(Comparator.comparing(CalendarEventDto::getEventDate))
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Get exam schedule events for a specific class
      */
     private List<CalendarEventDto> getExamEvents(Long classId, LocalDate startDate, LocalDate endDate) {
-        List<ExamSchedule> exams = examScheduleRepository.findByStudentClassIdAndExamDateBetween(
-            classId, startDate, endDate
-        );
-        
+        List<ExamSchedule> exams = examScheduleRepository.findAll(ExamScheduleSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId))
+                .and((root, query, cb) -> cb.between(root.get("examDate"), startDate, endDate)));
+
         return exams.stream()
-            .filter(exam -> exam.getExamDate() != null)
-            .map(exam -> {
-                String title = String.format("%s - %s", 
-                    exam.getSubject().getName(),
-                    exam.getExamTerm().getName()
-                );
-                
-                String description = String.format("Max Marks: %d", exam.getMaxMarks());
-                
-                return new CalendarEventDto(
-                    "EXAM",
-                    exam.getId(),
-                    title,
-                    description,
-                    exam.getExamDate(),
-                    null,
-                    exam.getSubject().getName(),
-                    exam.getStudentClass().getName(),
-                    buildExamMetadata(exam)
-                );
-            })
-            .collect(Collectors.toList());
+                .filter(exam -> exam.getExamDate() != null)
+                .map(exam -> {
+                    String title = String.format("%s - %s",
+                            exam.getSubject() != null ? exam.getSubject().getName() : "Subject",
+                            exam.getExamTerm() != null ? exam.getExamTerm().getName() : "Term");
+
+                    String description = String.format("Max Marks: %d", exam.getMaxMarks());
+
+                    return new CalendarEventDto(
+                            "EXAM",
+                            exam.getId(),
+                            title,
+                            description,
+                            exam.getExamDate(),
+                            null,
+                            exam.getSubject() != null ? exam.getSubject().getName() : "N/A",
+                            exam.getStudentClass() != null ? exam.getStudentClass().getName() : "N/A",
+                            buildExamMetadata(exam));
+                })
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Get notice events
      */
     private List<CalendarEventDto> getNoticeEvents(String targetRole, LocalDate startDate, LocalDate endDate) {
+        UUID schoolId = SchoolContext.getSchoolId();
         List<Notice> notices = noticeRepository.findByTargetRoleAndPublishDateBetween(
-            targetRole, startDate, endDate
-        );
-        
+                targetRole, startDate, endDate, schoolId);
+
         return notices.stream()
-            .map(notice -> new CalendarEventDto(
-                "NOTICE",
-                notice.getId(),
-                notice.getTitle(),
-                null, // Don't include full content in calendar view
-                notice.getPublishDate(),
-                notice.getPriority(),
-                null,
-                null,
-                null
-            ))
-            .collect(Collectors.toList());
+                .map(notice -> new CalendarEventDto(
+                        "NOTICE",
+                        notice.getId(),
+                        notice.getTitle(),
+                        null,
+                        notice.getPublishDate(),
+                        notice.getPriority(),
+                        null,
+                        null,
+                        null))
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Build metadata JSON for exam events
      */
     private String buildExamMetadata(ExamSchedule exam) {
         return String.format(
-            "{\"examTermId\":%d,\"subjectId\":%d,\"classId\":%d,\"maxMarks\":%d}",
-            exam.getExamTerm().getId(),
-            exam.getSubject().getId(),
-            exam.getStudentClass().getId(),
-            exam.getMaxMarks()
-        );
+                "{\"examTermId\":%d,\"subjectId\":%d,\"classId\":%d,\"maxMarks\":%d}",
+                exam.getExamTerm() != null ? exam.getExamTerm().getId() : 0,
+                exam.getSubject() != null ? exam.getSubject().getId() : 0,
+                exam.getStudentClass() != null ? exam.getStudentClass().getId() : 0,
+                exam.getMaxMarks());
     }
 }

@@ -17,6 +17,7 @@ public class UserPrincipal implements UserDetails {
     private UUID id;
     private String name;
     private String username;
+    private UUID schoolId;
 
     @JsonIgnore
     private String email;
@@ -27,10 +28,11 @@ public class UserPrincipal implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserPrincipal(UUID id, String name, String username, String email, String password,
-            Collection<? extends GrantedAuthority> authorities) {
+            UUID schoolId, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.name = name;
         this.username = username;
+        this.schoolId = schoolId;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
@@ -40,11 +42,6 @@ public class UserPrincipal implements UserDetails {
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .flatMap(role -> {
                     String roleName = role.getName().name();
-                    if (roleName.equals("ROLE_SCHOOL_ADMIN")) {
-                        return Stream.of(
-                                new SimpleGrantedAuthority(roleName),
-                                new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    }
                     return Stream.of(new SimpleGrantedAuthority(roleName));
                 })
                 .collect(Collectors.toList());
@@ -55,11 +52,20 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getSchoolId(),
                 authorities);
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public UUID getSchoolId() {
+        return schoolId;
+    }
+
+    public void setSchoolId(UUID schoolId) {
+        this.schoolId = schoolId;
     }
 
     public String getName() {

@@ -22,6 +22,9 @@ public class Student extends BaseEntity {
     @Column(name = "user_id", columnDefinition = "BINARY(16)")
     private UUID userId; // Links student to user account for authentication. Nullable for legacy data.
 
+    @Column(name = "school_id")
+    private UUID schoolId;
+
     @Column(length = 50)
     private String firstName;
 

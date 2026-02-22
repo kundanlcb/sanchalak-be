@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "homework")
@@ -16,6 +17,9 @@ public class Homework extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "class_id", nullable = false)

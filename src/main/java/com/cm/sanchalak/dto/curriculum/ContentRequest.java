@@ -9,12 +9,19 @@ public class ContentRequest {
     @NotBlank
     private String title;
 
-    @NotBlank
-    private String contentType;
+    // All content fields are optional — provide any combination
+    private String textContent;
+    private String videoUrl;
+    private String pdfUrl;
+    private String linkUrl;
 
-    @NotBlank
-    private String contentData;
+    private Integer sequenceOrder;
 
     @NotNull
-    private Integer sequenceOrder;
+    private Long classId;
+
+    @NotNull
+    private Long subjectId;
+
+    private Long chapterId;
 }

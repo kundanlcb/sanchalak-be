@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Entity for notices/announcements
@@ -25,6 +26,9 @@ public class Notice extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "school_id")
+    private UUID schoolId;
 
     @Column(name = "title", nullable = false, length = 200)
     private String title;

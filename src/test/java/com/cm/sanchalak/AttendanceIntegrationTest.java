@@ -56,7 +56,7 @@ public class AttendanceIntegrationTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private DatabaseCleanup databaseCleanup;
-    
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private String teacherEmail = "teacher_" + System.currentTimeMillis() + "@test.com"; // Unique email
@@ -70,7 +70,7 @@ public class AttendanceIntegrationTest {
                 .apply(springSecurity())
                 .configureClient()
                 .build();
-        
+
         // Use database cleanup utility to handle FK constraints
         databaseCleanup.cleanAllTables();
 
@@ -79,11 +79,14 @@ public class AttendanceIntegrationTest {
         createRoleIfMissing(RoleName.ROLE_STUDENT);
         createRoleIfMissing(RoleName.ROLE_ADMIN);
 
+        java.util.UUID testSchoolId = java.util.UUID.randomUUID();
+
         // 2. Teacher
         User teacher = new User();
         teacher.setName("Test Teacher");
         teacher.setEmail(teacherEmail);
         teacher.setPassword(passwordEncoder.encode("password"));
+        teacher.setSchoolId(testSchoolId);
         Role teacherRole = roleRepository.findByName(RoleName.ROLE_TEACHER).orElseThrow();
         teacher.setRoles(Set.of(teacherRole));
         String mobile = String.valueOf(System.currentTimeMillis()).substring(3);
@@ -99,7 +102,7 @@ public class AttendanceIntegrationTest {
                 .returnResult(byte[].class)
                 .getResponseBody()
                 .blockFirst();
-        
+
         if (response != null) {
             String respStr = new String(response);
             System.out.println("Login Response: " + respStr);
@@ -115,12 +118,15 @@ public class AttendanceIntegrationTest {
         // 4. Class & Student
         SchoolClass clazz = new SchoolClass();
         clazz.setName("Class 1A");
+        clazz.setSchoolId(testSchoolId);
         clazz = classRepository.save(clazz);
         this.classId = clazz.getId();
 
         Student student = new Student();
         student.setName("Student 1");
-        student.setStudentClass(clazz); 
+        student.setEmail("attendance.student@test.com");
+        student.setSchoolId(testSchoolId);
+        student.setStudentClass(clazz);
         student = studentRepository.save(student);
         this.studentId = student.getId();
     }
@@ -130,11 +136,11 @@ public class AttendanceIntegrationTest {
         BulkMarkAttendanceRequest request = new BulkMarkAttendanceRequest();
         request.setClassId(classId);
         request.setDate(LocalDate.now());
-        
+
         BulkMarkAttendanceRequest.StudentAttendanceStatus status = new BulkMarkAttendanceRequest.StudentAttendanceStatus();
         status.setStudentId(studentId);
         status.setStatus(AttendanceStatus.PRESENT);
-        
+
         request.setAttendances(List.of(status));
 
         webTestClient.post().uri("/api/attendance/bulk")

@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/me")
-@PreAuthorize("hasAnyRole('STUDENT', 'PARENT', 'TEACHER', 'ADMIN')")
 @RequiredArgsConstructor
 public class ProfileController {
 
@@ -88,7 +87,8 @@ public class ProfileController {
                 .name(fullName)
                 .firstName(firstName)
                 .lastName(lastName)
-                .role(user.getRoles().iterator().next().getName().name());
+                .role(user.getRoles().iterator().next().getName().name())
+                .schoolId(currentUser.getSchoolId());
 
         // Auto-resolve student info if ROLE_STUDENT
         if (hasRole(user, RoleName.ROLE_STUDENT)) {
@@ -218,7 +218,6 @@ public class ProfileController {
      * Works for: Mobile app, Web app
      */
     @GetMapping("/students")
-    @PreAuthorize("hasRole('PARENT')")
     public ResponseEntity<ApiResult<List<LinkedStudentDto>>> getLinkedStudents(
             @CurrentUser UserPrincipal currentUser) {
 
@@ -243,7 +242,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/attendance/summary")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<AttendanceSummaryDto>> getAttendanceSummary(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId) {
@@ -306,7 +304,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/attendance/history")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<List<AttendanceRecordDto>>> getAttendanceHistory(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId,
@@ -334,7 +331,6 @@ public class ProfileController {
      * PARENT role
      */
     @GetMapping("/timetable")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT', 'TEACHER')")
     public ResponseEntity<ApiResult<TimetableDto>> getTimetable(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId) {
@@ -429,7 +425,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/results")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<ResultsDto>> getResults(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId) {
@@ -500,7 +495,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/homework")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<HomeworkListDto>> getHomework(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId) {
@@ -565,7 +559,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/fees/ledger")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<StudentLedgerDto>> getFeeLedger(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false) Long studentId) {
@@ -633,7 +626,6 @@ public class ProfileController {
      * STUDENT role only
      */
     @PostMapping("/homework/{homeworkId}/upload-url")
-    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResult<PresignedUrlDto>> generateHomeworkUploadUrl(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long homeworkId,
@@ -677,7 +669,6 @@ public class ProfileController {
      * STUDENT role only
      */
     @PostMapping("/homework/{homeworkId}/submit")
-    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResult<HomeworkSubmissionDto>> submitHomework(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long homeworkId,
@@ -719,7 +710,6 @@ public class ProfileController {
      * Auto-resolves studentId for STUDENT role, validates linkage for PARENT role
      */
     @GetMapping("/homework/{homeworkId}/submission")
-    @PreAuthorize("hasAnyRole('STUDENT', 'PARENT')")
     public ResponseEntity<ApiResult<HomeworkSubmissionDto>> getHomeworkSubmission(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long homeworkId,

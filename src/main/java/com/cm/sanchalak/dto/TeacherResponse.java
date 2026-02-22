@@ -29,7 +29,7 @@ public class TeacherResponse {
     private String profileImage;
     private List<String> specializedSubjects;
     private String joiningDate;
-    private boolean isActive;
+    private Boolean isActive;
     private String createdAt;
     private String updatedAt;
 

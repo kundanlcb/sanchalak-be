@@ -33,9 +33,13 @@ public class JwtTokenProvider {
     public String generateToken(Authentication authentication) {
         Object principal = authentication.getPrincipal();
         String userId;
+        String schoolId = null;
 
         if (principal instanceof UserPrincipal userPrincipal) {
             userId = userPrincipal.getId().toString();
+            if (userPrincipal.getSchoolId() != null) {
+                schoolId = userPrincipal.getSchoolId().toString();
+            }
         } else if (principal instanceof PlatformUserDetails platformUserDetails) {
             userId = platformUserDetails.getId().toString();
         } else {
@@ -45,22 +49,36 @@ public class JwtTokenProvider {
         Instant now = Instant.now();
         Instant expiryDate = now.plusMillis(jwtExpirationInMs);
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(userId)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiryDate))
-                .signWith(getSigningKey())
-                .compact();
+                .signWith(getSigningKey());
+
+        if (schoolId != null) {
+            builder.claim("schoolId", schoolId);
+        }
+
+        return builder.compact();
     }
 
     public UUID getUserIdFromJWT(String token) {
-        Claims claims = Jwts.parser()
+        Claims claims = getClaims(token);
+        return UUID.fromString(claims.getSubject());
+    }
+
+    public UUID getSchoolIdFromJWT(String token) {
+        Claims claims = getClaims(token);
+        String schoolId = claims.get("schoolId", String.class);
+        return schoolId != null ? UUID.fromString(schoolId) : null;
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
-        return UUID.fromString(claims.getSubject());
     }
 
     public boolean validateToken(String authToken) {

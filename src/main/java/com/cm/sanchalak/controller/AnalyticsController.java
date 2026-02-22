@@ -20,7 +20,6 @@ public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
     @GetMapping("/report-card/{studentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL', 'TEACHER', 'OFFICE_STAFF')")
     public ResponseEntity<ReportCardDataDto> getReportCardData(
             @PathVariable Long studentId,
             @RequestParam Long termId) {
@@ -30,13 +29,11 @@ public class AnalyticsController {
     }
 
     @GetMapping("/finance/summary")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL')")
     public ResponseEntity<FinancialSummaryDto> getFinancialSummary() {
         return ResponseEntity.ok(analyticsService.getFinancialSummary());
     }
 
     @GetMapping("/finance/trend")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL')")
     public ResponseEntity<List<CollectionTrendDto>> getCollectionTrend(
             @RequestParam(defaultValue = "30") int days) {
         return ResponseEntity.ok(analyticsService.getCollectionTrend(days));

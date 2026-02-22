@@ -3,6 +3,11 @@ package com.cm.sanchalak.service;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.exception.ResourceNotFoundException;
 import com.cm.sanchalak.repository.*;
+import com.cm.sanchalak.repository.spec.TransportSpecification;
+import com.cm.sanchalak.repository.spec.StudentSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
+import com.cm.sanchalak.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,112 +16,122 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Service for transport management operations
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class TransportService {
-    
+
     private final RouteRepository routeRepository;
     private final StopRepository stopRepository;
     private final StudentTransportAssignmentRepository assignmentRepository;
     private final VehicleRepository vehicleRepository;
     private final TripRepository tripRepository;
-    
-    /**
-     * Get route details by ID
-     */
+    private final StudentRepository studentRepository;
+    private final OwnershipValidator ownership;
+
     public Route getRouteById(Long routeId) {
-        return routeRepository.findById(routeId)
-            .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
+        return routeRepository.findOne(TransportSpecification.routeById(routeId))
+                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
     }
-    
-    /**
-     * Get all active stops for a route, ordered by stop order
-     */
+
     public List<Stop> getStopsByRouteId(Long routeId) {
-        return stopRepository.findByRouteIdOrderByStopOrder(routeId);
+        routeRepository.findOne(TransportSpecification.routeById(routeId))
+                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
+
+        return stopRepository.findAll(TransportSpecification.stopScoped()
+                .and((root, query, cb) -> cb.equal(root.get("route").get("id"), routeId)))
+                .stream()
+                .sorted((s1, s2) -> s1.getStopOrder().compareTo(s2.getStopOrder()))
+                .toList();
     }
-    
-    /**
-     * Get active transport assignment for a student
-     * Cached for 6 hours to reduce database load
-     */
+
     @Cacheable(value = "route-assignments", key = "#studentId")
     public StudentTransportAssignment getActiveAssignmentForStudent(Long studentId) {
+        if (studentId != null) {
+            studentRepository.findOne(StudentSpecification.activeById(studentId))
+                    .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        }
+
         LocalDate today = LocalDate.now();
-        return assignmentRepository.findActiveByStudentId(studentId, today)
-            .orElse(null); // Return null if student doesn't use transport
+        return assignmentRepository.findAll(TransportSpecification.assignmentScoped()
+                .and((root, query, cb) -> cb.equal(root.get("student").get("id"), studentId))
+                .and((root, query, cb) -> cb.isTrue(root.get("isActive")))
+                .and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("startDate"), today))
+                .and((root, query, cb) -> cb.or(cb.isNull(root.get("endDate")),
+                        cb.greaterThanOrEqualTo(root.get("endDate"), today))))
+                .stream().findFirst().orElse(null);
     }
-    
-    /**
-     * Check if student has an active transport assignment
-     */
+
     public boolean hasActiveTransportAssignment(Long studentId) {
         return getActiveAssignmentForStudent(studentId) != null;
     }
-    
-    /**
-     * Get all students assigned to a route
-     */
+
     public List<StudentTransportAssignment> getStudentsByRouteId(Long routeId) {
-        return assignmentRepository.findActiveByRouteId(routeId);
+        routeRepository.findOne(TransportSpecification.routeById(routeId))
+                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
+
+        return assignmentRepository.findAll(TransportSpecification.assignmentScoped()
+                .and((root, query, cb) -> cb.equal(root.get("route").get("id"), routeId))
+                .and((root, query, cb) -> cb.isTrue(root.get("isActive"))));
     }
-    
-    /**
-     * Get all students assigned to a stop
-     */
+
     public List<StudentTransportAssignment> getStudentsByStopId(Long stopId) {
-        return assignmentRepository.findActiveByStopId(stopId);
+        stopRepository.findOne(TransportSpecification.stopById(stopId))
+                .orElseThrow(() -> new ResourceNotFoundException("Stop not found"));
+
+        return assignmentRepository.findAll(TransportSpecification.assignmentScoped()
+                .and((root, query, cb) -> cb.or(
+                        cb.equal(root.get("pickupStop").get("id"), stopId),
+                        cb.equal(root.get("dropStop").get("id"), stopId)))
+                .and((root, query, cb) -> cb.isTrue(root.get("isActive"))));
     }
-    
-    /**
-     * Get vehicle by ID
-     */
+
     public Vehicle getVehicleById(Long vehicleId) {
-        return vehicleRepository.findById(vehicleId)
-            .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id: " + vehicleId));
+        return vehicleRepository.findOne(TransportSpecification.vehicleById(vehicleId))
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id: " + vehicleId));
     }
-    
-    /**
-     * Get vehicle by GPS device ID
-     */
+
     public Vehicle getVehicleByGpsDeviceId(String gpsDeviceId) {
-        return vehicleRepository.findByGpsDeviceId(gpsDeviceId)
-            .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with GPS device ID: " + gpsDeviceId));
+        return vehicleRepository.findOne(TransportSpecification.vehicleScoped()
+                .and((root, query, cb) -> cb.equal(root.get("gpsDeviceId"), gpsDeviceId)))
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Vehicle not found with GPS device ID: " + gpsDeviceId));
     }
-    
-    /**
-     * Get active trip for a route on a specific date
-     */
+
     public Trip getActiveTripForRoute(Long routeId, LocalDate tripDate) {
-        return tripRepository.findActiveByRouteIdAndTripDate(routeId, tripDate)
-            .orElse(null); // Return null if no active trip
+        routeRepository.findOne(TransportSpecification.routeById(routeId))
+                .orElseThrow(() -> new ResourceNotFoundException("Route not found with id: " + routeId));
+
+        return tripRepository.findAll(TransportSpecification.tripScoped()
+                .and((root, query, cb) -> cb.equal(root.get("route").get("id"), routeId))
+                .and((root, query, cb) -> cb.equal(root.get("tripDate"), tripDate))
+                .and((root, query, cb) -> root.get("status").in("SCHEDULED", "ACTIVE")))
+                .stream().findFirst().orElse(null);
     }
-    
-    /**
-     * Get all trips for a vehicle on a specific date
-     */
+
     public List<Trip> getTripsByVehicleAndDate(Long vehicleId, LocalDate tripDate) {
-        return tripRepository.findByVehicleIdAndTripDate(vehicleId, tripDate);
+        vehicleRepository.findOne(TransportSpecification.vehicleById(vehicleId))
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
+
+        return tripRepository.findAll(TransportSpecification.tripScoped()
+                .and((root, query, cb) -> cb.equal(root.get("vehicle").get("id"), vehicleId))
+                .and((root, query, cb) -> cb.equal(root.get("tripDate"), tripDate)));
     }
-    
-    /**
-     * Get stop by ID
-     */
+
     public Stop getStopById(Long stopId) {
-        return stopRepository.findById(stopId)
-            .orElseThrow(() -> new ResourceNotFoundException("Stop not found with id: " + stopId));
+        return stopRepository.findOne(TransportSpecification.stopById(stopId))
+                .orElseThrow(() -> new ResourceNotFoundException("Stop not found with id: " + stopId));
     }
-    
-    /**
-     * Count active students on a route
-     */
+
     public long countStudentsOnRoute(Long routeId) {
-        return assignmentRepository.countActiveByRouteId(routeId);
+        routeRepository.findOne(TransportSpecification.routeById(routeId))
+                .orElseThrow(() -> new ResourceNotFoundException("Route not found"));
+
+        return assignmentRepository.count(TransportSpecification.assignmentScoped()
+                .and((root, query, cb) -> cb.equal(root.get("route").get("id"), routeId))
+                .and((root, query, cb) -> cb.isTrue(root.get("isActive"))));
     }
 }

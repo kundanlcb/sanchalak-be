@@ -14,7 +14,11 @@ import com.cm.sanchalak.exception.AppException;
 import com.cm.sanchalak.repository.UserRepository;
 import com.cm.sanchalak.repository.RoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.cm.sanchalak.repository.spec.StudentSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
 import java.util.Collections;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +36,7 @@ public class StudentService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OwnershipValidator ownership;
 
     public StudentResponse createStudent(StudentRequest request) {
         masterDataService.validateValue("GENDER", request.getGender());
@@ -39,8 +44,13 @@ public class StudentService {
         SchoolClass studentClass = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
 
+        ownership.validate(studentClass.getSchoolId());
+
+        UUID schoolId = SchoolContext.getSchoolId();
+
         Student student = new Student();
         updateStudentFromRequest(student, request);
+        student.setSchoolId(schoolId);
         student.setStudentClass(studentClass);
         student.setDeleted(false);
         student.setEmail(request.getEmail());
@@ -58,6 +68,7 @@ public class StudentService {
         Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
                 .orElseThrow(() -> new EntityNotFoundException("Student Role not found"));
         user.setRoles(Collections.singleton(studentRole));
+        user.setSchoolId(schoolId);
 
         User savedUser = userRepository.save(user);
         student.setUserId(savedUser.getId());
@@ -69,12 +80,16 @@ public class StudentService {
     public StudentResponse updateStudent(Long id, StudentRequest request) {
         masterDataService.validateValue("GENDER", request.getGender());
 
-        Student student = studentRepository.findById(id)
+        Student student = studentRepository.findOne(StudentSpecification.activeById(id))
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
 
         if (request.getClassId() != null && !request.getClassId().equals(student.getStudentClass().getId())) {
             SchoolClass studentClass = classRepository.findById(request.getClassId())
                     .orElseThrow(() -> new EntityNotFoundException("Class not found with id: " + request.getClassId()));
+
+            // Validate that the new class also belongs to the same school
+            ownership.validate(studentClass.getSchoolId());
+
             student.setStudentClass(studentClass);
         }
 
@@ -84,35 +99,32 @@ public class StudentService {
     }
 
     public void deleteStudent(Long id) {
-        Student student = studentRepository.findById(id)
+        Student student = studentRepository.findOne(StudentSpecification.activeById(id))
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+
         student.setDeleted(true);
         studentRepository.save(student);
     }
 
     @Transactional(readOnly = true)
-    public Page<StudentResponse> getAllStudents(int page, int size, String sortBy, String sortOrder) {
+    public Page<StudentResponse> getAllStudents(Long classId, int page, int size, String sortBy, String sortOrder) {
         Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        // Handle case where sortBy might be mapped differently or validate it
-        // For now trusting the input matches entity fields
         Pageable pageable = PageRequest.of(page > 0 ? page - 1 : 0, size, Sort.by(direction, sortBy));
 
-        return studentRepository.findByDeletedFalse(pageable)
+        org.springframework.data.jpa.domain.Specification<Student> spec = StudentSpecification.activeScoped();
+        if (classId != null) {
+            spec = spec.and(StudentSpecification.hasByClassId(classId));
+        }
+
+        return studentRepository.findAll(spec, pageable)
                 .map(this::mapToResponse);
     }
 
     @Transactional(readOnly = true)
     public StudentResponse getStudentById(Long id) {
-        Student student = studentRepository.findById(id)
+        Student student = studentRepository.findOne(StudentSpecification.activeById(id))
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
-        // Even if deleted, we might want to see it by ID?
-        // Typically GET /id should verify existence.
-        // If soft deleted, do we 404?
-        // Spec usually implies soft-deleted items are gone for general ops.
-        // I'll assume 404 if deleted for consistency with the filter.
-        if (student.isDeleted()) {
-            throw new EntityNotFoundException("Student not found (deleted) with id: " + id);
-        }
+
         return mapToResponse(student);
     }
 

@@ -33,7 +33,6 @@ public class NoticeController {
      * Returns notices with read status
      */
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<Map<String, Object>> getNotices(
             @CurrentUser UserPrincipal currentUser,
             @RequestParam(required = false, defaultValue = "false") boolean onlyRecent,
@@ -75,7 +74,6 @@ public class NoticeController {
      * Get notice details by ID and mark as read
      */
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<NoticeDetailDto> getNoticeDetails(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long id) {
@@ -99,7 +97,6 @@ public class NoticeController {
      * Get unread notice count
      */
     @GetMapping("/unread-count")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<Map<String, Long>> getUnreadCount(@CurrentUser UserPrincipal currentUser) {
 
         log.info("Fetching unread notice count for user {}", currentUser.getId());
@@ -123,7 +120,6 @@ public class NoticeController {
      * Create a new notice
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ApiResult<NoticeDto> createNotice(
             @CurrentUser UserPrincipal currentUser,
             @RequestBody NoticeRequest request) {
@@ -144,7 +140,6 @@ public class NoticeController {
      * Update an existing notice
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ApiResult<NoticeDto> updateNotice(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long id,
@@ -168,7 +163,6 @@ public class NoticeController {
      * Delete a notice
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ApiResult<Void> deleteNotice(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long id) {

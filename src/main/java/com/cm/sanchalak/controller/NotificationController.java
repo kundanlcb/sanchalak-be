@@ -33,7 +33,6 @@ public class NotificationController {
      * Available to all authenticated users (STUDENT, PARENT, TEACHER)
      */
     @PostMapping("/register")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<NotificationTokenDto.TokenRegistrationResponse> registerToken(
             @CurrentUser UserPrincipal currentUser,
             @RequestBody NotificationTokenDto tokenDto) {
@@ -79,7 +78,6 @@ public class NotificationController {
      * Available to all authenticated users
      */
     @PostMapping("/unregister")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<String> unregisterToken(
             @CurrentUser UserPrincipal currentUser,
             @RequestBody NotificationTokenDto tokenDto) {
@@ -106,7 +104,6 @@ public class NotificationController {
      * Get notification inbox
      */
     @GetMapping("/inbox")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<Page<NotificationLog>> getInbox(
             @CurrentUser UserPrincipal currentUser,
             @PageableDefault(size = 20, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -124,7 +121,6 @@ public class NotificationController {
      * Get unread notification count
      */
     @GetMapping("/unread-count")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<Long> getUnreadCount(@CurrentUser UserPrincipal currentUser) {
         log.info("Fetching unread notification count for user {}", currentUser.getId());
         try {
@@ -139,7 +135,6 @@ public class NotificationController {
      * Mark notification as read
      */
     @PostMapping("/{id}/read")
-    @PreAuthorize("isAuthenticated()")
     public ApiResult<String> markAsRead(
             @CurrentUser UserPrincipal currentUser,
             @PathVariable Long id) {

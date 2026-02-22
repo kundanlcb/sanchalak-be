@@ -6,11 +6,13 @@ import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.NotificationLogRepository;
 import com.cm.sanchalak.repository.NotificationTokenRepository;
 import com.cm.sanchalak.repository.UserRepository;
+import com.cm.sanchalak.repository.spec.NotificationSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -23,30 +25,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service for sending push notifications via Firebase Cloud Messaging
- */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
-
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private final NotificationTokenRepository tokenRepository;
     private final NotificationLogRepository logRepository;
     private final UserRepository userRepository;
+    private final OwnershipValidator ownership;
 
-    /**
-     * Send push notification to a specific user (all their active devices)
-     * Runs asynchronously to avoid blocking
-     */
     @Async("notificationExecutor")
     @Transactional
     public void sendNotificationToUser(UUID userId, String title, String message,
             String notificationType, Map<String, String> data) {
         log.info("Sending notification to user {}: {}", userId, title);
 
-        List<NotificationToken> tokens = tokenRepository.findActiveByUserId(userId);
+        List<NotificationToken> tokens = tokenRepository.findAll(NotificationSpecification.tokenScoped()
+                .and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId))
+                .and((root, query, cb) -> cb.equal(root.get("isActive"), true)));
 
         if (tokens.isEmpty()) {
             log.warn("No active notification tokens found for user {}", userId);
@@ -58,35 +55,26 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Send push notification to multiple users
-     */
     @Async("notificationExecutor")
     @Transactional
     public void sendNotificationToUsers(List<UUID> userIds, String title, String message,
             String notificationType, Map<String, String> data) {
         log.info("Sending notification to {} users: {}", userIds.size(), title);
-
         for (UUID userId : userIds) {
             sendNotificationToUser(userId, title, message, notificationType, data);
         }
     }
 
-    /**
-     * Send notification to a specific token
-     */
     private void sendToToken(NotificationToken token, String title, String message,
             String notificationType, Map<String, String> data) {
         User user = token.getUser();
 
         try {
-            // Build notification payload
             Notification notification = Notification.builder()
                     .setTitle(title)
                     .setBody(message)
                     .build();
 
-            // Build data payload
             Map<String, String> dataPayload = new HashMap<>();
             if (data != null) {
                 dataPayload.putAll(data);
@@ -94,7 +82,6 @@ public class NotificationService {
             dataPayload.put("type", notificationType);
             dataPayload.put("timestamp", Instant.now().toString());
 
-            // Build message
             Message fcmMessage = Message.builder()
                     .setToken(token.getTokenValue())
                     .setNotification(notification)
@@ -113,14 +100,11 @@ public class NotificationService {
                             .build())
                     .build();
 
-            // Send message
             String response = FirebaseMessaging.getInstance().send(fcmMessage);
 
-            // Log success
             logNotification(user, title, message, notificationType, token.getTokenValue(),
                     token.getPlatform(), "SENT", null, response, dataPayload);
 
-            // Update last used timestamp
             token.setLastUsedAt(Instant.now());
             tokenRepository.save(token);
 
@@ -131,11 +115,9 @@ public class NotificationService {
             log.error("Failed to send notification to user {} on platform {}: {}",
                     user.getId(), token.getPlatform(), e.getMessage());
 
-            // Log failure
             logNotification(user, title, message, notificationType, token.getTokenValue(),
                     token.getPlatform(), "FAILED", e.getMessage(), null, data);
 
-            // Handle invalid token
             if (e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT ||
                     e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {
                 log.warn("Token is invalid, marking as inactive: {}", token.getId());
@@ -149,9 +131,6 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Log notification to database
-     */
     private void logNotification(User user, String title, String message, String notificationType,
             String targetToken, String platform, String status, String errorMessage,
             String referenceId, Map<String, String> data) {
@@ -171,7 +150,6 @@ public class NotificationService {
             log.setDeliveredAt(Instant.now());
         }
 
-        // Store data payload as JSON string
         if (data != null && !data.isEmpty()) {
             try {
                 log.setDataPayload(new ObjectMapper().writeValueAsString(data));
@@ -183,20 +161,15 @@ public class NotificationService {
         logRepository.save(log);
     }
 
-    /**
-     * Register a new notification token
-     */
     @Transactional
     public NotificationToken registerToken(UUID userId, String tokenValue, String platform,
             String deviceType, String deviceId, String appVersion) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if token already exists
         NotificationToken existingToken = tokenRepository.findByTokenValue(tokenValue).orElse(null);
 
         if (existingToken != null) {
-            // Update existing token
             existingToken.setUser(user);
             existingToken.setPlatform(platform);
             existingToken.setDeviceType(deviceType);
@@ -209,7 +182,6 @@ public class NotificationService {
             return tokenRepository.save(existingToken);
         }
 
-        // Create new token
         NotificationToken token = new NotificationToken();
         token.setUser(user);
         token.setTokenValue(tokenValue);
@@ -225,9 +197,6 @@ public class NotificationService {
         return tokenRepository.save(token);
     }
 
-    /**
-     * Unregister a notification token
-     */
     @Transactional
     public void unregisterToken(UUID userId, String tokenValue) {
         NotificationToken token = tokenRepository.findByUserIdAndTokenValue(userId, tokenValue)
@@ -239,9 +208,6 @@ public class NotificationService {
         log.info("Unregistered notification token for user {}", userId);
     }
 
-    /**
-     * Send absence notification to parent
-     */
     @Async("notificationExecutor")
     public void sendAbsenceNotification(UUID parentUserId, String studentName, String date) {
         Map<String, String> data = new HashMap<>();
@@ -257,9 +223,6 @@ public class NotificationService {
                 data);
     }
 
-    /**
-     * Send fee due reminder to parent
-     */
     @Async("notificationExecutor")
     public void sendFeeDueReminder(UUID parentUserId, String studentName, Double amount, String dueDate) {
         Map<String, String> data = new HashMap<>();
@@ -276,9 +239,6 @@ public class NotificationService {
                 data);
     }
 
-    /**
-     * Send notice notification
-     */
     @Async("notificationExecutor")
     public void sendNoticeNotification(List<UUID> userIds, String noticeTitle, Long noticeId) {
         Map<String, String> data = new HashMap<>();
@@ -293,9 +253,6 @@ public class NotificationService {
                 data);
     }
 
-    /**
-     * Send bus proximity alert
-     */
     @Async("notificationExecutor")
     public void sendBusProximityAlert(UUID userId, String routeName, String stopName, Integer etaMinutes) {
         Map<String, String> data = new HashMap<>();
@@ -312,25 +269,17 @@ public class NotificationService {
                 data);
     }
 
-    /**
-     * Get user's notification inbox
-     */
     @Transactional(readOnly = true)
     public Page<NotificationLog> getNotificationInbox(UUID userId, Pageable pageable) {
-        return logRepository.findByUserIdOrderBySentAtDesc(userId, pageable);
+        return logRepository.findAll(NotificationSpecification.logScoped()
+                .and((root, query, cb) -> cb.equal(root.get("user").get("id"), userId)), pageable);
     }
 
-    /**
-     * Mark a notification as read
-     */
     @Transactional
     public void markAsRead(Long notificationId, UUID userId) {
         logRepository.markAsRead(notificationId, userId, Instant.now());
     }
 
-    /**
-     * Get count of unread notifications
-     */
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId) {
         return logRepository.countUnreadByUserId(userId);

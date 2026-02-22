@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.cm.sanchalak.security.SchoolContext;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,65 +21,54 @@ public class FinanceConfigController {
     private final FinanceService financeService;
 
     private UUID getSchoolId() {
-        // TODO: Implement actual school ID resolution from security context or user
-        // profile
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+        return SchoolContext.getSchoolId();
     }
 
     @PostMapping("/categories")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeCategoryDto> createCategory(@Valid @RequestBody FeeCategoryDto dto) {
         return ResponseEntity.ok(financeService.createCategory(getSchoolId(), dto));
     }
 
     @GetMapping("/categories")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<FeeCategoryDto>> getAllCategories() {
         return ResponseEntity.ok(financeService.getAllCategories(getSchoolId()));
     }
 
     @PostMapping("/structures")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeStructureDto> createStructure(@Valid @RequestBody FeeStructureDto dto) {
         return ResponseEntity.ok(financeService.createStructure(getSchoolId(), dto));
     }
 
     @GetMapping("/structures")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OFFICE_STAFF')")
     public ResponseEntity<List<FeeStructureDto>> getAllStructures() {
         return ResponseEntity.ok(financeService.getAllStructures(getSchoolId()));
     }
 
     @PostMapping("/structures/{id}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> assignStructure(@PathVariable Long id, @RequestParam Long classId) {
         financeService.assignStructureToClass(id, classId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeCategoryDto> updateCategory(@PathVariable Long id,
             @Valid @RequestBody FeeCategoryDto dto) {
         return ResponseEntity.ok(financeService.updateCategory(id, dto));
     }
 
     @DeleteMapping("/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         financeService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/structures/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeStructureDto> updateStructure(@PathVariable Long id,
             @Valid @RequestBody FeeStructureDto dto) {
         return ResponseEntity.ok(financeService.updateStructure(id, dto));
     }
 
     @DeleteMapping("/structures/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteStructure(@PathVariable Long id) {
         financeService.deleteStructure(id);
         return ResponseEntity.noContent().build();

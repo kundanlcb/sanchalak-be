@@ -10,33 +10,54 @@ import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.ClassRoutineRepository;
 import com.cm.sanchalak.repository.SubjectRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
+import com.cm.sanchalak.repository.spec.RoutineSpecification;
+import com.cm.sanchalak.repository.spec.SchoolClassSpecification;
+import com.cm.sanchalak.repository.spec.SubjectSpecification;
+import com.cm.sanchalak.repository.spec.TeacherSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
+import com.cm.sanchalak.exception.AppException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class RoutineService {
 
     private final ClassRoutineRepository routineRepository;
     private final SchoolClassRepository classRepository;
     private final SubjectRepository subjectRepository;
     private final TeacherRepository teacherRepository;
+    private final OwnershipValidator ownership;
 
-
+    @Transactional(readOnly = true)
     public List<RoutineResponse> getRoutineByClassId(Long classId) {
-        return routineRepository.findByStudentClassId(classId).stream()
+        classRepository.findOne(SchoolClassSpecification.activeById(classId))
+                .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+
+        return routineRepository.findAll(RoutineSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId)))
+                .stream()
                 .map(RoutineResponse::new)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<RoutineResponse> getRoutineByTeacherId(Long teacherId) {
-        return routineRepository.findByTeacherId(teacherId).stream()
+        teacherRepository.findOne(TeacherSpecification.activeById(teacherId))
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
+
+        return routineRepository.findAll(RoutineSpecification.activeScoped()
+                .and((root, query, cb) -> cb.equal(root.get("teacher").get("id"), teacherId)))
+                .stream()
                 .map(RoutineResponse::new)
                 .collect(Collectors.toList());
     }
@@ -53,13 +74,13 @@ public class RoutineService {
             throw new IllegalArgumentException("Teacher is already booked in this slot.");
         }
 
-        SchoolClass studentClass = classRepository.findById(request.getClassId())
+        SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(request.getClassId()))
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
 
-        Subject subject = subjectRepository.findById(request.getSubjectId())
+        Subject subject = subjectRepository.findOne(SubjectSpecification.activeById(request.getSubjectId()))
                 .orElseThrow(() -> new IllegalArgumentException("Subject not found"));
 
-        Teacher teacher = teacherRepository.findById(request.getTeacherId())
+        Teacher teacher = teacherRepository.findOne(TeacherSpecification.activeById(request.getTeacherId()))
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
         ClassRoutine routine = new ClassRoutine();
@@ -76,9 +97,9 @@ public class RoutineService {
     }
 
     public void clearSlot(Long id) {
-        if (!routineRepository.existsById(id)) {
-            throw new RuntimeException("Routine slot not found");
-        }
-        routineRepository.deleteById(id);
+        ClassRoutine routine = routineRepository.findOne(RoutineSpecification.activeById(id))
+                .orElseThrow(() -> new RuntimeException("Routine slot not found"));
+
+        routineRepository.delete(routine);
     }
 }

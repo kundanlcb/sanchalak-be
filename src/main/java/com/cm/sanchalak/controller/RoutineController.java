@@ -19,7 +19,6 @@ public class RoutineController {
     private final RoutineService routineService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRINCIPAL', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<RoutineResponse>> getRoutine(
             @RequestParam(required = false) Long classId,
             @RequestParam(required = false) Long teacherId) {
@@ -33,14 +32,12 @@ public class RoutineController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoutineResponse> assignSlot(@Valid @RequestBody RoutineRequest request) {
         RoutineResponse routine = routineService.assignSlot(request);
         return ResponseEntity.ok(routine);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> clearSlot(@PathVariable Long id) {
         routineService.clearSlot(id);
         return ResponseEntity.noContent().build();

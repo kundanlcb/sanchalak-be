@@ -47,6 +47,9 @@ class StudentServiceMasterDataTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private com.cm.sanchalak.security.OwnershipValidator ownership;
+
     @InjectMocks
     private StudentService studentService;
 

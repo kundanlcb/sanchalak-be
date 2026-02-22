@@ -10,6 +10,9 @@ import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.SchoolClassRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.repository.UserRepository;
+import com.cm.sanchalak.repository.spec.SchoolClassSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +42,13 @@ public class StudentImportService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OwnershipValidator ownership;
 
     @Transactional
     public int importStudents(MultipartFile file) {
+        UUID schoolId = SchoolContext.getSchoolId();
+        ownership.validate(schoolId);
+
         try (BufferedReader fileReader = new BufferedReader(
                 new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
                 CSVParser csvParser = new CSVParser(fileReader,
@@ -54,7 +62,6 @@ public class StudentImportService {
             List<Student> students = new ArrayList<>();
             Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
-            // Cache Role lookup outside the loop
             Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
                     .orElseThrow(() -> new RuntimeException("Student Role not set."));
 
@@ -63,12 +70,10 @@ public class StudentImportService {
                 String email = csvRecord.get("email");
                 String phone = csvRecord.get("phone");
                 String admissionNo = csvRecord.get("admissionNo");
-                String className = csvRecord.get("className"); // or classId
-                // Optional parent info - NOW MAPPED
+                String className = csvRecord.get("className");
                 String parentName = csvRecord.isMapped("parentName") ? csvRecord.get("parentName") : null;
                 String parentPhone = csvRecord.isMapped("parentPhone") ? csvRecord.get("parentPhone") : null;
 
-                // Create User account first
                 if (userRepository.existsByEmail(email)) {
                     log.warn("Skipping student with existing email: {}", email);
                     continue;
@@ -77,19 +82,19 @@ public class StudentImportService {
                 User user = new User();
                 user.setName(fullName);
                 user.setEmail(email);
-                user.setPassword(passwordEncoder.encode("password")); // Default password
+                user.setPassword(passwordEncoder.encode("password"));
                 user.setMobileNumber(phone);
                 user.setRoles(Collections.singleton(studentRole));
+                user.setSchoolId(schoolId);
 
                 user = userRepository.save(user);
 
-                // Create Student Profile
                 Student student = new Student();
                 student.setUserId(user.getId());
-                student.setName(fullName); // Keep full name for backward compatibility
+                student.setName(fullName);
                 student.setEmail(email);
+                student.setSchoolId(schoolId);
 
-                // Split Name for consistency
                 if (fullName != null) {
                     fullName = fullName.trim();
                     int lastSpaceIdx = fullName.lastIndexOf(" ");
@@ -104,14 +109,14 @@ public class StudentImportService {
 
                 student.setAdmissionNumber(admissionNo);
 
-                // Set Guardian Info
                 if (parentName != null && !parentName.isEmpty())
                     student.setGuardianName(parentName);
                 if (parentPhone != null && !parentPhone.isEmpty())
                     student.setGuardianMobile(parentPhone);
 
                 if (className != null && !className.isEmpty()) {
-                    Optional<SchoolClass> schoolClass = classRepository.findByName(className);
+                    Optional<SchoolClass> schoolClass = classRepository.findOne(SchoolClassSpecification.activeScoped()
+                            .and((root, query, cb) -> cb.equal(root.get("name"), className)));
                     if (schoolClass.isPresent()) {
                         student.setStudentClass(schoolClass.get());
                     } else {

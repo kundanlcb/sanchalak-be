@@ -99,14 +99,10 @@ public class SchoolOperationsIntegrationTest {
                 .bodyValue(req)
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(TeacherResponse.class)
-                .consumeWith(res -> {
-                    TeacherResponse t = res.getResponseBody();
-                    assertNotNull(t);
-                    assertEquals("Dr. Physics", t.getName());
-                    assertEquals(1, t.getSpecializations().size());
-                    assertEquals("Physics", t.getSpecializations().iterator().next().getName());
-                });
+                .expectBody()
+                .jsonPath("$.name").isEqualTo("Dr. Physics")
+                .jsonPath("$.specializedSubjects.length()").isEqualTo(1)
+                .jsonPath("$.specializedSubjects[0]").isEqualTo(sub.getId().toString());
     }
 
     @Test
@@ -175,6 +171,8 @@ public class SchoolOperationsIntegrationTest {
         // 2. Add Student
         Student s = new Student();
         s.setName("Student 1");
+        s.setEmail("student1@test.com");
+        s.setSchoolId(java.util.UUID.randomUUID());
         s.setStudentClass(cls);
         studentRepo.save(s);
 

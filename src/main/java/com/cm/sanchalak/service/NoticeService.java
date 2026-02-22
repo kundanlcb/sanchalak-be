@@ -9,6 +9,10 @@ import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.NoticeReadStatusRepository;
 import com.cm.sanchalak.repository.NoticeRepository;
 import com.cm.sanchalak.repository.UserRepository;
+import com.cm.sanchalak.repository.spec.NoticeSpecification;
+import com.cm.sanchalak.security.OwnershipValidator;
+import com.cm.sanchalak.security.SchoolContext;
+import com.cm.sanchalak.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,78 +24,66 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Service for managing notices and read status
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NoticeService {
-    
+
     private final NoticeRepository noticeRepository;
     private final NoticeReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
-    
-    /**
-     * Get all active notices for a user based on their role
-     */
+    private final OwnershipValidator ownership;
+
     @Transactional(readOnly = true)
     public List<NoticeDto> getNoticesForUser(UUID userId, String targetRole) {
         log.info("Fetching notices for user {} with role {}", userId, targetRole);
-        
+
         LocalDate currentDate = LocalDate.now();
-        List<Notice> notices = noticeRepository.findActiveByTargetRole(targetRole, currentDate);
-        
+        UUID schoolId = SchoolContext.getSchoolId();
+        List<Notice> notices = noticeRepository.findActiveByTargetRole(targetRole, currentDate, schoolId);
+
         return notices.stream()
-            .map(notice -> convertToDto(notice, userId))
-            .collect(Collectors.toList());
+                .map(notice -> convertToDto(notice, userId))
+                .collect(Collectors.toList());
     }
-    
-    /**
-     * Get recent notices (last 30 days)
-     */
+
     @Transactional(readOnly = true)
     public List<NoticeDto> getRecentNotices(UUID userId, String targetRole) {
         log.info("Fetching recent notices for user {} with role {}", userId, targetRole);
-        
+
         LocalDate sinceDate = LocalDate.now().minusDays(30);
-        List<Notice> notices = noticeRepository.findRecentByTargetRole(targetRole, sinceDate);
-        
+        UUID schoolId = SchoolContext.getSchoolId();
+        List<Notice> notices = noticeRepository.findRecentByTargetRole(targetRole, sinceDate, schoolId);
+
         return notices.stream()
-            .map(notice -> convertToDto(notice, userId))
-            .collect(Collectors.toList());
+                .map(notice -> convertToDto(notice, userId))
+                .collect(Collectors.toList());
     }
-    
-    /**
-     * Get high priority notices
-     */
+
     @Transactional(readOnly = true)
     public List<NoticeDto> getHighPriorityNotices(UUID userId, String targetRole) {
         log.info("Fetching high priority notices for user {} with role {}", userId, targetRole);
-        
+
         LocalDate currentDate = LocalDate.now();
-        List<Notice> notices = noticeRepository.findHighPriorityByTargetRole(targetRole, currentDate);
-        
+        UUID schoolId = SchoolContext.getSchoolId();
+        List<Notice> notices = noticeRepository.findHighPriorityByTargetRole(targetRole, currentDate, schoolId);
+
         return notices.stream()
-            .map(notice -> convertToDto(notice, userId))
-            .collect(Collectors.toList());
+                .map(notice -> convertToDto(notice, userId))
+                .collect(Collectors.toList());
     }
-    
-    /**
-     * Get notice details and mark as read
-     */
+
     @Transactional
     public NoticeDetailDto getNoticeDetailsAndMarkAsRead(Long noticeId, UUID userId) {
         log.info("Fetching notice {} for user {}", noticeId, userId);
-        
-        Notice notice = noticeRepository.findById(noticeId)
-            .orElseThrow(() -> new RuntimeException("Notice not found"));
-        
-        // Mark as read if not already read
+
+        Notice notice = noticeRepository.findOne(NoticeSpecification.activeById(noticeId))
+                .orElseThrow(() -> new RuntimeException("Notice not found"));
+
         NoticeReadStatus readStatus = readStatusRepository
-            .findByUserIdAndNoticeId(userId, noticeId)
-            .orElse(null);
-        
+                .findByUserIdAndNoticeId(userId, noticeId)
+                .orElse(null);
+
         if (readStatus == null) {
             readStatus = new NoticeReadStatus();
             readStatus.setUserId(userId);
@@ -100,75 +92,63 @@ public class NoticeService {
             readStatusRepository.save(readStatus);
             log.info("Marked notice {} as read for user {}", noticeId, userId);
         }
-        
+
         return convertToDetailDto(notice, readStatus);
     }
-    
-    /**
-     * Get unread notice count for a user
-     */
+
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId, String targetRole) {
-        return readStatusRepository.countUnreadByUserIdAndTargetRole(userId, targetRole);
+        UUID schoolId = SchoolContext.getSchoolId();
+        return readStatusRepository.countUnreadByUserIdAndTargetRole(userId, targetRole, schoolId);
     }
-    
-    /**
-     * Convert Notice entity to NoticeDto
-     */
+
     private NoticeDto convertToDto(Notice notice, UUID userId) {
         boolean isRead = readStatusRepository.existsByUserIdAndNoticeId(userId, notice.getId());
-        
+
         String createdByName = null;
         if (notice.getCreatedBy() != null) {
             createdByName = notice.getCreatedBy().getName();
         }
-        
+
         return new NoticeDto(
-            notice.getId(),
-            notice.getTitle(),
-            notice.getPriority(),
-            notice.getTargetRole(),
-            notice.getPublishDate(),
-            notice.getExpiryDate(),
-            isRead,
-            notice.getAttachmentUrl(),
-            createdByName
-        );
+                notice.getId(),
+                notice.getTitle(),
+                notice.getPriority(),
+                notice.getTargetRole(),
+                notice.getPublishDate(),
+                notice.getExpiryDate(),
+                isRead,
+                notice.getAttachmentUrl(),
+                createdByName);
     }
-    
-    /**
-     * Convert Notice entity to NoticeDetailDto
-     */
+
     private NoticeDetailDto convertToDetailDto(Notice notice, NoticeReadStatus readStatus) {
         String createdByName = null;
         if (notice.getCreatedBy() != null) {
             createdByName = notice.getCreatedBy().getName();
         }
-        
+
         return new NoticeDetailDto(
-            notice.getId(),
-            notice.getTitle(),
-            notice.getContent(),
-            notice.getPriority(),
-            notice.getTargetRole(),
-            notice.getPublishDate(),
-            notice.getExpiryDate(),
-            readStatus != null,
-            notice.getAttachmentUrl(),
-            createdByName,
-            readStatus != null ? readStatus.getReadAt() : null
-        );
+                notice.getId(),
+                notice.getTitle(),
+                notice.getContent(),
+                notice.getPriority(),
+                notice.getTargetRole(),
+                notice.getPublishDate(),
+                notice.getExpiryDate(),
+                readStatus != null,
+                notice.getAttachmentUrl(),
+                createdByName,
+                readStatus != null ? readStatus.getReadAt() : null);
     }
-    /**
-     * Create a new notice
-     */
+
     @Transactional
     public NoticeDto createNotice(NoticeRequest request, UUID userId) {
         log.info("Creating notice for user {}", userId);
-        
+
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-            
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Notice notice = new Notice();
         notice.setTitle(request.getTitle());
         notice.setContent(request.getContent());
@@ -178,26 +158,23 @@ public class NoticeService {
         notice.setExpiryDate(request.getExpiryDate());
         notice.setAttachmentUrl(request.getAttachmentUrl());
         notice.setCreatedBy(user);
+        UUID schoolId = SchoolContext.getSchoolId();
+        notice.setSchoolId(schoolId);
         notice.setIsActive(true);
-        
+
         notice = noticeRepository.save(notice);
         log.info("Created notice with ID: {}", notice.getId());
-        
+
         return convertToDto(notice, userId);
     }
 
-    /**
-     * Update an existing notice
-     */
     @Transactional
     public NoticeDto updateNotice(Long id, NoticeRequest request, UUID userId) {
         log.info("Updating notice {} for user {}", id, userId);
-        
-        Notice notice = noticeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Notice not found"));
-            
-        // TODO: Add permission check if needed (e.g. only creator or admin can update)
-        
+
+        Notice notice = noticeRepository.findOne(NoticeSpecification.activeById(id))
+                .orElseThrow(() -> new RuntimeException("Notice not found"));
+
         notice.setTitle(request.getTitle());
         notice.setContent(request.getContent());
         notice.setPriority(request.getPriority());
@@ -207,27 +184,23 @@ public class NoticeService {
         }
         notice.setExpiryDate(request.getExpiryDate());
         notice.setAttachmentUrl(request.getAttachmentUrl());
-        
+
         notice = noticeRepository.save(notice);
         log.info("Updated notice with ID: {}", notice.getId());
-        
+
         return convertToDto(notice, userId);
     }
 
-    /**
-     * Delete a notice (soft delete)
-     */
     @Transactional
     public void deleteNotice(Long id, UUID userId) {
         log.info("Deleting notice {} for user {}", id, userId);
-        
-        Notice notice = noticeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Notice not found"));
-            
-        // Soft delete
+
+        Notice notice = noticeRepository.findOne(NoticeSpecification.activeById(id))
+                .orElseThrow(() -> new RuntimeException("Notice not found"));
+
         notice.setIsActive(false);
         noticeRepository.save(notice);
-        
+
         log.info("Deleted (soft) notice with ID: {}", id);
     }
 }

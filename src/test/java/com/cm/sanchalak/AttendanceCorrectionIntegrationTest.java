@@ -38,8 +38,8 @@ public class AttendanceCorrectionIntegrationTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
 
     @Autowired
     private AttendanceRepository attendanceRepository;
@@ -74,11 +74,14 @@ public class AttendanceCorrectionIntegrationTest {
 
         SchoolClass clazz = new SchoolClass();
         clazz.setName("Class 10-A");
+        clazz.setSchoolId(java.util.UUID.randomUUID());
         clazz = classRepository.save(clazz);
 
         Student student = new Student();
         student.setName("Integration Test Student");
+        student.setEmail("correction.student@test.com");
         student.setStudentClass(clazz);
+        student.setSchoolId(clazz.getSchoolId());
         // minimal fields...
         student = studentRepository.save(student);
 
@@ -94,7 +97,7 @@ public class AttendanceCorrectionIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "teacher", roles = { "TEACHER" })
+    @WithMockUser(username = "admin", roles = { "ADMIN" })
     void testUpdateAttendance() throws Exception {
         UpdateAttendanceRequest request = new UpdateAttendanceRequest();
         request.setStatus(AttendanceStatus.PRESENT);

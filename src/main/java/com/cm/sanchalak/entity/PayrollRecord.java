@@ -15,7 +15,7 @@ public class PayrollRecord {
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
-    @Column(nullable = false)
+    @Column(name = "payroll_month", nullable = false)
     private String month;
 
     @Column(name = "basic_pay", nullable = false)

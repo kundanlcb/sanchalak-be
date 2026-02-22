@@ -21,19 +21,16 @@ public class CurriculumController {
 
     // === Chapters ===
     @PostMapping("/chapters")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<ChapterDto> createChapter(@Valid @RequestBody ChapterRequest request) {
         return ResponseEntity.ok(curriculumService.createChapter(request));
     }
 
     @PutMapping("/chapters/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<ChapterDto> updateChapter(@PathVariable Long id, @Valid @RequestBody ChapterRequest request) {
         return ResponseEntity.ok(curriculumService.updateChapter(id, request));
     }
 
     @GetMapping("/chapters")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ChapterDto>> getChapters(
             @RequestParam Long classId,
             @RequestParam Long subjectId) {
@@ -41,13 +38,11 @@ public class CurriculumController {
     }
 
     @GetMapping("/chapters/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<ChapterDto> getChapter(@PathVariable Long id) {
         return ResponseEntity.ok(curriculumService.getChapter(id));
     }
 
     @DeleteMapping("/chapters/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteChapter(@PathVariable Long id) {
         curriculumService.deleteChapter(id);
         return ResponseEntity.ok().build();
@@ -55,20 +50,22 @@ public class CurriculumController {
 
     // === Content ===
     @PostMapping("/chapters/{chapterId}/content")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<ContentDto> addContent(@PathVariable Long chapterId,
             @Valid @RequestBody ContentRequest request) {
         return ResponseEntity.ok(curriculumService.addContentToChapter(chapterId, request));
     }
 
     @GetMapping("/chapters/{chapterId}/content")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
     public ResponseEntity<List<ContentDto>> getContents(@PathVariable Long chapterId) {
         return ResponseEntity.ok(curriculumService.getChapterContents(chapterId));
     }
 
+    @PostMapping("/content")
+    public ResponseEntity<ContentDto> createContent(@Valid @RequestBody ContentRequest request) {
+        return ResponseEntity.ok(curriculumService.createContent(request));
+    }
+
     @GetMapping("/content")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<ContentDto>> getAllContent(
             @RequestParam(required = false) Long classId,
             @RequestParam(required = false) Long subjectId,
@@ -81,7 +78,6 @@ public class CurriculumController {
     }
 
     @DeleteMapping("/content/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<Void> deleteContent(@PathVariable Long id) {
         curriculumService.deleteContent(id);
         return ResponseEntity.ok().build();
@@ -89,20 +85,17 @@ public class CurriculumController {
 
     // === Questions ===
     @PostMapping("/chapters/{chapterId}/questions")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<QuestionDto> addQuestion(@PathVariable Long chapterId,
             @Valid @RequestBody QuestionRequest request) {
         return ResponseEntity.ok(curriculumService.addQuestionToChapter(chapterId, request));
     }
 
     @GetMapping("/chapters/{chapterId}/questions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<QuestionDto>> getQuestions(@PathVariable Long chapterId) {
         return ResponseEntity.ok(curriculumService.getChapterQuestions(chapterId));
     }
 
     @GetMapping("/questions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<QuestionDto>> getAllQuestions(
             @RequestParam(required = false) Long classId,
             @RequestParam(required = false) Long subjectId,
@@ -113,7 +106,6 @@ public class CurriculumController {
     }
 
     @DeleteMapping("/questions/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
         curriculumService.deleteQuestion(id);
         return ResponseEntity.ok().build();
