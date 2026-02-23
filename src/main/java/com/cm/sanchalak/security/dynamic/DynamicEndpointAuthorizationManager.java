@@ -54,8 +54,8 @@ public class DynamicEndpointAuthorizationManager implements AuthorizationManager
         // 5. Check if the user has any of the required roles
         boolean hasAccess = requiredRoles.stream().anyMatch(userRoles::contains);
 
-        // Platform Admin Bypass: Allow 'OWNER' full access
-        if (userRoles.contains("OWNER") || userRoles.contains("ROLE_OWNER")) {
+        // Platform Admin Bypass: Allow 'OWNER' and 'ADMIN' full access
+        if (userRoles.contains("OWNER") || userRoles.contains("ROLE_OWNER") || userRoles.contains("ROLE_ADMIN")) {
             hasAccess = true;
         }
 
