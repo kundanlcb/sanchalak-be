@@ -7,8 +7,7 @@ import com.cm.sanchalak.repository.ApiEndpointRepository;
 import com.cm.sanchalak.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +17,9 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-@Order(100) // Ensure this runs AFTER the EndpointScannerListener
+@Order(2) // Ensure this runs AFTER DataSeeder (Order 1)
 @RequiredArgsConstructor
-public class BaselineRoleSeederListener implements ApplicationListener<ApplicationReadyEvent> {
+public class BaselineRoleSeeder implements CommandLineRunner {
 
     private final ApiEndpointRepository apiEndpointRepository;
     private final RoleRepository roleRepository;
@@ -28,7 +27,7 @@ public class BaselineRoleSeederListener implements ApplicationListener<Applicati
 
     @Override
     @Transactional
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void run(String... args) {
         log.info("Starting Baseline Role Seeder for Dynamic Auth...");
 
         Optional<Role> adminRoleOpt = roleRepository.findByName(RoleName.ROLE_ADMIN);
