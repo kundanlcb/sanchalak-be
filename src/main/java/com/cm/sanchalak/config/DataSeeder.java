@@ -5,7 +5,8 @@ import com.cm.sanchalak.entity.RoleName;
 import com.cm.sanchalak.entity.User;
 import com.cm.sanchalak.repository.RoleRepository;
 import com.cm.sanchalak.repository.UserRepository;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +16,7 @@ import java.util.Set;
 
 @Component
 @Order(1)
-public class DataSeeder implements CommandLineRunner {
+public class DataSeeder implements ApplicationListener<ApplicationReadyEvent> {
 
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
@@ -28,7 +29,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         seedRoles();
         seedAdminUser();
     }
