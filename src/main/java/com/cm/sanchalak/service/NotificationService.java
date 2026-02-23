@@ -284,4 +284,25 @@ public class NotificationService {
     public long getUnreadCount(UUID userId) {
         return logRepository.countUnreadByUserId(userId);
     }
+
+    @Async("notificationExecutor")
+    public void sendLeaveStatusNotification(UUID userId, String leaveTypeName, String status, String comments) {
+        Map<String, String> data = new HashMap<>();
+        data.put("action", "VIEW_LEAVES");
+        data.put("status", status);
+
+        String message = String.format("Your leave request for %s has been %s.",
+                leaveTypeName, status.toLowerCase());
+
+        if (comments != null && !comments.isBlank()) {
+            message += " Comments: " + comments;
+        }
+
+        sendNotificationToUser(
+                userId,
+                "Leave Request " + (status.equals("APPROVED") ? "Approved" : "Rejected"),
+                message,
+                "LEAVE_STATUS",
+                data);
+    }
 }

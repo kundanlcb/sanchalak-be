@@ -36,7 +36,7 @@ public class RoutineService {
         private final SchoolClassRepository classRepository;
         private final SubjectRepository subjectRepository;
         private final TeacherRepository teacherRepository;
-        private final OwnershipValidator ownership;
+
         private final TimetableSlotRepository timetableSlotRepository;
 
         @Transactional(readOnly = true)

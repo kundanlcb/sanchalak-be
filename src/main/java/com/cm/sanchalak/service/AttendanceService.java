@@ -3,6 +3,7 @@ package com.cm.sanchalak.service;
 import com.cm.sanchalak.dto.*;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.entity.SchoolClass;
+import com.cm.sanchalak.entity.academics.Holiday;
 import com.cm.sanchalak.repository.*;
 import com.cm.sanchalak.repository.spec.AttendanceSpecification;
 import com.cm.sanchalak.repository.spec.SchoolClassSpecification;
@@ -33,11 +34,22 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
     private final SchoolClassRepository classRepository;
+    private final HolidayRepository holidayRepository;
     private final OwnershipValidator ownership;
+
+    private void validateNotAHoliday(LocalDate date) {
+        String tenantId = SchoolContext.getSchoolId() != null ? SchoolContext.getSchoolId().toString() : null;
+        List<Holiday> holidays = holidayRepository.findOverlappingStudentHolidays(date, tenantId);
+        if (!holidays.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Cannot mark manual attendance on a designated holiday: " + holidays.get(0).getName());
+        }
+    }
 
     @Transactional
     public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkAttendanceRequest request, String markedBy) {
         log.info("Bulk marking attendance for class: {} on date: {}", request.getClassId(), request.getDate());
+        validateNotAHoliday(request.getDate());
 
         Long classId = request.getClassId();
         SchoolClass clazz = classRepository.findOne(SchoolClassSpecification.activeById(classId))
@@ -97,6 +109,7 @@ public class AttendanceService {
     public AttendanceRecord markAttendance(MarkAttendanceRequest request, String markedBy) {
         log.info("Marking attendance for student: {} in class: {} on date: {}", request.getStudentId(),
                 request.getClassId(), request.getDate());
+        validateNotAHoliday(request.getDate());
 
         Long studentId = request.getStudentId();
         Long classId = request.getClassId();
@@ -157,6 +170,12 @@ public class AttendanceService {
         List<AttendanceRecordDto> dtos = new ArrayList<>();
         int present = 0;
         int absent = 0;
+        int holidayCount = 0;
+
+        String tenantId = SchoolContext.getSchoolId() != null ? SchoolContext.getSchoolId().toString() : null;
+        List<Holiday> holidays = holidayRepository.findOverlappingStudentHolidays(date, tenantId);
+        boolean isHoliday = !holidays.isEmpty();
+        String holidayName = isHoliday ? holidays.get(0).getName() : null;
 
         for (Student student : allStudents) {
             AttendanceRecord record = recordMap.get(student.getId());
@@ -181,6 +200,13 @@ public class AttendanceService {
                     present++;
                 else if (record.getStatus() == AttendanceStatus.ABSENT)
                     absent++;
+                else if (record.getStatus() == AttendanceStatus.HOLIDAY)
+                    holidayCount++;
+            } else if (isHoliday) {
+                dto.setStatus(AttendanceStatus.HOLIDAY);
+                dto.setRemarks(holidayName);
+                dto.setMarkedBy("SYSTEM");
+                holidayCount++;
             } else {
                 dto.setStatus(AttendanceStatus.PRESENT);
                 present++;
@@ -274,6 +300,8 @@ public class AttendanceService {
     public AttendanceRecordDto updateAttendance(Long id, UpdateAttendanceRequest request, String modifiedBy) {
         AttendanceRecord record = attendanceRepository.findOne(AttendanceSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Attendance record not found"));
+
+        validateNotAHoliday(record.getDate());
 
         if (request.getStatus() != null) {
             record.setStatus(request.getStatus());

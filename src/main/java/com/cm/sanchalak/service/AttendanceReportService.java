@@ -1,7 +1,5 @@
 package com.cm.sanchalak.service;
 
-import com.cm.sanchalak.dto.AttendanceRecordDto;
-import com.cm.sanchalak.dto.TeacherAttendanceDto;
 import com.cm.sanchalak.entity.AttendanceRecord;
 import com.cm.sanchalak.entity.AttendanceStatus;
 import com.cm.sanchalak.entity.Student;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

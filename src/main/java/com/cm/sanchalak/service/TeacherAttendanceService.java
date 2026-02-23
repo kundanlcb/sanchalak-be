@@ -6,8 +6,10 @@ import com.cm.sanchalak.dto.TeacherAttendanceDto;
 import com.cm.sanchalak.entity.AttendanceStatus;
 import com.cm.sanchalak.entity.Teacher;
 import com.cm.sanchalak.entity.TeacherAttendance;
+import com.cm.sanchalak.entity.academics.Holiday;
 import com.cm.sanchalak.repository.TeacherAttendanceRepository;
 import com.cm.sanchalak.repository.TeacherRepository;
+import com.cm.sanchalak.repository.HolidayRepository;
 import com.cm.sanchalak.security.SchoolContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +33,22 @@ public class TeacherAttendanceService {
 
     private final TeacherAttendanceRepository teacherAttendanceRepository;
     private final TeacherRepository teacherRepository;
+    private final HolidayRepository holidayRepository;
+
+    private void validateNotAHoliday(LocalDate date) {
+        String tenantId = SchoolContext.getSchoolId() != null ? SchoolContext.getSchoolId().toString() : null;
+        List<Holiday> holidays = holidayRepository.findOverlappingStaffHolidays(date, tenantId);
+        if (!holidays.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Cannot mark manual attendance on a designated holiday: " + holidays.get(0).getName());
+        }
+    }
 
     @Transactional
     public TeacherAttendanceDto markAttendance(Long teacherId, LocalDate date, AttendanceStatus status, String remarks,
             String markedBy) {
         log.info("Marking attendance for teacher: {} on date: {}", teacherId, date);
+        validateNotAHoliday(date);
 
         if (date.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Cannot mark attendance for future dates");
@@ -72,6 +85,7 @@ public class TeacherAttendanceService {
     @Transactional
     public BulkMarkAttendanceResponse markBulkAttendance(BulkMarkTeacherAttendanceRequest request, String markedBy) {
         log.info("Bulk marking teacher attendance on date: {}", request.getDate());
+        validateNotAHoliday(request.getDate());
 
         UUID schoolId = SchoolContext.getSchoolId();
         List<Teacher> teachers = teacherRepository.findBySchoolIdAndDeletedFalse(schoolId);
@@ -133,6 +147,11 @@ public class TeacherAttendanceService {
 
         List<TeacherAttendanceDto> dtos = new ArrayList<>();
 
+        String tenantId = schoolId != null ? schoolId.toString() : null;
+        List<Holiday> holidays = holidayRepository.findOverlappingStaffHolidays(date, tenantId);
+        boolean isHoliday = !holidays.isEmpty();
+        String holidayName = isHoliday ? holidays.get(0).getName() : null;
+
         for (Teacher teacher : teachers) {
             TeacherAttendance record = recordMap.get(teacher.getId());
             TeacherAttendanceDto dto = new TeacherAttendanceDto();
@@ -150,6 +169,10 @@ public class TeacherAttendanceService {
                     dto.setMarkedDate(LocalDateTime.ofInstant(record.getCreatedAt(), ZoneId.systemDefault()));
                 }
                 dto.setModified(record.isModified());
+            } else if (isHoliday) {
+                dto.setStatus(AttendanceStatus.HOLIDAY);
+                dto.setRemarks(holidayName);
+                dto.setMarkedBy("SYSTEM");
             } else {
                 dto.setStatus(null); // Not marked yet
             }
