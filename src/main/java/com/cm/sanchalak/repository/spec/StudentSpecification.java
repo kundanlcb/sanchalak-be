@@ -1,9 +1,8 @@
 package com.cm.sanchalak.repository.spec;
 
 import com.cm.sanchalak.entity.Student;
+import com.cm.sanchalak.entity.StudentStatus;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.util.UUID;
 
 public class StudentSpecification extends BaseSpecification {
 
@@ -24,6 +23,10 @@ public class StudentSpecification extends BaseSpecification {
 
     public static Specification<Student> hasByClassId(Long classId) {
         return (root, query, cb) -> cb.equal(root.get("studentClass").get("id"), classId);
+    }
+
+    public static Specification<Student> hasStatus(StudentStatus status) {
+        return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
 
     public static Specification<Student> activeById(Long id) {

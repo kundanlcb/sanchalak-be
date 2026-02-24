@@ -4,6 +4,7 @@ import com.cm.sanchalak.dto.StudentRequest;
 import com.cm.sanchalak.dto.StudentResponse;
 import com.cm.sanchalak.entity.*;
 import com.cm.sanchalak.repository.SchoolClassRepository;
+import com.cm.sanchalak.repository.StudentImportStagingRepository;
 import com.cm.sanchalak.repository.StudentRepository;
 import com.cm.sanchalak.platform.master.MasterDataService;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +19,7 @@ import com.cm.sanchalak.repository.spec.StudentSpecification;
 import com.cm.sanchalak.security.OwnershipValidator;
 import com.cm.sanchalak.security.SchoolContext;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -37,6 +39,7 @@ public class StudentService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final OwnershipValidator ownership;
+    private final StudentImportStagingRepository stagingRepository;
 
     public StudentResponse createStudent(StudentRequest request) {
         masterDataService.validateValue("GENDER", request.getGender());
@@ -63,6 +66,7 @@ public class StudentService {
         User user = new User();
         user.setName(student.getName());
         user.setEmail(student.getEmail());
+        user.setMobileNumber(student.getGuardianMobile()); // Student mobile or parent fallback
         user.setPassword(passwordEncoder.encode(request.getEmail())); // Default password is email
 
         Role studentRole = roleRepository.findByName(RoleName.ROLE_STUDENT)
@@ -95,6 +99,15 @@ public class StudentService {
 
         updateStudentFromRequest(student, request);
         Student updatedStudent = studentRepository.save(student);
+
+        // Sync mobile number with User account if it exists
+        if (updatedStudent.getUserId() != null) {
+            userRepository.findById(updatedStudent.getUserId()).ifPresent(user -> {
+                user.setMobileNumber(updatedStudent.getGuardianMobile());
+                userRepository.save(user);
+            });
+        }
+
         return mapToResponse(updatedStudent);
     }
 
@@ -107,7 +120,8 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StudentResponse> getAllStudents(Long classId, int page, int size, String sortBy, String sortOrder) {
+    public Page<StudentResponse> getAllStudents(Long classId, StudentStatus status, int page, int size, String sortBy,
+            String sortOrder) {
         Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page > 0 ? page - 1 : 0, size, Sort.by(direction, sortBy));
 
@@ -115,9 +129,74 @@ public class StudentService {
         if (classId != null) {
             spec = spec.and(StudentSpecification.hasByClassId(classId));
         }
+        if (status != null) {
+            spec = spec.and(StudentSpecification.hasStatus(status));
+        }
 
         return studentRepository.findAll(spec, pageable)
                 .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StudentImportStaging> getImportDrafts() {
+        return stagingRepository.findAll(); // Simple catch-all for now
+    }
+
+    @Transactional
+    public StudentResponse onboardFromStaging(Long stagingId) {
+        StudentImportStaging staging = stagingRepository.findById(stagingId)
+                .orElseThrow(() -> new EntityNotFoundException("Staging record not found: " + stagingId));
+
+        try {
+            // Map staging to request for reuse of existing create logic
+            StudentRequest request = new StudentRequest();
+            request.setName(
+                    staging.getFirstName() + (staging.getLastName() != null ? " " + staging.getLastName() : ""));
+            request.setFirstName(staging.getFirstName());
+            request.setLastName(staging.getLastName());
+            request.setEmail(staging.getEmail());
+            request.setMobileNumber(staging.getPhone());
+            request.setAdmissionNumber(staging.getAdmissionNo());
+            request.setGuardianName(staging.getParentName());
+            request.setGuardianMobile(staging.getParentPhone());
+
+            // Default required fields for manual completion later if missing
+            if (request.getEmail() == null || request.getEmail().isBlank()) {
+                throw new AppException("Email is required for onboarding");
+            }
+
+            // Find class by name if provided
+            if (staging.getClassName() != null) {
+                classRepository.findOne((root, query, cb) -> cb.equal(root.get("name"), staging.getClassName()))
+                        .ifPresent(sc -> request.setClassId(sc.getId()));
+            }
+
+            if (request.getClassId() == null) {
+                // Fallback to a default class or throw error if mandatory
+                // For now, we'll let it fail validation in createStudent if mandatory
+            }
+
+            StudentResponse response = createStudent(request);
+
+            // Mark staging as processed and clear error
+            staging.setProcessed(true);
+            staging.setErrorMessage(null);
+            stagingRepository.save(staging);
+
+            return response;
+        } catch (Exception e) {
+            staging.setErrorMessage(e.getMessage());
+            stagingRepository.save(staging);
+            throw e;
+        }
+    }
+
+    public StudentResponse approveStudent(Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with id: " + id));
+
+        student.setStatus(StudentStatus.ACTIVE);
+        return mapToResponse(studentRepository.save(student));
     }
 
     @Transactional(readOnly = true)
@@ -184,10 +263,21 @@ public class StudentService {
             // Fallback for legacy fields
             if (request.getGuardianName() != null)
                 student.setGuardianName(request.getGuardianName());
-            String mobile = request.getMobileNumber() != null ? request.getMobileNumber() : request.getGuardianMobile();
+            String mobile = request.getGuardianMobile();
             if (mobile != null)
                 student.setGuardianMobile(mobile);
         }
+
+        // Student Phone Fallback: If student mobile is missing, use parent mobility
+        String studentMobile = request.getMobileNumber();
+        if ((studentMobile == null || studentMobile.isBlank()) && student.getGuardianMobile() != null) {
+            studentMobile = student.getGuardianMobile();
+        }
+        // Although currently stored in guardian_mobile in Student entity for some
+        // reason,
+        // we should ensure it flows to the User entity correctly in createStudent.
+        // If we have a mobileNumber field in Student, use it. But current Student.java
+        // seems to rely on guardianMobile for the primary contact number.
     }
 
     private StudentResponse mapToResponse(Student student) {
@@ -217,7 +307,7 @@ public class StudentService {
                 .admissionNumber(student.getAdmissionNumber())
                 .admissionDate(student.getAdmissionDate() != null ? student.getAdmissionDate().toString() : null)
                 .mobileNumber(student.getGuardianMobile())
-                .status(student.isDeleted() ? "Inactive" : "Active")
+                .status(student.getStatus() != null ? student.getStatus().name() : "Active")
                 .deleted(student.isDeleted())
                 .address(StudentResponse.AddressResponse.builder()
                         .street(student.getAddressStreet())

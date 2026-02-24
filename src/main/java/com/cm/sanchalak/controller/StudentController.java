@@ -2,16 +2,15 @@ package com.cm.sanchalak.controller;
 
 import com.cm.sanchalak.dto.StudentRequest;
 import com.cm.sanchalak.dto.StudentResponse;
+import com.cm.sanchalak.entity.StudentImportStaging;
 import com.cm.sanchalak.service.StudentService;
+import com.cm.sanchalak.service.StudentImportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
-import com.cm.sanchalak.service.StudentImportService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/academics/students")
@@ -40,14 +39,14 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public ResponseEntity<Page<StudentResponse>> getAllStudents(
-            @RequestParam(required = false) Long classId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "rollNo") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortOrder) {
-        return ResponseEntity.ok(studentService.getAllStudents(classId, page, limit, sortBy, sortOrder));
+    @GetMapping("/drafts")
+    public ResponseEntity<List<StudentImportStaging>> getDrafts() {
+        return ResponseEntity.ok(studentService.getImportDrafts());
+    }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<StudentResponse> approveStudent(@PathVariable Long id) {
+        return ResponseEntity.ok(studentService.onboardFromStaging(id));
     }
 
     @GetMapping("/{id}")

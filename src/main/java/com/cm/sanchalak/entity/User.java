@@ -13,9 +13,6 @@ import java.util.UUID;
 @Table(name = "users", uniqueConstraints = {
                 @UniqueConstraint(columnNames = {
                                 "email"
-                }),
-                @UniqueConstraint(columnNames = {
-                                "mobile_number"
                 })
 })
 @Getter
@@ -40,7 +37,7 @@ public class User extends BaseEntity {
         private String email;
 
         @Size(max = 15)
-        @Column(name = "mobile_number", length = 15, unique = true)
+        @Column(name = "mobile_number", length = 15)
         private String mobileNumber; // For OTP authentication
 
         @NotBlank

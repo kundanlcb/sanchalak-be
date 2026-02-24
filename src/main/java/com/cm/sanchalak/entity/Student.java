@@ -97,6 +97,11 @@ public class Student extends BaseEntity {
     private String parentOccupation;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private StudentStatus status = StudentStatus.ACTIVE;
+
+    @Builder.Default
     @Column(nullable = false)
     private boolean deleted = false;
 
