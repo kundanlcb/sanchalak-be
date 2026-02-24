@@ -29,6 +29,20 @@ public class StudentSpecification extends BaseSpecification {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
 
+    public static Specification<Student> search(String query) {
+        return (root, q, cb) -> {
+            if (query == null || query.isBlank()) {
+                return cb.conjunction();
+            }
+            String searchPattern = "%" + query.toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("firstName")), searchPattern),
+                    cb.like(cb.lower(root.get("lastName")), searchPattern),
+                    cb.like(cb.lower(root.get("email")), searchPattern),
+                    cb.like(cb.lower(root.get("admissionNumber")), searchPattern));
+        };
+    }
+
     public static Specification<Student> activeById(Long id) {
         return activeScoped().and(hasId(id));
     }

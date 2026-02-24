@@ -120,8 +120,8 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StudentResponse> getAllStudents(Long classId, StudentStatus status, int page, int size, String sortBy,
-            String sortOrder) {
+    public Page<StudentResponse> getAllStudents(Long classId, StudentStatus status, String search, int page, int size,
+            String sortBy, String sortOrder) {
         Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page > 0 ? page - 1 : 0, size, Sort.by(direction, sortBy));
 
@@ -131,6 +131,9 @@ public class StudentService {
         }
         if (status != null) {
             spec = spec.and(StudentSpecification.hasStatus(status));
+        }
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(StudentSpecification.search(search));
         }
 
         return studentRepository.findAll(spec, pageable)

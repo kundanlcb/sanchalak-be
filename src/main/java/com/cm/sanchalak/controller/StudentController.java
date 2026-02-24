@@ -3,10 +3,12 @@ package com.cm.sanchalak.controller;
 import com.cm.sanchalak.dto.StudentRequest;
 import com.cm.sanchalak.dto.StudentResponse;
 import com.cm.sanchalak.entity.StudentImportStaging;
+import com.cm.sanchalak.entity.StudentStatus;
 import com.cm.sanchalak.service.StudentService;
 import com.cm.sanchalak.service.StudentImportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,19 @@ public class StudentController {
 
     private final StudentService studentService;
     private final StudentImportService studentImportService;
+
+    @GetMapping
+    public ResponseEntity<Page<StudentResponse>> getAllStudents(
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) StudentStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "rollNo") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        return ResponseEntity
+                .ok(studentService.getAllStudents(classId, status, search, page, limit, sortBy, sortOrder));
+    }
 
     @PostMapping
     public ResponseEntity<StudentResponse> createStudent(@Valid @RequestBody StudentRequest request) {
