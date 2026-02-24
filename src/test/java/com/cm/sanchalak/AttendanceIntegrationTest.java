@@ -59,7 +59,7 @@ public class AttendanceIntegrationTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private String teacherEmail = "teacher_" + System.currentTimeMillis() + "@test.com"; // Unique email
+    private String adminEmail = "admin_" + System.currentTimeMillis() + "@test.com"; // Unique email
     private String token;
     private Long classId;
     private Long studentId;
@@ -81,20 +81,21 @@ public class AttendanceIntegrationTest {
 
         java.util.UUID testSchoolId = java.util.UUID.randomUUID();
 
-        // 2. Teacher
-        User teacher = new User();
-        teacher.setName("Test Teacher");
-        teacher.setEmail(teacherEmail);
-        teacher.setPassword(passwordEncoder.encode("password"));
-        teacher.setSchoolId(testSchoolId);
-        Role teacherRole = roleRepository.findByName(RoleName.ROLE_TEACHER).orElseThrow();
-        teacher.setRoles(Set.of(teacherRole));
+        // 2. Admin user (bulk attendance requires ADMIN role per dynamic security
+        // config)
+        User admin = new User();
+        admin.setName("Test Admin");
+        admin.setEmail(adminEmail);
+        admin.setPassword(passwordEncoder.encode("password"));
+        admin.setSchoolId(testSchoolId);
+        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN).orElseThrow();
+        admin.setRoles(Set.of(adminRole));
         String mobile = String.valueOf(System.currentTimeMillis()).substring(3);
-        teacher.setMobileNumber(mobile);
-        userRepository.save(teacher);
+        admin.setMobileNumber(mobile);
+        userRepository.save(admin);
 
         // 3. Login
-        LoginRequest loginRequest = new LoginRequest(teacherEmail, "password");
+        LoginRequest loginRequest = new LoginRequest(adminEmail, "password");
         byte[] response = webTestClient.post().uri("/api/auth/signin")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(loginRequest)

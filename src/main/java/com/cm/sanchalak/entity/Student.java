@@ -87,7 +87,37 @@ public class Student extends BaseEntity {
     @Column(name = "address_country")
     private String addressCountry;
 
-    @Column(name = "parent_relationship")
+    // Extended fields for admit card, marksheet, and admission form
+    @Column(name = "father_name")
+    private String fatherName;
+
+    @Column(name = "mother_name")
+    private String motherName;
+
+    @Column(name = "student_aadhar", length = 12)
+    private String studentAadhar;
+
+    @Column(name = "father_aadhar", length = 12)
+    private String fatherAadhar;
+
+    @Column(name = "mother_aadhar", length = 12)
+    private String motherAadhar;
+
+    @Column(name = "address_village")
+    private String addressVillage;
+
+    @Column(name = "address_district")
+    private String addressDistrict;
+
+    @Column(name = "nationality", length = 50)
+    private String nationality;
+
+    @Column(name = "is_disabled")
+    private Boolean isDisabled;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
     private String parentRelationship;
 
     @Column(name = "parent_email")

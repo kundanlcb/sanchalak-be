@@ -6,6 +6,7 @@ import com.cm.sanchalak.entity.StudentImportStaging;
 import com.cm.sanchalak.entity.StudentStatus;
 import com.cm.sanchalak.service.StudentService;
 import com.cm.sanchalak.service.StudentImportService;
+import com.cm.sanchalak.service.storage.FileStorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/academics/students")
@@ -21,6 +23,7 @@ public class StudentController {
 
     private final StudentService studentService;
     private final StudentImportService studentImportService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     public ResponseEntity<Page<StudentResponse>> getAllStudents(
@@ -82,5 +85,21 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to import students: " + e.getMessage());
         }
+    }
+
+    /**
+     * Returns a presigned upload URL for the student photo.
+     * Frontend uploads directly to Azure Blob, then saves publicUrl via PUT
+     * student.
+     */
+    @PostMapping("/{id}/photo-url")
+    public ResponseEntity<Map<String, String>> getPhotoUploadUrl(
+            @PathVariable Long id,
+            @RequestParam String fileName,
+            @RequestParam String contentType) {
+        String objectKey = "students/" + id + "/photo/" + fileName;
+        String uploadUrl = fileStorageService.generateUploadUrl(objectKey, contentType, 15);
+        String publicUrl = fileStorageService.getPublicUrl(objectKey);
+        return ResponseEntity.ok(Map.of("uploadUrl", uploadUrl, "publicUrl", publicUrl));
     }
 }

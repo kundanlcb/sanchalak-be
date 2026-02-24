@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Admit Card</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm 8mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            color: #111;
+            margin: 0;
+        }
+
+        /* 2-up layout */
+        .card-row {
+            display: flex;
+            gap: 5mm;
+            margin-bottom: 5mm;
+            page-break-inside: avoid;
+        }
+
+        .card-box {
+            flex: 1;
+            border: 2px solid #333;
+            padding: 4mm 4mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .card-header {
+            text-align: center;
+            border-bottom: 1.5px solid #333;
+            padding-bottom: 2mm;
+            margin-bottom: 2mm;
+        }
+
+        .school-name {
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .school-address {
+            font-size: 7.5px;
+            color: #444;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+            margin: 2mm 0;
+            letter-spacing: 1px;
+        }
+
+        .exam-term {
+            text-align: center;
+            font-size: 9px;
+            color: #444;
+            margin-bottom: 2mm;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 3mm;
+            margin-bottom: 1.5mm;
+            font-size: 9px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            min-width: 90px;
+        }
+
+        .photo-box {
+            position: absolute;
+            top: 22mm;
+            right: 4mm;
+            width: 22mm;
+            height: 26mm;
+            border: 1px solid #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            color: #999;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .info-section {
+            margin-right: 26mm;
+        }
+
+        /* Exam table */
+        .exam-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2mm;
+            font-size: 8.5px;
+        }
+
+        .exam-table th {
+            background: #e8e8e8;
+            border: 1px solid #999;
+            padding: 1mm 1.5mm;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .exam-table td {
+            border: 1px solid #bbb;
+            padding: 1mm 1.5mm;
+        }
+
+        .exam-table td.date {
+            white-space: nowrap;
+        }
+
+        .footer-note {
+            font-size: 7px;
+            color: #555;
+            margin-top: 2mm;
+            border-top: 0.5px dashed #aaa;
+            padding-top: 1.5mm;
+        }
+
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3mm;
+            font-size: 8px;
+        }
+
+        .signature-line {
+            border-top: 0.5px solid #333;
+            width: 40mm;
+            text-align: center;
+            padding-top: 1mm;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px dashed #aaa;
+            margin: 4mm 0;
+        }
+    </style>
+</head>
+
+<body>
+    <th:block th:each="pair, stat : ${#lists.partition(cards, 2)}">
+        <div class="card-row">
+            <th:block th:each="card : ${pair}">
+                <div class="card-box">
+                    <!-- Photo -->
+                    <div class="photo-box">
+                        <img th:if="${card.photoUrl != null and !card.photoUrl.isEmpty()}" th:src="${card.photoUrl}"
+                            alt="Photo" />
+                        <span th:if="${card.photoUrl == null or card.photoUrl.isEmpty()}">Paste Photo</span>
+                    </div>
+
+                    <!-- School Header -->
+                    <div class="card-header">
+                        <div class="school-name" th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}">
+                        </div>
+                        <div class="school-address" th:text="${template != null ? template.addressLine1 : ''}"></div>
+                        <div class="school-address" th:text="${template != null ? template.addressLine2 : ''}"></div>
+                        <div class="school-address" th:if="${template != null}" th:text="'Ph: ' + ${template.phone1}">
+                        </div>
+                        <div class="school-address" th:if="${template != null and template.regNo != null}"
+                            th:text="'Reg. No: ' + ${template.regNo}"></div>
+                    </div>
+
+                    <div class="doc-title">Admit Card (प्रवेश पत्र)</div>
+                    <div class="exam-term" th:text="${examTermName}">Annual Examination 2025</div>
+
+                    <!-- Student Info -->
+                    <div class="info-section">
+                        <div class="info-row">
+                            <span class="info-label">Student Name:</span>
+                            <span th:text="${card.studentName}">Student</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Father's Name:</span>
+                            <span th:text="${card.fatherName}">Father</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Village:</span>
+                            <span th:text="${card.village}">Village</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Class:</span>
+                            <span th:text="${card.className}">Class</span>
+                            &nbsp;&nbsp;
+                            <span class="info-label">Roll No:</span>
+                            <span th:text="${card.rollNo}">01</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Adm. No:</span>
+                            <span th:text="${card.admissionNumber}">ADM-001</span>
+                        </div>
+                    </div>
+
+                    <!-- Exam Schedule Table -->
+                    <table class="exam-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Duration</th>
+                                <th>Max Marks</th>
+                                <th>Shift</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row : ${card.examRows}">
+                                <td th:text="${row.subject}">Math</td>
+                                <td class="date" th:text="${row.date}">01/04/2025</td>
+                                <td th:text="${row.day}">Mon</td>
+                                <td th:text="${row.time}">10:00 AM</td>
+                                <td th:text="${row.duration}">3 hr</td>
+                                <td th:text="${row.maxMarks}">100</td>
+                                <td th:text="${row.shift}">Ist</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Signatures -->
+                    <div class="signature-row">
+                        <div class="signature-line"
+                            th:text="${template != null and template.controllerDesignation != null ? template.controllerDesignation : 'Controller of Examinations'}">
+                        </div>
+                        <div style="font-size: 8px; color: #777; align-self:flex-end;">
+                            Signature of Student: ___________
+                        </div>
+                        <div class="signature-line"
+                            th:text="${template != null and template.principalDesignation != null ? template.principalDesignation : 'Principal'}">
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="footer-note"
+                        th:text="${template != null and template.admitCardFooterNote != null ? template.admitCardFooterNote : 'Bring this admit card on all examination days. Mobile phones are strictly not allowed.'}">
+                    </div>
+                </div>
+            </th:block>
+            <!-- Empty slot padding when odd count -->
+            <div class="card-box" th:if="${pair.size() == 1}" style="border: 1.5px dashed #ddd; background: #fafafa;">
+            </div>
+        </div>
+        <!-- Page break after every 2 cards (rows of 2) -->
+        <div th:if="${(stat.index + 1) % 2 == 0 and not stat.last}" style="page-break-after: always;"></div>
+    </th:block>
+</body>
+
+</html>

@@ -36,6 +36,17 @@ public class StudentResponse {
     private String mobileNumber;
     private String status;
     private boolean deleted;
+    private String bloodGroup;
+
+    // Extended student identity fields
+    private String fatherName;
+    private String motherName;
+    private String studentAadhar;
+    private String fatherAadhar;
+    private String motherAadhar;
+    private String nationality;
+    private Boolean isDisabled;
+    private String photoUrl;
 
     private ClassResponse studentClass; // For backward compatibility with generated models
 
@@ -65,6 +76,8 @@ public class StudentResponse {
         private String state;
         private String pincode;
         private String country;
+        private String village;
+        private String district;
     }
 
     @Data

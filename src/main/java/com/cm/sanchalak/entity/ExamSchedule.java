@@ -53,4 +53,7 @@ public class ExamSchedule extends BaseEntity {
 
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
+
+    @Column(name = "shift", length = 10)
+    private String shift; // e.g., "Ist", "IInd" - used for admit cards
 }

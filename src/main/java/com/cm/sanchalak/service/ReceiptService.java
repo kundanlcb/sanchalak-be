@@ -15,10 +15,16 @@ public class ReceiptService {
 
     private final TemplateEngine templateEngine;
 
+    // Existing method — unchanged for backward compatibility
     public byte[] generateReceiptPdf(Map<String, Object> data) {
+        return generatePdf("receipt", data);
+    }
+
+    // New generic method — used for demand bills, admit cards, marksheets
+    public byte[] generatePdf(String templateName, Map<String, Object> data) {
         Context context = new Context();
         context.setVariables(data);
-        String html = templateEngine.process("receipt", context);
+        String html = templateEngine.process(templateName, context);
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -28,7 +34,7 @@ public class ReceiptService {
             builder.run();
             return os.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("Error generating PDF receipt", e);
+            throw new RuntimeException("Error generating PDF for template: " + templateName, e);
         }
     }
 }

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Marksheet</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 12mm 10mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9.5px;
+            color: #111;
+            margin: 0;
+        }
+
+        /* One marksheet per page */
+        .marksheet {
+            page-break-after: always;
+            padding: 0;
+        }
+
+        .marksheet:last-child {
+            page-break-after: auto;
+        }
+
+        /* Header */
+        .school-header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .school-name {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .school-address {
+            font-size: 8px;
+            color: #555;
+        }
+
+        .doc-title {
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 3mm 0 2mm;
+            letter-spacing: 1px;
+        }
+
+        .exam-term {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 3mm;
+        }
+
+        /* Student info two-column */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1mm 4mm;
+            margin-bottom: 3mm;
+            font-size: 9px;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 2mm;
+        }
+
+        .info-label {
+            font-weight: bold;
+            min-width: 90px;
+        }
+
+        /* Marks table */
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 3mm;
+            font-size: 9.5px;
+        }
+
+        .marks-table th {
+            background: #1a3a5c;
+            color: white;
+            border: 1px solid #1a3a5c;
+            padding: 1.5mm 2mm;
+            text-align: center;
+        }
+
+        .primary-color th {
+            background-color: var(--primary, #1a3a5c);
+        }
+
+        .marks-table td {
+            border: 1px solid #ccc;
+            padding: 1.2mm 2mm;
+            text-align: center;
+        }
+
+        .marks-table td.subject-col {
+            text-align: left;
+        }
+
+        .marks-table tr.total-row td {
+            font-weight: bold;
+            background: #f5f5f5;
+            border-top: 2px solid #333;
+        }
+
+        .pass {
+            color: #1a7a1a;
+        }
+
+        .fail {
+            color: #cc1a1a;
+            font-weight: bold;
+        }
+
+        /* Summary bar */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3mm;
+            margin-bottom: 3mm;
+        }
+
+        .summary-card {
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2mm;
+            text-align: center;
+        }
+
+        .summary-card .label {
+            font-size: 7.5px;
+            color: #666;
+        }
+
+        .summary-card .value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1a3a5c;
+        }
+
+        .result-pass .value {
+            color: #1a7a1a;
+        }
+
+        .result-fail .value {
+            color: #cc1a1a;
+        }
+
+        /* Attendance */
+        .attendance-row {
+            font-size: 9px;
+            margin-bottom: 3mm;
+        }
+
+        /* Co-scholastic */
+        .co-table {
+            width: 60%;
+            margin-bottom: 3mm;
+        }
+
+        .co-table td,
+        .co-table th {
+            border: 1px solid #ccc;
+            padding: 1mm 2mm;
+            font-size: 9px;
+        }
+
+        .co-table th {
+            background: #eee;
+            font-weight: bold;
+        }
+
+        /* Signatures */
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4mm;
+        }
+
+        .signature-col {
+            text-align: center;
+            font-size: 8.5px;
+        }
+
+        .signature-line {
+            border-top: 0.5px solid #333;
+            width: 40mm;
+            margin: 0 auto;
+            padding-top: 1mm;
+            margin-top: 5mm;
+        }
+
+        .footer-note {
+            font-size: 7.5px;
+            color: #666;
+            margin-top: 4mm;
+            border-top: 0.5px dashed #aaa;
+            padding-top: 1.5mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="marksheet" th:each="sheet : ${marksheets}">
+
+        <!-- School Header -->
+        <div class="school-header">
+            <div class="school-name" th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}"></div>
+            <div class="school-address" th:text="${template != null ? template.addressLine1 : ''}"></div>
+            <div class="school-address" th:text="${template != null ? template.addressLine2 : ''}"></div>
+            <div class="school-address" th:if="${template != null}"
+                th:text="'Ph: ' + ${template.phone1} + (template.regNo != null ? ' | Reg: ' + template.regNo : '')">
+            </div>
+        </div>
+
+        <div class="doc-title">Marksheet / Report Card (अंक पत्र)</div>
+        <div class="exam-term" th:text="${examTermName}">Annual Examination 2025</div>
+
+        <!-- Student Info -->
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Name:</span>
+                <span th:text="${sheet.studentName}">Name</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Class:</span>
+                <span th:text="${sheet.className}">Class</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Father's Name:</span>
+                <span th:text="${sheet.fatherName}">Father</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Roll No:</span>
+                <span th:text="${sheet.rollNo}">01</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mother's Name:</span>
+                <span th:text="${sheet.motherName}">Mother</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Adm. No:</span>
+                <span th:text="${sheet.admissionNumber}">ADM-001</span>
+            </div>
+        </div>
+
+        <!-- Marks Table -->
+        <table class="marks-table">
+            <thead>
+                <tr>
+                    <th style="text-align:left; width:30%">Subject</th>
+                    <th>Max Marks</th>
+                    <th>Marks Obtained</th>
+                    <th>Passing Marks</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row : ${sheet.subjectRows}">
+                    <td class="subject-col" th:text="${row.subject}">Mathematics</td>
+                    <td th:text="${row.maxMarks}">100</td>
+                    <td th:text="${row.obtained}">75</td>
+                    <td th:text="${row.passing}">33</td>
+                    <td th:class="${'pass' == row.status ? 'pass' : 'fail'}" th:text="${row.status}">P</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="subject-col">Total</td>
+                    <td th:text="${sheet.totalMax}">500</td>
+                    <td th:text="${sheet.totalObtained}">375</td>
+                    <td></td>
+                    <td th:class="${sheet.result == 'PASS' ? 'pass' : 'fail'}" th:text="${sheet.result}">PASS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="label">Percentage</div>
+                <div class="value" th:text="${sheet.percentage + '%'}">75.0%</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Grade</div>
+                <div class="value" th:text="${sheet.grade}">B1</div>
+            </div>
+            <div class="summary-card"
+                th:class="'summary-card ' + (sheet.result == 'PASS' ? 'result-pass' : 'result-fail')">
+                <div class="label">Result</div>
+                <div class="value" th:text="${sheet.result}">PASS</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Class Rank</div>
+                <div class="value" th:text="${sheet.rank}">3</div>
+            </div>
+        </div>
+
+        <!-- Attendance -->
+        <div class="attendance-row">
+            <strong>Attendance:</strong>
+            <span th:text="${sheet.presentDays + ' / ' + sheet.totalDays + ' days present'}">180 / 220 days
+                present</span>
+        </div>
+
+        <!-- Co-Scholastic: derived from attendance -->
+        <table class="co-table">
+            <thead>
+                <tr>
+                    <th colspan="2">Co-Scholastic (Co-पाठ्यक्रम)</th>
+                </tr>
+                <tr>
+                    <th>Area</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Discipline</td>
+                    <td
+                        th:text="${(sheet.presentDays / (sheet.totalDays > 0 ? sheet.totalDays : 1.0)) >= 0.9 ? 'A' : ((sheet.presentDays / (sheet.totalDays > 0 ? sheet.totalDays : 1.0)) >= 0.75 ? 'B' : 'C')}">
+                        A</td>
+                </tr>
+                <tr>
+                    <td>Punctuality</td>
+                    <td
+                        th:text="${(sheet.presentDays / (sheet.totalDays > 0 ? sheet.totalDays : 1.0)) >= 0.9 ? 'A' : 'B'}">
+                        B</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Signatures -->
+        <div class="signature-row">
+            <div class="signature-col">
+                <div class="signature-line"
+                    th:text="${template != null and template.controllerDesignation != null ? template.controllerDesignation : 'Controller of Examinations'}">
+                </div>
+            </div>
+            <div class="signature-col">
+                <div style="font-size:8px; color:#777;">Parent/Guardian Signature</div>
+                <div class="signature-line">Parent / Guardian</div>
+            </div>
+            <div class="signature-col">
+                <div class="signature-line"
+                    th:text="${template != null and template.principalDesignation != null ? template.principalDesignation : 'Principal'}">
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            This is a computer-generated marksheet. Grading scale: A1 (91-100), A2 (81-90), B1 (71-80), B2 (61-70), C1
+            (51-60), C2 (41-50), D (33-40), E (Below 33).
+        </div>
+
+    </div>
+</body>
+
+</html>

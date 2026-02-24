@@ -253,6 +253,10 @@ public class StudentService {
             student.setAddressState(request.getAddress().getState());
             student.setAddressPincode(request.getAddress().getPincode());
             student.setAddressCountry(request.getAddress().getCountry());
+            if (request.getAddress().getVillage() != null)
+                student.setAddressVillage(request.getAddress().getVillage());
+            if (request.getAddress().getDistrict() != null)
+                student.setAddressDistrict(request.getAddress().getDistrict());
         }
 
         // Parent Mapping
@@ -270,6 +274,24 @@ public class StudentService {
             if (mobile != null)
                 student.setGuardianMobile(mobile);
         }
+
+        // Extended identity fields — null-guarded so existing data is never overwritten
+        if (request.getFatherName() != null)
+            student.setFatherName(request.getFatherName());
+        if (request.getMotherName() != null)
+            student.setMotherName(request.getMotherName());
+        if (request.getStudentAadhar() != null)
+            student.setStudentAadhar(request.getStudentAadhar());
+        if (request.getFatherAadhar() != null)
+            student.setFatherAadhar(request.getFatherAadhar());
+        if (request.getMotherAadhar() != null)
+            student.setMotherAadhar(request.getMotherAadhar());
+        if (request.getNationality() != null)
+            student.setNationality(request.getNationality());
+        if (request.getIsDisabled() != null)
+            student.setIsDisabled(request.getIsDisabled());
+        if (request.getPhotoUrl() != null)
+            student.setPhotoUrl(request.getPhotoUrl());
 
         // Student Phone Fallback: If student mobile is missing, use parent mobility
         String studentMobile = request.getMobileNumber();
@@ -312,12 +334,24 @@ public class StudentService {
                 .mobileNumber(student.getGuardianMobile())
                 .status(student.getStatus() != null ? student.getStatus().name() : "Active")
                 .deleted(student.isDeleted())
+                .bloodGroup(student.getBloodGroup())
+                // Extended identity fields
+                .fatherName(student.getFatherName())
+                .motherName(student.getMotherName())
+                .studentAadhar(student.getStudentAadhar())
+                .fatherAadhar(student.getFatherAadhar())
+                .motherAadhar(student.getMotherAadhar())
+                .nationality(student.getNationality())
+                .isDisabled(student.getIsDisabled())
+                .photoUrl(student.getPhotoUrl())
                 .address(StudentResponse.AddressResponse.builder()
                         .street(student.getAddressStreet())
                         .city(student.getAddressCity())
                         .state(student.getAddressState())
                         .pincode(student.getAddressPincode())
                         .country(student.getAddressCountry())
+                        .village(student.getAddressVillage())
+                        .district(student.getAddressDistrict())
                         .build())
                 .primaryParent(StudentResponse.ParentResponse.builder()
                         .name(student.getGuardianName())

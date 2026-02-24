@@ -53,6 +53,16 @@ public class StudentRequest {
 
     private String bloodGroup;
 
+    // Extended student identity fields
+    private String fatherName;
+    private String motherName;
+    private String studentAadhar;
+    private String fatherAadhar;
+    private String motherAadhar;
+    private String nationality;
+    private Boolean isDisabled;
+    private String photoUrl;
+
     private AddressRequest address;
 
     private ParentRequest primaryParent;
@@ -67,6 +77,8 @@ public class StudentRequest {
         private String state;
         private String pincode;
         private String country;
+        private String village;
+        private String district;
     }
 
     @Data
