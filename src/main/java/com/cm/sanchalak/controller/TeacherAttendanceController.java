@@ -8,7 +8,6 @@ import com.cm.sanchalak.service.TeacherAttendanceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,7 +21,6 @@ public class TeacherAttendanceController {
     private final TeacherAttendanceService teacherAttendanceService;
 
     @PostMapping("/mark")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<TeacherAttendanceDto> markIndividualAttendance(
             @RequestParam Long teacherId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -35,14 +33,12 @@ public class TeacherAttendanceController {
     }
 
     @PostMapping("/bulk")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BulkMarkAttendanceResponse> markBulkAttendance(
             @RequestBody BulkMarkTeacherAttendanceRequest request) {
         return ResponseEntity.ok(teacherAttendanceService.markBulkAttendance(request, "ADMIN"));
     }
 
     @GetMapping("/sheet")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TeacherAttendanceDto>> getTeacherAttendanceSheet(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         if (date == null)
