@@ -29,6 +29,9 @@ public class Student extends BaseEntity {
     private String firstName;
 
     @Column(length = 50)
+    private String middleName;
+
+    @Column(length = 50)
     private String lastName;
 
     @NotBlank
@@ -150,9 +153,19 @@ public class Student extends BaseEntity {
     }
 
     private void updateName() {
-        this.name = (this.firstName != null ? this.firstName : "") +
-                (this.firstName != null && this.lastName != null ? " " : "") +
-                (this.lastName != null ? this.lastName : "");
-        this.name = this.name.trim();
+        StringBuilder sb = new StringBuilder();
+        if (this.firstName != null)
+            sb.append(this.firstName);
+        if (this.middleName != null && !this.middleName.isEmpty()) {
+            if (sb.length() > 0)
+                sb.append(" ");
+            sb.append(this.middleName);
+        }
+        if (this.lastName != null) {
+            if (sb.length() > 0)
+                sb.append(" ");
+            sb.append(this.lastName);
+        }
+        this.name = sb.toString().trim();
     }
 }

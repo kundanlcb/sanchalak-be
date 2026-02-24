@@ -55,6 +55,8 @@ public class FinanceService {
         entity.setSchoolId(schoolId);
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
+        entity.setType(dto.getType());
+        entity.setFrequency(dto.getFrequency());
         entity.setIsMandatory(dto.getIsMandatory());
 
         return mapToDto(feeCategoryRepository.save(entity));
@@ -304,6 +306,8 @@ public class FinanceService {
 
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
+        category.setType(dto.getType());
+        category.setFrequency(dto.getFrequency());
         category.setIsMandatory(dto.getIsMandatory());
 
         return mapToDto(feeCategoryRepository.save(category));
@@ -414,6 +418,8 @@ public class FinanceService {
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setDescription(entity.getDescription());
+        dto.setType(entity.getType());
+        dto.setFrequency(entity.getFrequency());
         dto.setIsMandatory(entity.getIsMandatory());
         return dto;
     }

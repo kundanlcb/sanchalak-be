@@ -28,6 +28,12 @@ public class FeeCategory extends BaseEntity {
 
     private String description;
 
+    @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
+    private String frequency;
+
     @Builder.Default
     @Column(name = "is_mandatory", nullable = false)
     private Boolean isMandatory = false;
