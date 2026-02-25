@@ -17,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Map;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/academic")
@@ -183,12 +181,8 @@ public class AcademicController {
     // Class Management
 
     @PutMapping("/classes/{id}")
-    public ResponseEntity<SchoolClass> updateClass(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        String name = body.get("name");
-        if (name == null || name.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(academicService.updateClass(id, name));
+    public ResponseEntity<SchoolClass> updateClass(@PathVariable Long id, @Valid @RequestBody SchoolClass schoolClass) {
+        return ResponseEntity.ok(academicService.updateClass(id, schoolClass));
     }
 
     @DeleteMapping("/classes/{id}")

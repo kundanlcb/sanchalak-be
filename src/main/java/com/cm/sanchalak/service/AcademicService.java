@@ -348,10 +348,20 @@ public class AcademicService {
         return report;
     }
 
-    public SchoolClass updateClass(Long id, String name) {
+    public SchoolClass updateClass(Long id, SchoolClass classDetails) {
         SchoolClass studentClass = classRepository.findOne(SchoolClassSpecification.activeById(id))
                 .orElseThrow(() -> new RuntimeException("Class not found"));
-        studentClass.setName(name);
+
+        if (classDetails.getName() != null) {
+            studentClass.setName(classDetails.getName());
+        }
+        if (classDetails.getSection() != null) {
+            studentClass.setSection(classDetails.getSection());
+        }
+        if (classDetails.getRoom() != null) {
+            studentClass.setRoom(classDetails.getRoom());
+        }
+        // Note: Grade update is not allowed per requirements
 
         return classRepository.save(studentClass);
     }
