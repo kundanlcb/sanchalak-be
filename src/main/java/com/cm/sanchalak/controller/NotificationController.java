@@ -2,11 +2,13 @@ package com.cm.sanchalak.controller;
 
 import com.cm.sanchalak.dto.ApiResult;
 import com.cm.sanchalak.dto.NotificationTokenDto;
+import com.cm.sanchalak.dto.StudentResponse;
 import com.cm.sanchalak.entity.NotificationToken;
 import com.cm.sanchalak.entity.NotificationLog;
 import com.cm.sanchalak.security.CurrentUser;
 import com.cm.sanchalak.security.UserPrincipal;
 import com.cm.sanchalak.service.NotificationService;
+import com.cm.sanchalak.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final StudentService studentService;
 
     /**
      * Register a device token for push notifications
@@ -146,6 +149,39 @@ public class NotificationController {
         } catch (Exception e) {
             log.error("Failed to mark notification {} as read: {}", id, e.getMessage());
             return ApiResult.error("MARK_READ_FAILED", "Failed to mark as read");
+        }
+    }
+
+    /**
+     * Send a fee payment reminder notification to the student / parent.
+     * Accessible only by Admin.
+     */
+    @PostMapping("/payment-reminder/{studentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResult<String> sendPaymentReminder(
+            @CurrentUser UserPrincipal currentUser,
+            @PathVariable Long studentId) {
+
+        log.info("Admin {} sending payment reminder for student {}", currentUser.getId(), studentId);
+        try {
+            StudentResponse student = studentService.getStudentById(studentId);
+
+            if (student.getUserId() == null) {
+                return ApiResult.error("NO_USER", "This student has no linked user account for notifications");
+            }
+
+            java.util.UUID userId = java.util.UUID.fromString(student.getUserId());
+            String studentName = student.getName() != null ? student.getName()
+                    : ((student.getFirstName() != null ? student.getFirstName() : "") + " " +
+                            (student.getLastName() != null ? student.getLastName() : "")).trim();
+
+            // Use a sensible default amount / due date; the client can enhance this later
+            notificationService.sendFeeDueReminder(userId, studentName, 0.0, "as soon as possible");
+
+            return ApiResult.success("Payment reminder sent to student " + studentName);
+        } catch (Exception e) {
+            log.error("Failed to send payment reminder for student {}: {}", studentId, e.getMessage());
+            return ApiResult.error("REMINDER_FAILED", "Failed to send payment reminder: " + e.getMessage());
         }
     }
 }

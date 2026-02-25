@@ -40,10 +40,31 @@ public class DemandBillController {
     }
 
     /**
+     * Preview demand bill as PDF (in-memory only, no DB save).
+     * Used for in-browser PDF preview modal.
+     */
+    @PostMapping("/preview-pdf")
+    public ResponseEntity<byte[]> previewPdf(@RequestBody DemandBillRequest request) {
+        byte[] pdf = demandBillService.previewPdf(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"preview.pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    /**
      * Get demand bill history for a specific student.
      */
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<DemandBillResponse>> studentHistory(@PathVariable Long studentId) {
         return ResponseEntity.ok(demandBillService.getStudentHistory(studentId));
+    }
+
+    /**
+     * Get demand bill history for all students in a class.
+     */
+    @GetMapping("/class/{classId}/history")
+    public ResponseEntity<List<DemandBillResponse>> classHistory(@PathVariable Long classId) {
+        return ResponseEntity.ok(demandBillService.getClassHistory(classId));
     }
 }

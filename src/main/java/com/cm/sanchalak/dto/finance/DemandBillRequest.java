@@ -12,6 +12,7 @@ public class DemandBillRequest {
 
     private String monthLabel; // e.g. "JUNE 2025"
     private Long classId; // optional — null means all classes
+    private Long studentId; // optional — if set, generates for one student only
     private BigDecimal backDues; // total back dues (optional, computed from ledger)
 
     private List<LineItemRequest> lineItems;
