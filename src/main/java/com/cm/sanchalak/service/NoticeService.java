@@ -12,7 +12,6 @@ import com.cm.sanchalak.repository.UserRepository;
 import com.cm.sanchalak.repository.spec.NoticeSpecification;
 import com.cm.sanchalak.security.OwnershipValidator;
 import com.cm.sanchalak.security.SchoolContext;
-import com.cm.sanchalak.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,7 @@ public class NoticeService {
 
         LocalDate currentDate = LocalDate.now();
         UUID schoolId = SchoolContext.getSchoolId();
-        List<Notice> notices = noticeRepository.findActiveByTargetRole(targetRole, currentDate, schoolId);
+        List<Notice> notices = noticeRepository.findActiveByTargetRole(targetRole, userId, currentDate, schoolId);
 
         return notices.stream()
                 .map(notice -> convertToDto(notice, userId))
@@ -53,7 +52,7 @@ public class NoticeService {
 
         LocalDate sinceDate = LocalDate.now().minusDays(30);
         UUID schoolId = SchoolContext.getSchoolId();
-        List<Notice> notices = noticeRepository.findRecentByTargetRole(targetRole, sinceDate, schoolId);
+        List<Notice> notices = noticeRepository.findRecentByTargetRole(targetRole, userId, sinceDate, schoolId);
 
         return notices.stream()
                 .map(notice -> convertToDto(notice, userId))
@@ -66,7 +65,7 @@ public class NoticeService {
 
         LocalDate currentDate = LocalDate.now();
         UUID schoolId = SchoolContext.getSchoolId();
-        List<Notice> notices = noticeRepository.findHighPriorityByTargetRole(targetRole, currentDate, schoolId);
+        List<Notice> notices = noticeRepository.findHighPriorityByTargetRole(targetRole, userId, currentDate, schoolId);
 
         return notices.stream()
                 .map(notice -> convertToDto(notice, userId))

@@ -38,7 +38,8 @@ public class CalendarAggregationService {
      * Get aggregated calendar events for a student
      */
     @Transactional(readOnly = true)
-    public List<CalendarEventDto> getCalendarEventsForStudent(Long studentId, LocalDate startDate, LocalDate endDate) {
+    public List<CalendarEventDto> getCalendarEventsForStudent(Long studentId, UUID userId, LocalDate startDate,
+            LocalDate endDate) {
         log.info("Fetching calendar events for student {} from {} to {}", studentId, startDate, endDate);
 
         List<CalendarEventDto> events = new ArrayList<>();
@@ -50,7 +51,7 @@ public class CalendarAggregationService {
             events.addAll(getExamEvents(student.getStudentClass().getId(), startDate, endDate));
         }
 
-        events.addAll(getNoticeEvents("STUDENT", startDate, endDate));
+        events.addAll(getNoticeEvents("STUDENT", userId, startDate, endDate));
 
         events.sort(Comparator.comparing(CalendarEventDto::getEventDate));
 
@@ -61,7 +62,8 @@ public class CalendarAggregationService {
      * Get aggregated calendar events for a parent (includes all linked children)
      */
     @Transactional(readOnly = true)
-    public List<CalendarEventDto> getCalendarEventsForParent(Long parentId, LocalDate startDate, LocalDate endDate) {
+    public List<CalendarEventDto> getCalendarEventsForParent(Long parentId, UUID userId, LocalDate startDate,
+            LocalDate endDate) {
         log.info("Fetching calendar events for parent {} from {} to {}", parentId, startDate, endDate);
 
         List<CalendarEventDto> events = new ArrayList<>();
@@ -83,7 +85,7 @@ public class CalendarAggregationService {
             events.addAll(getExamEvents(classId, startDate, endDate));
         }
 
-        events.addAll(getNoticeEvents("PARENT", startDate, endDate));
+        events.addAll(getNoticeEvents("PARENT", userId, startDate, endDate));
 
         // Remove duplicates and sort
         return events.stream()
@@ -126,10 +128,11 @@ public class CalendarAggregationService {
     /**
      * Get notice events
      */
-    private List<CalendarEventDto> getNoticeEvents(String targetRole, LocalDate startDate, LocalDate endDate) {
+    private List<CalendarEventDto> getNoticeEvents(String targetRole, UUID userId, LocalDate startDate,
+            LocalDate endDate) {
         UUID schoolId = SchoolContext.getSchoolId();
         List<Notice> notices = noticeRepository.findByTargetRoleAndPublishDateBetween(
-                targetRole, startDate, endDate, schoolId);
+                targetRole, userId, startDate, endDate, schoolId);
 
         return notices.stream()
                 .map(notice -> new CalendarEventDto(

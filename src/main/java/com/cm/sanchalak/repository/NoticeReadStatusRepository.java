@@ -13,27 +13,27 @@ import java.util.UUID;
 
 @Repository
 public interface NoticeReadStatusRepository
-        extends JpaRepository<NoticeReadStatus, Long>, JpaSpecificationExecutor<NoticeReadStatus> {
+                extends JpaRepository<NoticeReadStatus, Long>, JpaSpecificationExecutor<NoticeReadStatus> {
 
-    @Query("SELECT CASE WHEN COUNT(nrs) > 0 THEN true ELSE false END " +
-            "FROM NoticeReadStatus nrs " +
-            "WHERE nrs.userId = :userId AND nrs.notice.id = :noticeId")
-    boolean existsByUserIdAndNoticeId(
-            @Param("userId") UUID userId,
-            @Param("noticeId") Long noticeId);
+        @Query("SELECT CASE WHEN COUNT(nrs) > 0 THEN true ELSE false END " +
+                        "FROM NoticeReadStatus nrs " +
+                        "WHERE nrs.userId = :userId AND nrs.notice.id = :noticeId")
+        boolean existsByUserIdAndNoticeId(
+                        @Param("userId") UUID userId,
+                        @Param("noticeId") Long noticeId);
 
-    Optional<NoticeReadStatus> findByUserIdAndNoticeId(UUID userId, Long noticeId);
+        Optional<NoticeReadStatus> findByUserIdAndNoticeId(UUID userId, Long noticeId);
 
-    List<NoticeReadStatus> findByUserId(UUID userId);
+        List<NoticeReadStatus> findByUserId(UUID userId);
 
-    @Query("SELECT COUNT(n) FROM Notice n " +
-            "WHERE n.targetRole IN ('ALL', :targetRole) " +
-            "AND n.isActive = true " +
-            "AND (:schoolId IS NULL OR n.schoolId = :schoolId) " +
-            "AND NOT EXISTS (SELECT 1 FROM NoticeReadStatus nrs " +
-            "WHERE nrs.notice.id = n.id AND nrs.userId = :userId)")
-    long countUnreadByUserIdAndTargetRole(
-            @Param("userId") UUID userId,
-            @Param("targetRole") String targetRole,
-            @Param("schoolId") UUID schoolId);
+        @Query("SELECT COUNT(n) FROM Notice n " +
+                        "WHERE (n.targetRole IN ('ALL', :targetRole) OR n.createdBy.id = :userId) " +
+                        "AND n.isActive = true " +
+                        "AND (:schoolId IS NULL OR n.schoolId = :schoolId) " +
+                        "AND NOT EXISTS (SELECT 1 FROM NoticeReadStatus nrs " +
+                        "WHERE nrs.notice.id = n.id AND nrs.userId = :userId)")
+        long countUnreadByUserIdAndTargetRole(
+                        @Param("userId") UUID userId,
+                        @Param("targetRole") String targetRole,
+                        @Param("schoolId") UUID schoolId);
 }

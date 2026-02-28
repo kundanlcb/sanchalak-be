@@ -247,7 +247,8 @@ public class DashboardAggregationService {
                 LocalDate now = LocalDate.now();
                 UUID schoolId = SchoolContext.getSchoolId();
 
-                List<Notice> notices = noticeRepository.findRecentByTargetRole(role, now.minusDays(30), schoolId);
+                List<Notice> notices = noticeRepository.findRecentByTargetRole(role, userId, now.minusDays(30),
+                                schoolId);
 
                 return notices.stream()
                                 .limit(5)
