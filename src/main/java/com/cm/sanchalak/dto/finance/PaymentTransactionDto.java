@@ -17,5 +17,5 @@ public class PaymentTransactionDto {
     // New allocations
     private Long categoryId;
     private String categoryName;
-    private String monthLabel;
+    private java.time.LocalDate forMonth;
 }

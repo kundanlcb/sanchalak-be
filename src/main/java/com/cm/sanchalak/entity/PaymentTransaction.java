@@ -35,7 +35,7 @@ public class PaymentTransaction extends BaseEntity {
     private FeeCategory feeCategory;
 
     @Column(name = "for_month")
-    private String forMonth;
+    private java.time.LocalDate forMonth;
 
     @Column(nullable = false)
     private BigDecimal amount;

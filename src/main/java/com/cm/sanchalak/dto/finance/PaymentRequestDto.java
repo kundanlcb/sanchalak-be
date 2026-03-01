@@ -22,5 +22,5 @@ public class PaymentRequestDto {
     private String transactionReference;
 
     private Long categoryId;
-    private String monthLabel;
+    private java.time.LocalDate forMonth;
 }

@@ -258,8 +258,8 @@ public class FinanceService {
             feeCategoryRepository.findOne(FinanceSpecification.activeById(dto.getCategoryId()))
                     .ifPresent(tx::setFeeCategory);
         }
-        if (dto.getMonthLabel() != null && !dto.getMonthLabel().trim().isEmpty()) {
-            tx.setForMonth(dto.getMonthLabel().trim());
+        if (dto.getForMonth() != null) {
+            tx.setForMonth(dto.getForMonth());
         }
 
         tx.setAmount(dto.getAmount());
@@ -304,7 +304,7 @@ public class FinanceService {
             data.put("feeCategory", tx.getFeeCategory().getName());
         }
         if (tx.getForMonth() != null) {
-            data.put("forMonth", tx.getForMonth());
+            data.put("forMonth", tx.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")));
         }
 
         return receiptService.generateReceiptPdf(data);
@@ -477,7 +477,7 @@ public class FinanceService {
             dto.setCategoryName(val.getFeeCategory().getName());
         }
         if (val.getForMonth() != null) {
-            dto.setMonthLabel(val.getForMonth());
+            dto.setForMonth(val.getForMonth());
         }
 
         return dto;
