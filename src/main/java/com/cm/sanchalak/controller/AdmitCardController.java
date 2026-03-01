@@ -111,8 +111,14 @@ public class AdmitCardController {
                 DocumentTemplate template = documentTemplateRepository.findBySchoolId(schoolId).orElse(null);
                 String examTermName = schedules.isEmpty() ? "Examination" : schedules.get(0).getExamTerm().getName();
 
+                List<List<Map<String, Object>>> cardPairs = new ArrayList<>();
+                for (int i = 0; i < cards.size(); i += 2) {
+                        cardPairs.add(cards.subList(i, Math.min(i + 2, cards.size())));
+                }
+
                 Map<String, Object> data = new HashMap<>();
                 data.put("cards", cards);
+                data.put("cardPairs", cardPairs);
                 data.put("template", template);
                 data.put("examTermName", examTermName);
 

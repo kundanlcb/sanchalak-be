@@ -162,7 +162,7 @@
 </head>
 
 <body>
-    <th:block th:each="pair, stat : ${#lists.partition(cards, 2)}">
+    <th:block th:each="pair, stat : ${cardPairs}">
         <div class="card-row">
             <th:block th:each="card : ${pair}">
                 <div class="card-box">
