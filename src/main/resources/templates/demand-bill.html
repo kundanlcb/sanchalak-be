@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Demand Bill</title>
     <style>
@@ -7,15 +8,18 @@
             size: A4;
             margin: 10mm 8mm;
         }
+
         body {
             font-family: 'Arial', sans-serif;
             font-size: 10px;
             color: #111;
             margin: 0;
         }
+
         .page-wrapper {
             width: 100%;
         }
+
         /* 2-up layout: 2 bills per row */
         .bill-row {
             display: flex;
@@ -23,29 +27,34 @@
             margin-bottom: 6mm;
             page-break-inside: avoid;
         }
+
         .bill-box {
             flex: 1;
             border: 1.5px solid #555;
             padding: 5mm 4mm;
             box-sizing: border-box;
         }
+
         .school-header {
             text-align: center;
             border-bottom: 1px solid #333;
             margin-bottom: 3mm;
             padding-bottom: 2mm;
         }
+
         .school-name {
             font-size: 13px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .school-address {
             font-size: 8px;
             color: #555;
             margin: 1mm 0;
         }
+
         .doc-title {
             text-align: center;
             font-size: 11px;
@@ -54,32 +63,38 @@
             margin: 2mm 0;
             text-transform: uppercase;
         }
+
         .bill-meta {
             display: flex;
             justify-content: space-between;
             margin-bottom: 2mm;
             font-size: 9px;
         }
+
         .student-info {
             border: 1px solid #ccc;
             padding: 2mm;
             margin-bottom: 2mm;
             font-size: 9px;
         }
+
         .student-info .row {
             display: flex;
             margin-bottom: 1mm;
         }
+
         .student-info .label {
             font-weight: bold;
             min-width: 80px;
         }
+
         .fee-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 2mm;
             font-size: 9px;
         }
+
         .fee-table th {
             background: #e8e8e8;
             border: 1px solid #aaa;
@@ -87,36 +102,45 @@
             text-align: left;
             font-weight: bold;
         }
+
         .fee-table td {
             border: 1px solid #bbb;
             padding: 1.5mm 2mm;
         }
+
         .fee-table td.amount {
             text-align: right;
         }
+
         .fee-table tr.back-due {
             background: #fff8e1;
             font-style: italic;
         }
+
         .summary-table {
             width: 100%;
             font-size: 9px;
             margin-bottom: 2mm;
         }
+
         .summary-table td {
             padding: 1mm 2mm;
         }
+
         .summary-table td.label {
             font-weight: bold;
         }
+
         .summary-table td.amount {
             text-align: right;
         }
+
         .total-row td {
             border-top: 1.5px solid #333;
             font-weight: bold;
             font-size: 10px;
         }
+
         .footer-note {
             font-size: 7.5px;
             color: #555;
@@ -124,6 +148,7 @@
             border-top: 0.5px dashed #aaa;
             padding-top: 1.5mm;
         }
+
         .divider {
             border: none;
             border-top: 1px dashed #999;
@@ -131,112 +156,118 @@
         }
     </style>
 </head>
+
 <body>
-<div class="page-wrapper">
+    <div class="page-wrapper">
 
-    <!-- Iterate bills in pairs for 2-up layout -->
-    <th:block th:each="pair, stat : ${#lists.partition(bills, 2)}">
-        <div class="bill-row">
-            <th:block th:each="bill : ${pair}">
-                <div class="bill-box">
-                    <!-- School Header -->
-                    <div class="school-header">
-                        <div class="school-name"
-                             th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}">SCHOOL NAME</div>
-                        <div class="school-address"
-                             th:text="${template != null ? template.addressLine1 : ''}">Address Line 1</div>
-                        <div class="school-address"
-                             th:text="${template != null ? template.addressLine2 : ''}">Address Line 2</div>
-                        <div class="school-address">
-                            <span th:text="${template != null ? 'Ph: ' + template.phone1 : ''}"></span>
+        <!-- Iterate bills in pairs for 2-up layout -->
+        <th:block th:each="pair, stat : ${#lists.partition(bills, 2)}">
+            <div class="bill-row">
+                <th:block th:each="bill : ${pair}">
+                    <div class="bill-box">
+                        <!-- School Header -->
+                        <div class="school-header">
+                            <div class="school-name"
+                                th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}">SCHOOL NAME</div>
+                            <div class="school-address" th:text="${template != null ? template.addressLine1 : ''}">
+                                Address Line 1</div>
+                            <div class="school-address" th:text="${template != null ? template.addressLine2 : ''}">
+                                Address Line 2</div>
+                            <div class="school-address">
+                                <span th:text="${template != null ? 'Ph: ' + template.phone1 : ''}"></span>
+                            </div>
+                        </div>
+
+                        <div class="doc-title">Fee Demand Bill (विद्यालय शुल्क माँग)</div>
+
+                        <!-- Bill Meta -->
+                        <div class="bill-meta">
+                            <span><strong>Bill No:</strong> <span th:text="${bill.billNo}">JUNE-2025-001</span></span>
+                            <span><strong>Date:</strong> <span th:text="${generatedDate}">24.06.2025</span></span>
+                        </div>
+
+                        <!-- Student Info -->
+                        <div class="student-info">
+                            <div class="row">
+                                <span class="label">Name:</span>
+                                <span th:text="${bill.studentName}">Student Name</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Father's Name:</span>
+                                <span th:text="${bill.fatherName}">Father Name</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Class:</span>
+                                <span th:text="${bill.className}">Class</span>
+                                &#160;&#160;
+                                <span class="label">Roll No:</span>
+                                <span th:text="${bill.rollNo}">01</span>
+                            </div>
+                            <div class="row">
+                                <span class="label">Adm. No (A/C):</span>
+                                <span th:text="${bill.admissionNumber}">ADM-001</span>
+                            </div>
+                        </div>
+
+                        <!-- Fee Table -->
+                        <table class="fee-table">
+                            <thead>
+                                <tr>
+                                    <th>Fee Category</th>
+                                    <th>Month</th>
+                                    <th style="text-align: right;">Amount (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${bill.lineItems}" th:class="${item.isBackDue ? 'back-due' : ''}">
+                                    <td th:text="${item.categoryName}">Tuition Fee</td>
+                                    <td th:text="${item.monthsUpto}">JUNE 2025</td>
+                                    <td class="amount"
+                                        th:text="${#numbers.formatDecimal(item.amount, 1, 'COMMA', 2, 'POINT')}">500.00
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Summary -->
+                        <table class="summary-table">
+                            <tr>
+                                <td class="label">Total Current Fees:</td>
+                                <td class="amount"
+                                    th:text="'₹ ' + ${#numbers.formatDecimal(bill.totalCurrentFees, 1, 'COMMA', 2, 'POINT')}">
+                                    ₹ 500.00</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Back Dues:</td>
+                                <td class="amount"
+                                    th:text="'₹ ' + ${#numbers.formatDecimal(bill.totalBackDues, 1, 'COMMA', 2, 'POINT')}">
+                                    ₹ 0.00</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td class="label">Grand Total:</td>
+                                <td class="amount"
+                                    th:text="'₹ ' + ${#numbers.formatDecimal(bill.grandTotal, 1, 'COMMA', 2, 'POINT')}">
+                                    ₹ 500.00</td>
+                            </tr>
+                        </table>
+
+                        <!-- Footer Note -->
+                        <div class="footer-note"
+                            th:text="${template != null and template.feeReceiptFooterNote != null ? template.feeReceiptFooterNote : 'Please pay the fee before the due date.'}">
+                            Please pay the fee before the due date.
                         </div>
                     </div>
+                </th:block>
+                <!-- Empty slot if odd number -->
+                <div class="bill-box" th:if="${pair.size() == 1}"
+                    style="border: 1.5px dashed #ddd; background: #fafafa;"></div>
+            </div>
 
-                    <div class="doc-title">Fee Demand Bill (विद्यालय शुल्क माँग)</div>
+            <!-- Page break after every 4 bills (2 rows of 2) -->
+            <div th:if="${(stat.index + 1) % 2 == 0 and not stat.last}" style="page-break-after: always;"></div>
+        </th:block>
 
-                    <!-- Bill Meta -->
-                    <div class="bill-meta">
-                        <span><strong>Bill No:</strong> <span th:text="${bill.billNo}">JUNE-2025-001</span></span>
-                        <span><strong>Date:</strong> <span th:text="${generatedDate}">24.06.2025</span></span>
-                    </div>
-
-                    <!-- Student Info -->
-                    <div class="student-info">
-                        <div class="row">
-                            <span class="label">Name:</span>
-                            <span th:text="${bill.studentName}">Student Name</span>
-                        </div>
-                        <div class="row">
-                            <span class="label">Father's Name:</span>
-                            <span th:text="${bill.fatherName}">Father Name</span>
-                        </div>
-                        <div class="row">
-                            <span class="label">Class:</span>
-                            <span th:text="${bill.className}">Class</span>
-                            &nbsp;&nbsp;
-                            <span class="label">Roll No:</span>
-                            <span th:text="${bill.rollNo}">01</span>
-                        </div>
-                        <div class="row">
-                            <span class="label">Adm. No (A/C):</span>
-                            <span th:text="${bill.admissionNumber}">ADM-001</span>
-                        </div>
-                    </div>
-
-                    <!-- Fee Table -->
-                    <table class="fee-table">
-                        <thead>
-                        <tr>
-                            <th>Fee Category</th>
-                            <th>Month</th>
-                            <th style="text-align: right;">Amount (₹)</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="item : ${bill.lineItems}"
-                            th:class="${item.isBackDue ? 'back-due' : ''}">
-                            <td th:text="${item.categoryName}">Tuition Fee</td>
-                            <td th:text="${item.monthsUpto}">JUNE 2025</td>
-                            <td class="amount" th:text="${#numbers.formatDecimal(item.amount, 1, 'COMMA', 2, 'POINT')}">500.00</td>
-                        </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Summary -->
-                    <table class="summary-table">
-                        <tr>
-                            <td class="label">Total Current Fees:</td>
-                            <td class="amount"
-                                th:text="'₹ ' + ${#numbers.formatDecimal(bill.totalCurrentFees, 1, 'COMMA', 2, 'POINT')}">₹ 500.00</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Back Dues:</td>
-                            <td class="amount"
-                                th:text="'₹ ' + ${#numbers.formatDecimal(bill.totalBackDues, 1, 'COMMA', 2, 'POINT')}">₹ 0.00</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td class="label">Grand Total:</td>
-                            <td class="amount"
-                                th:text="'₹ ' + ${#numbers.formatDecimal(bill.grandTotal, 1, 'COMMA', 2, 'POINT')}">₹ 500.00</td>
-                        </tr>
-                    </table>
-
-                    <!-- Footer Note -->
-                    <div class="footer-note"
-                         th:text="${template != null and template.feeReceiptFooterNote != null ? template.feeReceiptFooterNote : 'Please pay the fee before the due date.'}">
-                        Please pay the fee before the due date.
-                    </div>
-                </div>
-            </th:block>
-            <!-- Empty slot if odd number -->
-            <div class="bill-box" th:if="${pair.size() == 1}" style="border: 1.5px dashed #ddd; background: #fafafa;"></div>
-        </div>
-
-        <!-- Page break after every 4 bills (2 rows of 2) -->
-        <div th:if="${(stat.index + 1) % 2 == 0 and not stat.last}"
-             style="page-break-after: always;"></div>
-    </th:block>
-
-</div>
+    </div>
 </body>
+
 </html>
