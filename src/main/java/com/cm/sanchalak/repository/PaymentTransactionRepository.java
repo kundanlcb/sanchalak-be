@@ -25,6 +25,9 @@ public interface PaymentTransactionRepository
         @Query("SELECT SUM(pt.amount) FROM PaymentTransaction pt WHERE pt.schoolId = :schoolId AND pt.status = 'SUCCESS'")
         BigDecimal sumTotalCollected(@Param("schoolId") UUID schoolId);
 
+        @Query("SELECT SUM(pt.amount) FROM PaymentTransaction pt WHERE pt.schoolId = :schoolId AND pt.status = 'SUCCESS' AND pt.paymentDate >= :startDate")
+        BigDecimal sumCollectedSince(@Param("schoolId") UUID schoolId, @Param("startDate") LocalDateTime startDate);
+
         @Query("SELECT new com.cm.sanchalak.dto.analytics.CollectionTrendDto(CAST(pt.paymentDate AS LocalDate), SUM(pt.amount), COUNT(pt)) "
                         +
                         "FROM PaymentTransaction pt " +

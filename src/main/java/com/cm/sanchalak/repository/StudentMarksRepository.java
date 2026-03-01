@@ -25,6 +25,20 @@ public interface StudentMarksRepository
         // For Analytics
         List<StudentMarks> findByStudent_IdAndExamSchedule_ExamTerm_Id(Long studentId, Long termId);
 
+        @Query("SELECT new map(" +
+                        "s.id as id, s.name as name, s.section as section, " +
+                        "SUM(sm.marksObtained) as totalMarks, " +
+                        "AVG((sm.marksObtained * 100.0) / es.maxMarks) as percentage) " +
+                        "FROM StudentMarks sm " +
+                        "JOIN sm.student s " +
+                        "JOIN sm.examSchedule es " +
+                        "WHERE s.schoolId = :schoolId AND s.deleted = false " +
+                        "GROUP BY s.id, s.name, s.section " +
+                        "ORDER BY percentage DESC")
+        List<Map<String, Object>> findTopStudentsByPerformance(
+                        @org.springframework.data.repository.query.Param("schoolId") java.util.UUID schoolId,
+                        org.springframework.data.domain.Pageable pageable);
+
         @Query(value = "SELECT t.name as teacherName, AVG(sm.marks_obtained) as avgMarks " +
                         "FROM student_marks sm " +
                         "JOIN exam_schedules es ON sm.exam_schedule_id = es.id " +

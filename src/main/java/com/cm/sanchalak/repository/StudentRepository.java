@@ -44,4 +44,12 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     long countBySchoolIdAndDeletedFalse(UUID schoolId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT new map(CAST(s.admissionDate AS LocalDate) as date, COUNT(s) as count) "
+            +
+            "FROM Student s WHERE s.schoolId = :schoolId AND s.deleted = false AND s.admissionDate >= :startDate " +
+            "GROUP BY CAST(s.admissionDate AS LocalDate) " +
+            "ORDER BY CAST(s.admissionDate AS LocalDate) ASC")
+    List<java.util.Map<String, Object>> findAdmissionTrend(
+            @org.springframework.data.repository.query.Param("schoolId") UUID schoolId,
+            @org.springframework.data.repository.query.Param("startDate") java.time.LocalDate startDate);
 }

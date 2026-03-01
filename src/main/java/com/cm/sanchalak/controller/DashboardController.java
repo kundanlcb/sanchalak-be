@@ -38,6 +38,17 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getActivityFeed());
     }
 
+    @GetMapping("/growth")
+    public ResponseEntity<?> getGrowthData(
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "6M") String duration) {
+        return ResponseEntity.ok(dashboardService.getGrowthData(duration));
+    }
+
+    @GetMapping("/star-students")
+    public ResponseEntity<?> getStarStudents() {
+        return ResponseEntity.ok(dashboardService.getStarStudents());
+    }
+
     private final DashboardAggregationService aggregationService;
 
     @GetMapping("/overview/student")

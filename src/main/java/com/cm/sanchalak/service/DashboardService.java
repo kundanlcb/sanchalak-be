@@ -28,6 +28,7 @@ public class DashboardService {
     private final AttendanceRepository attendanceRepository;
     private final AuditLogRepository auditLogRepository;
     private final StudentMarksRepository studentMarksRepository;
+    private final PaymentTransactionRepository paymentRepository;
     private final OwnershipValidator ownership;
 
     @Transactional(readOnly = true)
@@ -49,6 +50,10 @@ public class DashboardService {
         stats.put("students", totalStudents);
         stats.put("teachers", totalTeachers);
         stats.put("classes", totalClasses);
+
+        java.time.LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        java.math.BigDecimal earnings = paymentRepository.sumCollectedSince(SchoolContext.getSchoolId(), startOfMonth);
+        stats.put("monthlyEarnings", earnings != null ? earnings.longValue() : 0L);
 
         if (totalStudents > 0) {
             long present = attendanceRepository
@@ -133,5 +138,65 @@ public class DashboardService {
             return "Payment received for " + log.getResourceId();
 
         return action + " on " + resource + (log.getResourceId() != null ? ": " + log.getResourceId() : "");
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getStarStudents() {
+        return studentMarksRepository.findTopStudentsByPerformance(SchoolContext.getSchoolId(),
+                org.springframework.data.domain.PageRequest.of(0, 5));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getGrowthData(String duration) {
+        UUID schoolId = SchoolContext.getSchoolId();
+        int monthsToSubtract = 6;
+        if ("1M".equals(duration))
+            monthsToSubtract = 1;
+        else if ("3M".equals(duration))
+            monthsToSubtract = 3;
+
+        java.time.LocalDateTime start = LocalDate.now().minusMonths(monthsToSubtract).withDayOfMonth(1).atStartOfDay();
+        java.time.LocalDateTime end = java.time.LocalDateTime.now();
+
+        List<com.cm.sanchalak.dto.analytics.CollectionTrendDto> feeTrends = paymentRepository.findCollectionTrend(start,
+                end, schoolId);
+        List<Map<String, Object>> admissionTrends = studentRepository.findAdmissionTrend(schoolId, start.toLocalDate());
+
+        Map<String, Map<String, Object>> aggregated = new java.util.LinkedHashMap<>();
+        LocalDate current = start.toLocalDate();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM");
+
+        while (!current.isAfter(LocalDate.now())) {
+            String monthName = current.format(formatter);
+            if (!aggregated.containsKey(monthName)) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("name", monthName);
+                map.put("collections", 0L);
+                map.put("students", 0L);
+                aggregated.put(monthName, map);
+            }
+            current = current.plusMonths(1);
+        }
+
+        for (com.cm.sanchalak.dto.analytics.CollectionTrendDto ft : feeTrends) {
+            String monthName = ft.getDate().format(formatter);
+            if (aggregated.containsKey(monthName)) {
+                Map<String, Object> map = aggregated.get(monthName);
+                long currentColl = ((Number) map.get("collections")).longValue();
+                map.put("collections", currentColl + ft.getAmount().longValue());
+            }
+        }
+
+        for (Map<String, Object> at : admissionTrends) {
+            LocalDate date = (LocalDate) at.get("date");
+            String monthName = date.format(formatter);
+            if (aggregated.containsKey(monthName)) {
+                Map<String, Object> map = aggregated.get(monthName);
+                long count = ((Number) at.get("count")).longValue();
+                map.put("students", ((Number) map.get("students")).longValue() + count);
+            }
+        }
+
+        return new ArrayList<>(aggregated.values());
     }
 }
