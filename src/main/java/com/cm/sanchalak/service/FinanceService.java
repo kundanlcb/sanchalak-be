@@ -253,6 +253,15 @@ public class FinanceService {
         tx.setSchoolId(schoolId);
         studentFeeMapRepository.findTopByStudentIdAndIsActiveTrueOrderByCreatedAtAsc(dto.getStudentId())
                 .ifPresent(tx::setStudentFeeMap);
+
+        if (dto.getCategoryId() != null) {
+            feeCategoryRepository.findOne(FinanceSpecification.activeById(dto.getCategoryId()))
+                    .ifPresent(tx::setFeeCategory);
+        }
+        if (dto.getMonthLabel() != null && !dto.getMonthLabel().trim().isEmpty()) {
+            tx.setForMonth(dto.getMonthLabel().trim());
+        }
+
         tx.setAmount(dto.getAmount());
         tx.setPaymentMethod(dto.getPaymentMethod());
         tx.setTransactionReference(dto.getTransactionReference());
@@ -290,6 +299,13 @@ public class FinanceService {
         data.put("amount", tx.getAmount());
         data.put("paymentMethod", tx.getPaymentMethod());
         data.put("transactionRef", tx.getTransactionReference());
+
+        if (tx.getFeeCategory() != null) {
+            data.put("feeCategory", tx.getFeeCategory().getName());
+        }
+        if (tx.getForMonth() != null) {
+            data.put("forMonth", tx.getForMonth());
+        }
 
         return receiptService.generateReceiptPdf(data);
     }
@@ -455,6 +471,15 @@ public class FinanceService {
         dto.setTransactionReference(val.getTransactionReference());
         dto.setStatus(val.getStatus());
         dto.setPaymentDate(val.getPaymentDate());
+
+        if (val.getFeeCategory() != null) {
+            dto.setCategoryId(val.getFeeCategory().getId());
+            dto.setCategoryName(val.getFeeCategory().getName());
+        }
+        if (val.getForMonth() != null) {
+            dto.setMonthLabel(val.getForMonth());
+        }
+
         return dto;
     }
 

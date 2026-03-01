@@ -1,27 +1,82 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Fee Receipt</title>
     <style>
-        body { font-family: sans-serif; color: #333; }
-        .receipt-box { border: 1px solid #ccc; padding: 30px; margin: 20px auto; max-width: 700px; background: #fff; }
-        .header { text-align: center; border-bottom: 2px solid #444; margin-bottom: 20px; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .header h2 { margin: 5px 0 0; font-size: 16px; color: #666; }
-        .info-table { width: 100%; margin-bottom: 20px; }
-        .info-table td { padding: 5px; vertical-align: top; }
-        .label { font-weight: bold; width: 120px; display: inline-block; }
-        .amount-row { font-size: 18px; font-weight: bold; padding-top: 10px; border-top: 1px solid #eee; margin-top: 10px; display: flex; justify-content: space-between; }
-        .footer { margin-top: 30px; font-size: 12px; text-align: center; color: #888; }
+        body {
+            font-family: sans-serif;
+            color: #333;
+        }
+
+        .receipt-box {
+            border: 1px solid #ccc;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 700px;
+            background: #fff;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #444;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header h2 {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .info-table td {
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        .label {
+            font-weight: bold;
+            width: 120px;
+            display: inline-block;
+        }
+
+        .amount-row {
+            font-size: 18px;
+            font-weight: bold;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #888;
+        }
     </style>
 </head>
+
 <body>
     <div class="receipt-box">
         <div class="header">
             <h1>Sanachalak School</h1>
             <h2>Payment Receipt</h2>
         </div>
-        
+
         <table class="info-table">
             <tr>
                 <td><span class="label">Receipt No:</span> <span th:text="${receiptNumber}">REC-001</span></td>
@@ -35,8 +90,14 @@
                 <td><span class="label">Payment Mode:</span> <span th:text="${paymentMethod}">CASH</span></td>
                 <td><span class="label">Transaction Ref:</span> <span th:text="${transactionRef}">TX001</span></td>
             </tr>
+            <tr th:if="${feeCategory != null or forMonth != null}">
+                <td th:if="${feeCategory != null}"><span class="label">Fee Type:</span> <span
+                        th:text="${feeCategory}">Tuition Fee</span></td>
+                <td th:if="${forMonth != null}"><span class="label">For Month:</span> <span
+                        th:text="${forMonth}">January 2024</span></td>
+            </tr>
         </table>
-        
+
         <div style="background: #f9f9f9; padding: 15px; border-radius: 5px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span class="label">Description</span>
@@ -58,4 +119,5 @@
         </div>
     </div>
 </body>
+
 </html>

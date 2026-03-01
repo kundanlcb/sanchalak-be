@@ -30,6 +30,13 @@ public class PaymentTransaction extends BaseEntity {
     @JoinColumn(name = "student_fee_map_id")
     private StudentFeeMap studentFeeMap;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fee_category_id")
+    private FeeCategory feeCategory;
+
+    @Column(name = "for_month")
+    private String forMonth;
+
     @Column(nullable = false)
     private BigDecimal amount;
 

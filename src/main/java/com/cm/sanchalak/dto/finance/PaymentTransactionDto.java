@@ -13,4 +13,9 @@ public class PaymentTransactionDto {
     private String transactionReference;
     private String status;
     private LocalDateTime paymentDate;
+
+    // New allocations
+    private Long categoryId;
+    private String categoryName;
+    private String monthLabel;
 }

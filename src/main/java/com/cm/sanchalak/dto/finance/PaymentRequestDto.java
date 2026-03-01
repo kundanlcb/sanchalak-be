@@ -20,4 +20,7 @@ public class PaymentRequestDto {
     private String paymentMethod;
 
     private String transactionReference;
+
+    private Long categoryId;
+    private String monthLabel;
 }
