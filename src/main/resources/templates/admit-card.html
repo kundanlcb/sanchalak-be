@@ -18,14 +18,18 @@
 
         /* 2-up layout */
         .card-row {
-            display: flex;
-            gap: 5mm;
-            margin-bottom: 5mm;
+            width: 100%;
+            margin-bottom: 12mm;
+            /* This is the vertical gap between rows */
             page-break-inside: avoid;
         }
 
         .card-box {
-            flex: 1;
+            display: inline-block;
+            width: 48%;
+            /* Leave 4% gap total between the two inline blocks */
+            margin-right: 1.5%;
+            vertical-align: top;
             border: 2px solid #333;
             padding: 4mm 4mm;
             margin-bottom: 10mm;
