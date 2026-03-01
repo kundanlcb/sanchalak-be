@@ -23,84 +23,113 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdmitCardController {
 
-    private final StudentRepository studentRepository;
-    private final ExamScheduleRepository examScheduleRepository;
-    private final DocumentTemplateRepository documentTemplateRepository;
-    private final ReceiptService receiptService;
+        private final StudentRepository studentRepository;
+        private final ExamScheduleRepository examScheduleRepository;
+        private final DocumentTemplateRepository documentTemplateRepository;
+        private final ReceiptService receiptService;
 
-    @PostMapping
-    public ResponseEntity<byte[]> generate(@RequestBody AdmitCardRequest request) {
-        UUID schoolId = SchoolContext.getSchoolId();
+        @PostMapping
+        public ResponseEntity<byte[]> generateSingle(@RequestBody AdmitCardRequest request) {
+                UUID schoolId = SchoolContext.getSchoolId();
 
-        // 1. Load exam schedules for the class in this term
-        List<ExamSchedule> schedules = examScheduleRepository
-                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(), request.getClassId());
+                Student student = studentRepository.findById(request.getStudentId())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        // 2. Load students for the class
-        List<Student> students = studentRepository.findAll().stream()
-                .filter(s -> !s.isDeleted()
-                        && schoolId.equals(s.getSchoolId())
-                        && s.getStudentClass() != null
-                        && s.getStudentClass().getId().equals(request.getClassId()))
-                .collect(Collectors.toList());
+                if (!schoolId.equals(student.getSchoolId())) {
+                        throw new RuntimeException("Unauthorized");
+                }
 
-        // 3. Build per-student card data
-        List<Map<String, Object>> cards = students.stream().map(student -> {
-            Map<String, Object> card = new LinkedHashMap<>();
-            card.put("studentName", student.getName());
-            card.put("fatherName",
-                    student.getFatherName() != null ? student.getFatherName() : student.getGuardianName());
-            card.put("village", student.getAddressVillage() != null ? student.getAddressVillage() : "");
-            card.put("className", student.getStudentClass().getName());
-            card.put("rollNo", student.getRollNo() != null ? student.getRollNo().toString() : "");
-            card.put("admissionNumber", student.getAdmissionNumber());
-            card.put("photoUrl", student.getPhotoUrl() != null ? student.getPhotoUrl() : "");
+                List<ExamSchedule> schedules = examScheduleRepository
+                                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(),
+                                                student.getStudentClass().getId());
 
-            // Exam rows
-            List<Map<String, String>> examRows = schedules.stream()
-                    .filter(s -> s.getExamDate() != null)
-                    .sorted(Comparator.comparing(ExamSchedule::getExamDate))
-                    .map(s -> {
-                        Map<String, String> row = new LinkedHashMap<>();
-                        row.put("subject", s.getSubject().getName());
-                        row.put("date", s.getExamDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                        row.put("day", s.getExamDate().getDayOfWeek().getDisplayName(
-                                java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH));
-                        row.put("time", s.getStartTime() != null
-                                ? s.getStartTime().format(DateTimeFormatter.ofPattern("hh:mm a"))
-                                : "");
-                        row.put("duration", s.getDurationMinutes() != null
-                                ? s.getDurationMinutes() + " min"
-                                : "");
-                        row.put("maxMarks", s.getMaxMarks() != null ? s.getMaxMarks().toString() : "");
-                        row.put("shift", s.getShift() != null ? s.getShift() : "");
-                        return row;
-                    }).collect(Collectors.toList());
-            card.put("examRows", examRows);
-            return card;
-        }).collect(Collectors.toList());
+                List<Student> students = Collections.singletonList(student);
+                return buildPdfResponse(students, schedules, schoolId);
+        }
 
-        // 4. Template data
-        DocumentTemplate template = documentTemplateRepository.findBySchoolId(schoolId).orElse(null);
-        String examTermName = schedules.isEmpty() ? "Examination" : schedules.get(0).getExamTerm().getName();
+        @PostMapping("/bulk")
+        public ResponseEntity<byte[]> generateBulk(@RequestBody AdmitCardRequest request) {
+                UUID schoolId = SchoolContext.getSchoolId();
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("cards", cards);
-        data.put("template", template);
-        data.put("examTermName", examTermName);
+                List<ExamSchedule> schedules = examScheduleRepository
+                                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(), request.getClassId());
 
-        byte[] pdf = receiptService.generatePdf("admit-card", data);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"admit-cards-" + examTermName.replace(" ", "-") + ".pdf\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdf);
-    }
+                List<Student> students = studentRepository.findAll().stream()
+                                .filter(s -> !s.isDeleted()
+                                                && schoolId.equals(s.getSchoolId())
+                                                && s.getStudentClass() != null
+                                                && s.getStudentClass().getId().equals(request.getClassId()))
+                                .collect(Collectors.toList());
 
-    // Inner request DTO
-    @lombok.Data
-    public static class AdmitCardRequest {
-        private Long examTermId;
-        private Long classId;
-    }
+                return buildPdfResponse(students, schedules, schoolId);
+        }
+
+        private ResponseEntity<byte[]> buildPdfResponse(List<Student> students, List<ExamSchedule> schedules,
+                        UUID schoolId) {
+                // 3. Build per-student card data
+                List<Map<String, Object>> cards = students.stream().map(student -> {
+                        Map<String, Object> card = new LinkedHashMap<>();
+                        card.put("studentName", student.getName());
+                        card.put("fatherName",
+                                        student.getFatherName() != null ? student.getFatherName()
+                                                        : student.getGuardianName());
+                        card.put("village", student.getAddressVillage() != null ? student.getAddressVillage() : "");
+                        card.put("className", student.getStudentClass().getName());
+                        card.put("rollNo", student.getRollNo() != null ? student.getRollNo().toString() : "");
+                        card.put("admissionNumber", student.getAdmissionNumber());
+                        card.put("photoUrl", student.getPhotoUrl() != null ? student.getPhotoUrl() : "");
+
+                        // Exam rows
+                        List<Map<String, String>> examRows = schedules.stream()
+                                        .filter(s -> s.getExamDate() != null)
+                                        .sorted(Comparator.comparing(ExamSchedule::getExamDate))
+                                        .map(s -> {
+                                                Map<String, String> row = new LinkedHashMap<>();
+                                                row.put("subject", s.getSubject().getName());
+                                                row.put("date", s.getExamDate()
+                                                                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                                                row.put("day", s.getExamDate().getDayOfWeek().getDisplayName(
+                                                                java.time.format.TextStyle.SHORT,
+                                                                java.util.Locale.ENGLISH));
+                                                row.put("time", s.getStartTime() != null
+                                                                ? s.getStartTime().format(
+                                                                                DateTimeFormatter.ofPattern("hh:mm a"))
+                                                                : "");
+                                                row.put("duration", s.getDurationMinutes() != null
+                                                                ? s.getDurationMinutes() + " min"
+                                                                : "");
+                                                row.put("maxMarks", s.getMaxMarks() != null ? s.getMaxMarks().toString()
+                                                                : "");
+                                                row.put("shift", s.getShift() != null ? s.getShift() : "");
+                                                return row;
+                                        }).collect(Collectors.toList());
+                        card.put("examRows", examRows);
+                        return card;
+                }).collect(Collectors.toList());
+
+                // 4. Template data
+                DocumentTemplate template = documentTemplateRepository.findBySchoolId(schoolId).orElse(null);
+                String examTermName = schedules.isEmpty() ? "Examination" : schedules.get(0).getExamTerm().getName();
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("cards", cards);
+                data.put("template", template);
+                data.put("examTermName", examTermName);
+
+                byte[] pdf = receiptService.generatePdf("admit-card", data);
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.CONTENT_DISPOSITION,
+                                                "attachment; filename=\"admit-cards-" + examTermName.replace(" ", "-")
+                                                                + ".pdf\"")
+                                .contentType(MediaType.APPLICATION_PDF)
+                                .body(pdf);
+        }
+
+        // Inner request DTO
+        @lombok.Data
+        public static class AdmitCardRequest {
+                private Long examTermId;
+                private Long classId;
+                private Long studentId;
+        }
 }

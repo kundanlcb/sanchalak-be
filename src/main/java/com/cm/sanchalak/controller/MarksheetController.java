@@ -32,7 +32,30 @@ public class MarksheetController {
     private final ReceiptService receiptService;
 
     @PostMapping
-    public ResponseEntity<byte[]> generate(@RequestBody MarksheetRequest request) {
+    public ResponseEntity<byte[]> generateSingle(@RequestBody MarksheetRequest request) {
+        UUID schoolId = SchoolContext.getSchoolId();
+
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (!schoolId.equals(student.getSchoolId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        List<ExamSchedule> schedules = examScheduleRepository
+                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(), student.getStudentClass().getId());
+
+        List<Student> students = Collections.singletonList(student);
+        List<Student> allStudentsInClass = studentRepository.findAll().stream()
+                .filter(s -> !s.isDeleted() && schoolId.equals(s.getSchoolId()) && s.getStudentClass() != null
+                        && s.getStudentClass().getId().equals(student.getStudentClass().getId()))
+                .collect(Collectors.toList());
+
+        return buildPdfResponse(students, allStudentsInClass, schedules, schoolId, request);
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<byte[]> generateBulk(@RequestBody MarksheetRequest request) {
         UUID schoolId = SchoolContext.getSchoolId();
 
         List<ExamSchedule> schedules = examScheduleRepository
@@ -46,10 +69,15 @@ public class MarksheetController {
                 .sorted(Comparator.comparingInt(s -> s.getRollNo() != null ? s.getRollNo() : 999))
                 .collect(Collectors.toList());
 
+        return buildPdfResponse(students, students, schedules, schoolId, request);
+    }
+
+    private ResponseEntity<byte[]> buildPdfResponse(List<Student> targetStudents, List<Student> allStudents,
+            List<ExamSchedule> schedules, UUID schoolId, MarksheetRequest request) {
         String examTermName = schedules.isEmpty() ? "Examination" : schedules.get(0).getExamTerm().getName();
 
         // 1. Compute subject-level marks per student
-        List<Map<String, Object>> marksheets = students.stream().map(student -> {
+        List<Map<String, Object>> marksheets = targetStudents.stream().map(student -> {
             // Subject rows
             List<Map<String, Object>> subjectRows = schedules.stream().map(schedule -> {
                 Optional<StudentMarks> marksOpt = studentMarksRepository
@@ -79,7 +107,7 @@ public class MarksheetController {
             boolean isPass = subjectRows.stream().noneMatch(r -> "F".equals(r.get("status")));
 
             // Rank among class
-            int rank = computeRank(student, schedules, students);
+            int rank = computeRank(student, schedules, allStudents);
 
             // Attendance — use current academic year dates as approximation
             int presentDays = 0;
@@ -162,6 +190,7 @@ public class MarksheetController {
     public static class MarksheetRequest {
         private Long examTermId;
         private Long classId;
+        private Long studentId;
         private LocalDate fromDate;
         private LocalDate toDate;
     }
