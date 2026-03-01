@@ -163,7 +163,8 @@ public class DemandBillService {
         private DemandBillResponse buildBillResponse(Student student, DemandBillRequest request, UUID schoolId) {
                 // Compute back dues — check total paid vs total assigned
                 // This is the foundation; will be refined as monthly payment tracking is added
-                BigDecimal currentFees = request.getLineItems().stream()
+                BigDecimal currentFees = (request.getLineItems() != null ? request.getLineItems()
+                                : Collections.<DemandBillRequest.LineItemRequest>emptyList()).stream()
                                 .map(DemandBillRequest.LineItemRequest::getAmount)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -176,7 +177,9 @@ public class DemandBillService {
 
                 String billNo = generateBillNo(schoolId, request.getMonthLabel());
 
-                List<DemandBillResponse.LineItemResponse> lineItems = request.getLineItems().stream()
+                List<DemandBillResponse.LineItemResponse> lineItems = (request.getLineItems() != null
+                                ? request.getLineItems()
+                                : Collections.<DemandBillRequest.LineItemRequest>emptyList()).stream()
                                 .map(li -> DemandBillResponse.LineItemResponse.builder()
                                                 .categoryName(li.getCategoryName())
                                                 .monthsUpto(request.getMonthLabel())
