@@ -175,13 +175,21 @@
 
                     <!-- School Header -->
                     <div class="card-header">
-                        <div class="school-name" th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}">
+                        <div class="school-name"
+                            th:text="${template != null and template.schoolName != null and !template.schoolName.isEmpty() ? template.schoolName : 'Sanchalan Public School'}">
                         </div>
-                        <div class="school-address" th:text="${template != null ? template.addressLine1 : ''}"></div>
-                        <div class="school-address" th:text="${template != null ? template.addressLine2 : ''}"></div>
-                        <div class="school-address" th:if="${template != null}" th:text="'Ph: ' + ${template.phone1}">
+                        <div class="school-address"
+                            th:text="${template != null and template.addressLine1 != null and !template.addressLine1.isEmpty() ? template.addressLine1 : '123 Education Lane, Knowledge City, State - 123456'}">
                         </div>
-                        <div class="school-address" th:if="${template != null and template.regNo != null}"
+                        <div class="school-address"
+                            th:if="${template != null and template.addressLine2 != null and !template.addressLine2.isEmpty()}"
+                            th:text="${template.addressLine2}"></div>
+                        <div class="school-address"
+                            th:if="${template != null and template.phone1 != null and !template.phone1.isEmpty()}"
+                            th:text="'Ph: ' + ${template.phone1}">
+                        </div>
+                        <div class="school-address"
+                            th:if="${template != null and template.regNo != null and !template.regNo.isEmpty()}"
                             th:text="'Reg. No: ' + ${template.regNo}"></div>
                     </div>
 

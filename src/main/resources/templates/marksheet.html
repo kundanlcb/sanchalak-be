@@ -219,11 +219,18 @@
 
         <!-- School Header -->
         <div class="school-header">
-            <div class="school-name" th:text="${template != null ? template.schoolName : 'SCHOOL NAME'}"></div>
-            <div class="school-address" th:text="${template != null ? template.addressLine1 : ''}"></div>
-            <div class="school-address" th:text="${template != null ? template.addressLine2 : ''}"></div>
-            <div class="school-address" th:if="${template != null}"
-                th:text="'Ph: ' + ${template.phone1} + (template.regNo != null ? ' | Reg: ' + template.regNo : '')">
+            <div class="school-name"
+                th:text="${template != null and template.schoolName != null and !template.schoolName.isEmpty() ? template.schoolName : 'Sanchalan Public School'}">
+            </div>
+            <div class="school-address"
+                th:text="${template != null and template.addressLine1 != null and !template.addressLine1.isEmpty() ? template.addressLine1 : '123 Education Lane, Knowledge City, State - 123456'}">
+            </div>
+            <div class="school-address"
+                th:if="${template != null and template.addressLine2 != null and !template.addressLine2.isEmpty()}"
+                th:text="${template.addressLine2}"></div>
+            <div class="school-address"
+                th:if="${template != null and template.phone1 != null and !template.phone1.isEmpty()}"
+                th:text="'Ph: ' + ${template.phone1} + (template.regNo != null and !template.regNo.isEmpty() ? ' | Reg: ' + template.regNo : '')">
             </div>
         </div>
 
