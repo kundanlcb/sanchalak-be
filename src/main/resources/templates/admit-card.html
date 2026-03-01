@@ -268,12 +268,7 @@
                     </div>
                 </div>
             </th:block>
-            <!-- Empty slot padding when odd count -->
-            <div class="card-box" th:if="${pair.size() == 1}" style="border: 1.5px dashed #ddd; background: #fafafa;">
-            </div>
         </div>
-        <!-- Page break after every 2 cards (rows of 2) -->
-        <div th:if="${(stat.index + 1) % 2 == 0 and not stat.last}" style="page-break-after: always;"></div>
     </th:block>
 </body>
 
