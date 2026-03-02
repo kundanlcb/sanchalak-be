@@ -56,9 +56,18 @@ public class AdmitCardController {
 
                 List<Student> students = studentRepository.findAll().stream()
                                 .filter(s -> !s.isDeleted()
-                                                && schoolId.equals(s.getSchoolId())
-                                                && s.getStudentClass() != null
-                                                && s.getStudentClass().getId().equals(request.getClassId()))
+                                                && schoolId.equals(s.getSchoolId()))
+                                .filter(s -> {
+                                        if (request.getStudentIds() != null && !request.getStudentIds().isEmpty()) {
+                                                // If specific student IDs are provided, filter by those
+                                                return request.getStudentIds().contains(s.getId());
+                                        } else {
+                                                // Fallback to all students in the class
+                                                return s.getStudentClass() != null
+                                                                && s.getStudentClass().getId()
+                                                                                .equals(request.getClassId());
+                                        }
+                                })
                                 .collect(Collectors.toList());
 
                 return buildPdfResponse(students, schedules, schoolId);
@@ -137,5 +146,6 @@ public class AdmitCardController {
                 private Long examTermId;
                 private Long classId;
                 private Long studentId;
+                private List<Long> studentIds;
         }
 }
