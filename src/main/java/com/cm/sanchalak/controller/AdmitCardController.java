@@ -73,8 +73,78 @@ public class AdmitCardController {
                 return buildPdfResponse(students, schedules, schoolId);
         }
 
+        @PostMapping("/data")
+        public ResponseEntity<Map<String, Object>> generateSingleData(@RequestBody AdmitCardRequest request) {
+                UUID schoolId = SchoolContext.getSchoolId();
+
+                Student student = studentRepository.findById(request.getStudentId())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+                if (!schoolId.equals(student.getSchoolId())) {
+                        throw new RuntimeException("Unauthorized");
+                }
+
+                List<ExamSchedule> schedules = examScheduleRepository
+                                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(),
+                                                student.getStudentClass().getId());
+
+                List<Student> students = Collections.singletonList(student);
+                return buildJsonResponse(students, schedules, schoolId);
+        }
+
+        @PostMapping("/bulk/data")
+        public ResponseEntity<Map<String, Object>> generateBulkData(@RequestBody AdmitCardRequest request) {
+                UUID schoolId = SchoolContext.getSchoolId();
+
+                List<ExamSchedule> schedules = examScheduleRepository
+                                .findByExamTerm_IdAndStudentClass_Id(request.getExamTermId(), request.getClassId());
+
+                List<Student> students = studentRepository.findAll().stream()
+                                .filter(s -> !s.isDeleted() && schoolId.equals(s.getSchoolId()))
+                                .filter(s -> {
+                                        if (request.getStudentIds() != null && !request.getStudentIds().isEmpty()) {
+                                                return request.getStudentIds().contains(s.getId());
+                                        } else {
+                                                return s.getStudentClass() != null
+                                                                && s.getStudentClass().getId()
+                                                                                .equals(request.getClassId());
+                                        }
+                                })
+                                .collect(Collectors.toList());
+
+                return buildJsonResponse(students, schedules, schoolId);
+        }
+
         private ResponseEntity<byte[]> buildPdfResponse(List<Student> students, List<ExamSchedule> schedules,
                         UUID schoolId) {
+                Map<String, Object> data = buildDataMap(students, schedules, schoolId);
+
+                // Thymeleaf 2-up template requires pre-grouped pairs
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> cards = (List<Map<String, Object>>) data.get("cards");
+                List<List<Map<String, Object>>> cardPairs = new ArrayList<>();
+                for (int i = 0; i < cards.size(); i += 2) {
+                        cardPairs.add(cards.subList(i, Math.min(i + 2, cards.size())));
+                }
+                data.put("cardPairs", cardPairs);
+
+                String examTermName = (String) data.get("examTermName");
+                byte[] pdf = receiptService.generatePdf("admit-card", data);
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.CONTENT_DISPOSITION,
+                                                "attachment; filename=\"admit-cards-" + examTermName.replace(" ", "-")
+                                                                + ".pdf\"")
+                                .contentType(MediaType.APPLICATION_PDF)
+                                .body(pdf);
+        }
+
+        private ResponseEntity<Map<String, Object>> buildJsonResponse(List<Student> students,
+                        List<ExamSchedule> schedules, UUID schoolId) {
+                Map<String, Object> data = buildDataMap(students, schedules, schoolId);
+                return ResponseEntity.ok(data);
+        }
+
+        private Map<String, Object> buildDataMap(List<Student> students, List<ExamSchedule> schedules, UUID schoolId) {
                 // 3. Build per-student card data
                 List<Map<String, Object>> cards = students.stream().map(student -> {
                         Map<String, Object> card = new LinkedHashMap<>();
@@ -120,24 +190,12 @@ public class AdmitCardController {
                 DocumentTemplate template = documentTemplateRepository.findBySchoolId(schoolId).orElse(null);
                 String examTermName = schedules.isEmpty() ? "Examination" : schedules.get(0).getExamTerm().getName();
 
-                List<List<Map<String, Object>>> cardPairs = new ArrayList<>();
-                for (int i = 0; i < cards.size(); i += 2) {
-                        cardPairs.add(cards.subList(i, Math.min(i + 2, cards.size())));
-                }
-
                 Map<String, Object> data = new HashMap<>();
                 data.put("cards", cards);
-                data.put("cardPairs", cardPairs);
                 data.put("template", template);
                 data.put("examTermName", examTermName);
 
-                byte[] pdf = receiptService.generatePdf("admit-card", data);
-                return ResponseEntity.ok()
-                                .header(HttpHeaders.CONTENT_DISPOSITION,
-                                                "attachment; filename=\"admit-cards-" + examTermName.replace(" ", "-")
-                                                                + ".pdf\"")
-                                .contentType(MediaType.APPLICATION_PDF)
-                                .body(pdf);
+                return data;
         }
 
         // Inner request DTO
