@@ -39,9 +39,9 @@
 
         .card-header {
             text-align: center;
-            border-bottom: 1.5px solid #333;
+            border-bottom: 2px solid #333;
             padding-bottom: 2mm;
-            margin-bottom: 2mm;
+            margin-bottom: 3mm;
         }
 
         .school-name {
@@ -58,45 +58,49 @@
 
         .doc-title {
             text-align: center;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             text-decoration: underline;
             text-transform: uppercase;
-            margin: 2mm 0;
+            margin-bottom: 2mm;
             letter-spacing: 1px;
         }
 
         .exam-term {
             text-align: center;
-            font-size: 9px;
-            color: #444;
-            margin-bottom: 2mm;
+            font-size: 11px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 4mm;
+            text-transform: uppercase;
         }
 
         .info-row {
             display: flex;
-            gap: 3mm;
-            margin-bottom: 1.5mm;
-            font-size: 9px;
+            gap: 2mm;
+            margin-bottom: 3mm;
+            font-size: 10px;
+            line-height: 1.3;
         }
 
         .info-label {
             font-weight: bold;
-            min-width: 90px;
+            min-width: 80px;
         }
 
         .photo-box {
             position: absolute;
-            top: 22mm;
+            top: 25mm;
+            /* Adjusted to sit nicely under the header */
             right: 4mm;
-            width: 22mm;
-            height: 26mm;
-            border: 1px solid #aaa;
+            width: 25mm;
+            height: 32mm;
+            border: 1px solid #666;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 7px;
-            color: #999;
+            font-size: 8px;
+            color: #666;
             text-align: center;
             overflow: hidden;
         }
@@ -108,28 +112,30 @@
         }
 
         .info-section {
-            margin-right: 26mm;
+            margin-right: 32mm;
+            /* Ensure text never hits the photo container */
+            margin-bottom: 4mm;
         }
 
         /* Exam table */
         .exam-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2mm;
-            font-size: 8.5px;
+            font-size: 9.5px;
+            margin-bottom: 4mm;
         }
 
         .exam-table th {
-            background: #e8e8e8;
-            border: 1px solid #999;
-            padding: 1mm 1.5mm;
+            background: #f0f0f0;
+            border: 1px solid #666;
+            padding: 1.5mm;
             text-align: left;
             font-weight: bold;
         }
 
         .exam-table td {
-            border: 1px solid #bbb;
-            padding: 1mm 1.5mm;
+            border: 1px solid #777;
+            padding: 1.5mm;
         }
 
         .exam-table td.date {
@@ -137,11 +143,11 @@
         }
 
         .footer-note {
-            font-size: 7px;
-            color: #555;
-            margin-top: 2mm;
-            border-top: 0.5px dashed #aaa;
-            padding-top: 1.5mm;
+            font-size: 8px;
+            color: #444;
+            margin-top: 4mm;
+            border-top: 1px dashed #999;
+            padding-top: 2mm;
         }
 
         .signature-row {
@@ -171,13 +177,6 @@
         <div class="card-row">
             <th:block th:each="card : ${pair}">
                 <div class="card-box">
-                    <!-- Photo -->
-                    <div class="photo-box">
-                        <img th:if="${card.photoUrl != null and !card.photoUrl.isEmpty()}" th:src="${card.photoUrl}"
-                            alt="Photo" />
-                        <span th:if="${card.photoUrl == null or card.photoUrl.isEmpty()}">Paste Photo</span>
-                    </div>
-
                     <!-- School Header -->
                     <div class="card-header">
                         <div class="school-name"
@@ -198,8 +197,34 @@
                             th:text="'Reg. No: ' + ${template.regNo}"></div>
                     </div>
 
-                    <div class="doc-title">Admit Card (प्रवेश पत्र)</div>
+                    <!-- Moved Title and Term Before Photo for better alignment -->
+                    <div class="doc-title">Admit Card</div>
                     <div class="exam-term" th:text="${examTermName}">Annual Examination 2025</div>
+
+                    <!-- Photo (Absolute positioning will drop it below header in the right corner) -->
+                    <div class="photo-box">
+                        <img th:if="${card.photoUrl != null and !card.photoUrl.isEmpty()}" th:src="${card.photoUrl}"
+                            alt="Photo" />
+                        <span th:if="${card.photoUrl == null or card.photoUrl.isEmpty()}">Paste Photo</span>
+                    </div>
+                    <div class="card-header">
+                        <div class="school-name"
+                            th:text="${template != null and template.schoolName != null and !template.schoolName.isEmpty() ? template.schoolName : 'Sanchalan Public School'}">
+                        </div>
+                        <div class="school-address"
+                            th:text="${template != null and template.addressLine1 != null and !template.addressLine1.isEmpty() ? template.addressLine1 : '123 Education Lane, Knowledge City, State - 123456'}">
+                        </div>
+                        <div class="school-address"
+                            th:if="${template != null and template.addressLine2 != null and !template.addressLine2.isEmpty()}"
+                            th:text="${template.addressLine2}"></div>
+                        <div class="school-address"
+                            th:if="${template != null and template.phone1 != null and !template.phone1.isEmpty()}"
+                            th:text="'Ph: ' + ${template.phone1}">
+                        </div>
+                        <div class="school-address"
+                            th:if="${template != null and template.regNo != null and !template.regNo.isEmpty()}"
+                            th:text="'Reg. No: ' + ${template.regNo}"></div>
+                    </div>
 
                     <!-- Student Info -->
                     <div class="info-section">
